@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from '../prisma.service';
+import { PrismaService } from './prisma.service';
 import { Race, Prisma } from '@prisma/client';
 
 @Injectable()
-export class raceService {
+export class RaceService {
   constructor(private prisma: PrismaService) {}
 
   async Race(
@@ -31,13 +31,13 @@ export class raceService {
     });
   }
 
-  async createrace(data: Prisma.RaceCreateInput): Promise<Race> {
+  async createRace(data: Prisma.RaceCreateInput): Promise<Race> {
     return this.prisma.race.create({
       data,
     });
   }
 
-  async updaterace(params: {
+  async updateRace(params: {
     where: Prisma.RaceWhereUniqueInput;
     data: Prisma.RaceUpdateInput;
   }): Promise<Race> {
@@ -48,7 +48,7 @@ export class raceService {
     });
   }
 
-  async deleterace(where: Prisma.RaceWhereUniqueInput): Promise<Race> {
+  async deleteRace(where: Prisma.RaceWhereUniqueInput): Promise<Race> {
     return this.prisma.race.delete({
       where,
     });

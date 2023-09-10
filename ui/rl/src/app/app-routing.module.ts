@@ -1,7 +1,15 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
+import { ShowModule } from 'projects/show/src/lib/show.module';
+import { SongModule } from 'projects/song/src/lib/song.module';
 
-const routes: Routes = [];
+const routes: Routes = [
+  {path:'', children: [
+    {path: 'show', loadChildren: () => ShowModule},
+    {path: 'song', loadChildren: () => SongModule}
+
+  ]}
+];
 
 @NgModule({
   imports: [RouterModule.forRoot(routes)],

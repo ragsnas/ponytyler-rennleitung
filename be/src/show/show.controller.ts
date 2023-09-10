@@ -1,8 +1,8 @@
 import { Controller, Param, Get, Post, Body, Patch } from '@nestjs/common';
-import { ShowService } from './show.service';
+import { ShowService } from '../prisma-api/show.service';
 import { Show, Prisma } from '@prisma/client';
 
-@Controller('show')
+@Controller('api/show')
 export class ShowController {
   constructor(private readonly showService: ShowService) {}
 
@@ -22,6 +22,16 @@ export class ShowController {
     return this.showService.shows({
       orderBy: { date: { sort: 'desc' } },
       where: { date: { gte: nowMinus5Hours, lte: nowPlus5Hours } },
+    });
+  }
+
+  @Get('old-shows')
+  async getOldShows(): Promise<Show[]> {
+    const nowMinus5Hours = new Date();
+    nowMinus5Hours.setHours(nowMinus5Hours.getHours() - 5);
+    return this.showService.shows({
+      orderBy: { date: { sort: 'desc' } },
+      where: { date: { lte: nowMinus5Hours } },
     });
   }
 

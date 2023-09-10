@@ -5,6 +5,12 @@
     "paths": {
       "auth": [
         "dist/auth"
+      ],
+      "show": [
+        "dist/show"
+      ],
+      "song": [
+        "dist/song"
       ]
     },
     "baseUrl": "./",

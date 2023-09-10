@@ -1,0 +1,15 @@
+<h2>Shows</h2>
+
+<h3>Aktive Shows</h3>
+<div *ngIf="currentShows$">
+    <lib-show *ngFor="let show of currentShows$ | async; index as i" [show]="show" [routerLink]="show.id"></lib-show>
+</div>
+
+<hr>
+
+<h3>Vergangene Shows</h3>
+<div *ngIf="oldShows$">
+    <lib-show *ngFor="let show of oldShows$ | async; index as i" [show]="show"></lib-show>
+</div>
+
+<button mat-button [routerLink]="'create'">Add Show</button>

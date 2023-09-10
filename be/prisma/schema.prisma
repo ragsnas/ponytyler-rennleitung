@@ -21,6 +21,7 @@ model Show {
 model Song {
   id Int @id @default(autoincrement())
   name String @unique
+  artist String
   pickedByPerson1 Race[] @ignore @relation(name: "SongForPerson1")
   pickedByPerson2 Race[] @ignore @relation(name: "SongForPerson2")
 }

@@ -1,0 +1,10 @@
+<div *ngIf="form" [formGroup]="form">
+    <div>
+        <mat-form-field appearance="outline">
+            <mat-label>Show Name</mat-label>
+            <input matInput placeholder="i.e. PT @PAPP Dez 2023" formControlName="name">
+        </mat-form-field>
+    </div>
+
+    <button mat-raised-button color="primary" (click)="createShow()">Speichern</button>
+</div>
