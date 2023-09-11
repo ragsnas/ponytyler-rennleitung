@@ -11,6 +11,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { CommonModule } from '@angular/common';
 import { ShowDashboardComponent } from './show-dashboard/show-dashboard.component';
+import { CreateRaceComponent } from './create-race/create-race.component';
 
 const routes: Routes = [
   { path: '', component: ShowsComponent },
@@ -19,7 +20,7 @@ const routes: Routes = [
 ];
 
 @NgModule({
-  declarations: [ShowComponent, ShowsComponent, CreateShowComponent, ShowDashboardComponent],
+  declarations: [ShowComponent, ShowsComponent, CreateShowComponent, ShowDashboardComponent, CreateRaceComponent],
   imports: [
     CommonModule,
     RouterModule.forChild(routes),
