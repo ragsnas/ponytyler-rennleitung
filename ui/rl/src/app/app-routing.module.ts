@@ -5,6 +5,7 @@ import { SongModule } from 'projects/song/src/lib/song.module';
 
 const routes: Routes = [
   {path:'', children: [
+    {path: '', redirectTo: 'show', pathMatch: 'full'},
     {path: 'show', loadChildren: () => ShowModule},
     {path: 'song', loadChildren: () => SongModule}
 

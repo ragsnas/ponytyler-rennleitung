@@ -12,6 +12,7 @@ import { BehaviorSubject } from 'rxjs';
 export class ShowDashboardComponent implements OnInit {
   show: Show | undefined;
   races$: BehaviorSubject<Race[]> = new BehaviorSubject<Race[]>([]);
+  finishedRaces$: BehaviorSubject<Race[]> = new BehaviorSubject<Race[]>([]);
 
   constructor(
     private showService: ShowService,
@@ -30,9 +31,10 @@ export class ShowDashboardComponent implements OnInit {
           .getShow(showId)
           .subscribe((show) => (this.show = show));
         this.raceService.getRacesForShow(showId).subscribe((races) => {
-          console.log('races received', races);
-
           this.races$.next(races);
+        });
+        this.raceService.getRacesForShow(showId, true).subscribe((races) => {
+          this.finishedRaces$.next(races);
         });
       }
     });
@@ -40,6 +42,9 @@ export class ShowDashboardComponent implements OnInit {
   }
 
   markRaceAsRaced(race: Race): void {
+    console.log(`markRaceAsRaced with race > race.raced`, race.raced);
+    console.log(`markRaceAsRaced with after race.raced`, {...race, raced: race.raced}.raced);
+    
     this.raceService
       .updateRace({
         ...race,

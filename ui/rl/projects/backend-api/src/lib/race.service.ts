@@ -18,13 +18,15 @@ export interface Race {
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class RaceService {
   constructor(private http: HttpClient) {}
 
-  getRacesForShow(showId: string): Observable<Race[]> {
-    return this.http.get<Race[]>('api/race/for-show/' + showId)
+  getRacesForShow(showId: string, raced: boolean = false): Observable<Race[]> {
+    return this.http.get<Race[]>(
+      'api/race/for-show/' + showId + (raced ? '?raced=true' : '')
+    );
   }
 
   createRace(race: Race) {
@@ -33,16 +35,16 @@ export class RaceService {
       person1: race.person1,
       song1Id: race.song1!.id,
       person2: race.person2,
-      song2Id: race.song2!.id
-        });
+      song2Id: race.song2!.id,
+    });
   }
 
   updateRace(race: Race) {
+    console.log(`will update race with`, race);
+
     return this.http.patch(`api/race/${race.id}`, {
       ...race,
       id: undefined,
     });
   }
-
-
 }

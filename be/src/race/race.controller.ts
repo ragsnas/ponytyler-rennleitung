@@ -6,6 +6,7 @@ import {
   Patch,
   Param,
   Delete,
+  Query,
 } from '@nestjs/common';
 import { RaceService } from 'src/prisma-api/race.service';
 import { Prisma } from '@prisma/client';
@@ -20,9 +21,12 @@ export class RaceController {
   }
 
   @Get('for-show/:showId')
-  findRacesForShow(@Param('showId') showId: string) {
+  findRacesForShow(
+    @Param('showId') showId: string,
+    @Query('raced') raced: string,
+  ) {
     return this.raceService.races({
-      where: { showId: Number(showId) },
+      where: { showId: Number(showId), raced: raced ? true : false },
       orderBy: { orderNumber: 'asc' },
     });
   }
