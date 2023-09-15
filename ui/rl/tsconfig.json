@@ -3,6 +3,9 @@
   "compileOnSave": false,
   "compilerOptions": {
     "paths": {
+      "@ui/button-list": [
+        "dist/ui/button-list"
+      ],
       "auth": [
         "dist/auth"
       ],

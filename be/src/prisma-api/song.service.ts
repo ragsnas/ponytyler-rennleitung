@@ -19,7 +19,9 @@ export class SongService {
     take?: number;
     cursor?: Prisma.SongWhereUniqueInput;
     where?: Prisma.SongWhereInput;
-    orderBy?: Prisma.SongOrderByWithRelationInput;
+    orderBy?:
+      | Prisma.SongOrderByWithRelationInput
+      | Prisma.SongOrderByWithRelationInput[];
   }): Promise<Song[]> {
     const { skip, take, cursor, where, orderBy } = params;
     return this.prisma.song.findMany({

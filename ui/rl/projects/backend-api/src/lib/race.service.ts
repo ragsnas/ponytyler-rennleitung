@@ -1,6 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
+import { Song } from './song.service';
 
 export interface Race {
   id?: string;
@@ -8,8 +9,10 @@ export interface Race {
   showId: string;
   person1: string;
   song1Id?: string;
+  song1?: Song;
   person2: string;
   song2Id?: string;
+  song2?: Song;
   orderNumber: string;
   raced?: boolean;
 }
@@ -25,14 +28,12 @@ export class RaceService {
   }
 
   createRace(race: Race) {
-    this.http.post('api/race', race).subscribe({
-      next: (result) => {
-        console.log(`It worked:`, result);
-        
-      },
-      error: (error) => {
-        console.error(`Oh No! It didn't work!:`, error);
-      }
-    });
+    return this.http.post('api/race', {
+      showId: race.showId,
+      person1: race.person1,
+      song1Id: race.song1!.id,
+      person2: race.person2,
+      song2Id: race.song2!.id
+        });
   }
 }

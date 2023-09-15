@@ -15,7 +15,7 @@ export class RaceController {
   constructor(private readonly raceService: RaceService) {}
 
   @Post()
-  create(@Body() data: Prisma.RaceCreateInput) {
+  create(@Body() data: Prisma.RaceUncheckedCreateInput) {
     return this.raceService.createRace(data);
   }
 
@@ -29,7 +29,7 @@ export class RaceController {
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.raceService.Race({ id: Number(id) });
+    return this.raceService.race({ id: Number(id) });
   }
 
   @Patch(':id')

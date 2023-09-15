@@ -6,6 +6,8 @@ export interface Song {
   id: number
   name: string
   artist: string
+  deleted: boolean,
+  selectable: boolean
 }
 
 @Injectable({
@@ -21,9 +23,9 @@ export class SongService {
     return this.http.get<Song[]>('api/song').pipe(result => {
       return result
     });
-
+    
   }
-
+  
   createSong(song: Song): void {
     this.http.post('api/song', song).subscribe({
       next: (result) => {
@@ -33,6 +35,10 @@ export class SongService {
         console.error(`Oh No! It didn't work!:`, error);
       }
     });
-     
+    
+  }
+
+  updateSong(song: Song) {
+    return this.http.patch(`api/song/${song.id}`, song);
   }
 }

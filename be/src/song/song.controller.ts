@@ -21,7 +21,19 @@ export class SongController {
 
   @Get()
   findAll() {
-    return this.songService.songs({ orderBy: { name: 'asc' } });
+    return this.songService.songs({
+      where: {
+        deleted: { equals: false },
+      },
+      orderBy: [
+        {
+          artist: 'asc',
+        },
+        {
+          name: 'asc',
+        },
+      ],
+    });
   }
 
   @Get(':id')
@@ -41,6 +53,10 @@ export class SongController {
             artist: { contains: text },
           },
         ],
+      },
+      orderBy: {
+        artist: 'asc',
+        name: 'asc',
       },
     });
   }

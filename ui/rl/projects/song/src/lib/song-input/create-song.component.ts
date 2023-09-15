@@ -12,6 +12,8 @@ export class CreateSongComponent {
   public form: FormGroup = new FormGroup({
     name: new FormControl(''),
     artist: new FormControl(''),
+    deleted: new FormControl(false),
+    selectable: new FormControl(true),
   });
   
   constructor(private songService: SongService) { }

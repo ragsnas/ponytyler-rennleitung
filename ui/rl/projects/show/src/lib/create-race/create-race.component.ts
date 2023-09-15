@@ -1,7 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { FormControl, FormGroup } from '@angular/forms';
 import { RaceService } from '../../../../backend-api/src/lib/race.service';
-import { SongService } from 'projects/song/src/public-api';
+import { Song, SongService } from 'projects/song/src/public-api';
+import { ActivatedRoute, ActivatedRouteSnapshot } from '@angular/router';
 
 @Component({
   selector: 'lib-create-race',
@@ -13,19 +14,30 @@ export class CreateRaceComponent implements OnInit {
   public form: FormGroup = new FormGroup({
     name: new FormControl(''),
     person1: new FormControl(''),
-    song1Id: new FormControl(''),
+    song1: new FormControl<Song|undefined>(undefined),
     person2: new FormControl(''),
-    song2Id: new FormControl(''),
+    song2: new FormControl<Song|undefined>(undefined),
     orderNumber: new FormControl(''),
   });
   
-  constructor(private raceService: RaceService, private songService: SongService) { }
+  constructor(private raceService: RaceService, private songService: SongService, private route: ActivatedRoute) { }
   
   ngOnInit(): void {
   }
 
   createRace() {
-    throw new Error('Method not implemented.');
+    this.raceService.createRace({
+      ...this.form.getRawValue(),
+      showId: this.route.snapshot.paramMap.get('showId')
+    }).subscribe({
+      next: (result) => {
+        console.log(`It worked:`, result);
+        
+      },
+      error: (error) => {
+        console.error(`Oh No! It didn't work!:`, error);
+      }
+    });
   }
 
 }

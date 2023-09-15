@@ -12,6 +12,7 @@ import { CommonModule } from '@angular/common';
 import { ShowDashboardComponent } from './show-dashboard/show-dashboard.component';
 import { CreateRaceComponent } from './create-race/create-race.component';
 import { BackendApiModule } from 'projects/backend-api/src/public-api';
+import { SongSearchModule } from 'projects/song-search/src/public-api';
 
 const routes: Routes = [
   { path: '', component: ShowsComponent },
@@ -36,7 +37,8 @@ const routes: Routes = [
     MatInputModule,
     MatFormFieldModule,
     MatButtonModule,
-    BackendApiModule
+    BackendApiModule,
+    SongSearchModule
   ],
   exports: [ShowComponent],
 })

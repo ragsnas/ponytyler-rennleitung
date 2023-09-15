@@ -6,7 +6,7 @@ import { Race, Prisma } from '@prisma/client';
 export class RaceService {
   constructor(private prisma: PrismaService) {}
 
-  async Race(
+  async race(
     raceWhereUniqueInput: Prisma.RaceWhereUniqueInput,
   ): Promise<Race | null> {
     return this.prisma.race.findUnique({
@@ -31,9 +31,24 @@ export class RaceService {
     });
   }
 
-  async createRace(data: Prisma.RaceCreateInput): Promise<Race> {
+  async createRace(data: Prisma.RaceUncheckedCreateInput): Promise<Race> {
+    const highestOrderNumberRace: Race[] = await this.races({
+      where: { showId: Number(data.showId) },
+      orderBy: { orderNumber: 'desc' },
+    });
     return this.prisma.race.create({
-      data,
+      data: {
+        person1: data.person1,
+        song1Id: Number(data.song1Id),
+        person2: data.person2,
+        song2Id: Number(data.song2Id),
+        showId: Number(data.showId),
+        createdAt: data.createdAt || new Date(),
+        orderNumber:
+          highestOrderNumberRace.length > 0
+            ? Number(highestOrderNumberRace[0].orderNumber) + 1
+            : 0,
+      },
     });
   }
 

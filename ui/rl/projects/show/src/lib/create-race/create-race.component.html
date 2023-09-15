@@ -2,27 +2,21 @@
     <div>
         <mat-form-field appearance="outline">
             <mat-label>Black Bike Rider</mat-label>
-            <input matInput placeholder="i.e. Gylcan or Oman or Paul or ..." formControlName="name">
+            <input matInput placeholder="i.e. Gylcan or Oman or Paul or ..." formControlName="person1">
         </mat-form-field>
     </div>
     <div>
-        <mat-form-field appearance="outline">
-            <mat-label>Black Bike Song</mat-label>
-            <input matInput placeholder="i.e. Enrique Iglesias - Hero" formControlName="name">
-        </mat-form-field>
+        <lib-song-auto-complete label="Song for Black Bike" formControlName="song1"></lib-song-auto-complete>
     </div>
     <hr>
     <div>
         <mat-form-field appearance="outline">
             <mat-label>White Bike Rider</mat-label>
-            <input matInput placeholder="i.e. Olga or Steve or ..." formControlName="name">
+            <input matInput placeholder="i.e. Olga or Steve or ..." formControlName="person2">
         </mat-form-field>
     </div>
     <div>
-        <mat-form-field appearance="outline">
-            <mat-label>White Bike Song</mat-label>
-            <input matInput placeholder="i.e. Taylor Swift - Shake it off" formControlName="name">
-        </mat-form-field>
+        <lib-song-auto-complete label="Song for White Bike" formControlName="song2"></lib-song-auto-complete>
     </div>
 
     <button mat-raised-button color="primary" (click)="createRace()">Speichern</button>
