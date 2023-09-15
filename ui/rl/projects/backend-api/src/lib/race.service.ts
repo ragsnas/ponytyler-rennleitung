@@ -36,4 +36,12 @@ export class RaceService {
       song2Id: race.song2!.id
         });
   }
+
+  updateRace(race: Race) {
+    return this.http.patch(`api/race/${race.id}`, {
+      ...race
+    });
+  }
+
+
 }

@@ -13,6 +13,8 @@ import { ShowDashboardComponent } from './show-dashboard/show-dashboard.componen
 import { CreateRaceComponent } from './create-race/create-race.component';
 import { BackendApiModule } from 'projects/backend-api/src/public-api';
 import { SongSearchModule } from 'projects/song-search/src/public-api';
+import { MatIconModule } from '@angular/material/icon';
+import { MatTableModule } from '@angular/material/table';
 
 const routes: Routes = [
   { path: '', component: ShowsComponent },
@@ -34,6 +36,8 @@ const routes: Routes = [
     RouterModule.forChild(routes),
     HttpClientModule,
     ReactiveFormsModule,
+    MatTableModule,
+    MatIconModule,
     MatInputModule,
     MatFormFieldModule,
     MatButtonModule,

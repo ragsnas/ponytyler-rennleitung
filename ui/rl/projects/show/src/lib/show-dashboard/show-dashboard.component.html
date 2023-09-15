@@ -2,3 +2,48 @@
 <p>{{ show?.date }}</p>
 
 <button mat-raised-button [routerLink]="'create-race'">Add Race for this Show</button>
+
+
+<table mat-table *ngIf="races$ | async as races" [dataSource]="races" class="mat-elevation-z8">
+
+    <ng-container matColumnDef="orderNumber">
+      <th mat-header-cell *matHeaderCellDef><mat-icon>number</mat-icon></th>
+      <td mat-cell *matCellDef="let element">
+        {{element.orderNumber + 1}}
+      </td>
+    </ng-container>
+    <ng-container matColumnDef="person1">
+      <th mat-header-cell *matHeaderCellDef>Rider Black Bike</th>
+      <td mat-cell *matCellDef="let element"> {{element.person1}} </td>
+    </ng-container>
+  
+    <ng-container matColumnDef="song1">
+        <th mat-header-cell *matHeaderCellDef>Song Black Bike</th>
+        <td mat-cell *matCellDef="let element"> {{element.song1.artist}} - {{element.song1.name}} </td>
+      </ng-container>
+  
+    <ng-container matColumnDef="person2">
+        <th mat-header-cell *matHeaderCellDef>Rider White Bike</th>
+        <td mat-cell *matCellDef="let element"> {{element.person2}} </td>
+      </ng-container>
+  
+      <ng-container matColumnDef="song2">
+        <th mat-header-cell *matHeaderCellDef>Song White Bike</th>
+        <td mat-cell *matCellDef="let element"> {{element.song2.artist}} - {{element.song2.name}} </td>
+      </ng-container>
+      
+    <ng-container matColumnDef="actions">
+      <th mat-header-cell *matHeaderCellDef>Actions</th>
+      <td mat-cell *matCellDef="let element"> 
+        <button *ngIf="element.checked" mat-icon-button aria-label="Delete Song" (click)="markRaceAsRaced(element)">
+            <mat-icon>check-box-outline-blank</mat-icon>
+          </button>
+        <button *ngIf="!element.checked" mat-icon-button aria-label="Delete Song" (click)="markRaceAsNotRaced(element)">
+            <mat-icon>check-box</mat-icon>
+          </button>
+      </td>
+    </ng-container>
+    
+    <tr mat-header-row *matHeaderRowDef="['orderNumber', 'person1', 'song1', 'person2', 'song2', 'actions']"></tr>
+    <tr mat-row *matRowDef="let row; columns: ['orderNumber', 'person1', 'song1', 'person2', 'song2', 'actions'];"></tr>
+  </table>
