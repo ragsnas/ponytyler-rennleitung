@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
+import { Show, ShowService } from 'projects/backend-api/src/lib/show.service';
 import { Observable } from 'rxjs';
-import { Show, ShowService } from '../show.service';
 
 @Component({
   selector: 'lib-shows',

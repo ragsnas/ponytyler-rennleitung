@@ -1,8 +1,8 @@
 import { Component, Input } from '@angular/core';
-import { Song } from '../song.service';
+import { Song } from '../../../../backend-api/src/lib/song.service';
 
 @Component({
-  selector: 'app-song',
+  selector: 'lib-song-song',
   templateUrl: './song.component.html',
   styleUrls: ['./song.component.scss'],
 })

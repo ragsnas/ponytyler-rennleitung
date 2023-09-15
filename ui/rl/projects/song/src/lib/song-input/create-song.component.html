@@ -1,0 +1,15 @@
+<div *ngIf="form" [formGroup]="form">
+    <div>
+        <mat-form-field appearance="outline">
+            <mat-label>Title</mat-label>
+            <input matInput placeholder="i.e. Toxic or Total Eclipse of the Heart..." formControlName="name">
+        </mat-form-field>
+    </div>
+    <div>
+        <mat-form-field appearance="outline">
+            <mat-label>Artist/Band</mat-label>
+            <input matInput placeholder="i.e. Britney Spears or Queen" formControlName="artist">
+        </mat-form-field>
+    </div>
+    <button mat-raised-button color="primary" (click)="createSong()">Speichern</button>
+</div>

@@ -6,11 +6,17 @@
       "auth": [
         "dist/auth"
       ],
+      "backend-api": [
+        "dist/backend-api"
+      ],
       "show": [
         "dist/show"
       ],
       "song": [
         "dist/song"
+      ],
+      "song-search": [
+        "dist/song-search"
       ]
     },
     "baseUrl": "./",

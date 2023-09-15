@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
-import { Song, SongService } from './song.service';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { BehaviorSubject } from 'rxjs';
+import { Song, SongService } from '../../../backend-api/src/lib/song.service';
 
 @Component({
   selector: 'lib-song-songs',
@@ -8,13 +8,14 @@ import { BehaviorSubject, Observable } from 'rxjs';
   styleUrls: ['./songs.component.scss']
 })
 export class SongsComponent implements OnInit {
-  songs$: Observable<Song[]> = new BehaviorSubject([]);
+  songs$: BehaviorSubject<Song[]> = new BehaviorSubject<Song[]>([]);
 
   constructor(private songService: SongService) { }
 
   ngOnInit(): void {
     this.songService.getSongs().subscribe({
       next: result => {
+        this.songs$.next(result);
         console.log(`Result:`, result);
         
       },

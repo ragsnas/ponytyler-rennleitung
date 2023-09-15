@@ -3,12 +3,15 @@ import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 
 export interface Race {
-  orderNumber: number;
+  id?: string;
   createdAt?: Date | string;
-  raced?: boolean;
-  person1: string;
-  person2: string;
   showId: string;
+  person1: string;
+  song1Id?: string;
+  person2: string;
+  song2Id?: string;
+  orderNumber: string;
+  raced?: boolean;
 }
 
 @Injectable({

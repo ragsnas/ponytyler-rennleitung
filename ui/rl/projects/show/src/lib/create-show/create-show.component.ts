@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { FormControl, FormGroup } from '@angular/forms';
-import { ShowService } from '../show.service';
+import { ShowService } from 'projects/backend-api/src/lib/show.service';
 
 @Component({
   selector: 'lib-create-show',

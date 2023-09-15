@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { Show, ShowService } from '../show.service';
+import { Show, ShowService } from 'projects/backend-api/src/lib/show.service';
 
 @Component({
   selector: 'lib-show-dashboard',

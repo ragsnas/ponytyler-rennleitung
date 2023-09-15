@@ -13,7 +13,7 @@ export interface Song {
 })
 export class SongService {
   songs$: Observable<Song[]> = new BehaviorSubject([]);
-
+  
   constructor(private http: HttpClient) {
     
   }
@@ -21,5 +21,18 @@ export class SongService {
     return this.http.get<Song[]>('api/song').pipe(result => {
       return result
     });
+
+  }
+
+  createSong(song: Song): void {
+    this.http.post('api/song', song).subscribe({
+      next: (result) => {
+        console.log(`It worked:`, result);        
+      },
+      error: (error) => {
+        console.error(`Oh No! It didn't work!:`, error);
+      }
+    });
+     
   }
 }

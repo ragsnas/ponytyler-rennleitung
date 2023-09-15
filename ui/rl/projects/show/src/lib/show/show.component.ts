@@ -1,5 +1,5 @@
 import { Component, Input } from '@angular/core';
-import { Show } from '../show.service';
+import { Show } from 'projects/backend-api/src/lib/show.service';
 
 @Component({
   selector: 'lib-show',

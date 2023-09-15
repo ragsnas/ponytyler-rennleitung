@@ -1,1 +1,29 @@
-<p>create-race works!</p>
+<div *ngIf="form" [formGroup]="form">
+    <div>
+        <mat-form-field appearance="outline">
+            <mat-label>Black Bike Rider</mat-label>
+            <input matInput placeholder="i.e. Gylcan or Oman or Paul or ..." formControlName="name">
+        </mat-form-field>
+    </div>
+    <div>
+        <mat-form-field appearance="outline">
+            <mat-label>Black Bike Song</mat-label>
+            <input matInput placeholder="i.e. Enrique Iglesias - Hero" formControlName="name">
+        </mat-form-field>
+    </div>
+    <hr>
+    <div>
+        <mat-form-field appearance="outline">
+            <mat-label>White Bike Rider</mat-label>
+            <input matInput placeholder="i.e. Olga or Steve or ..." formControlName="name">
+        </mat-form-field>
+    </div>
+    <div>
+        <mat-form-field appearance="outline">
+            <mat-label>White Bike Song</mat-label>
+            <input matInput placeholder="i.e. Taylor Swift - Shake it off" formControlName="name">
+        </mat-form-field>
+    </div>
+
+    <button mat-raised-button color="primary" (click)="createRace()">Speichern</button>
+</div>
