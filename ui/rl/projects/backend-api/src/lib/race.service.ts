@@ -39,7 +39,8 @@ export class RaceService {
 
   updateRace(race: Race) {
     return this.http.patch(`api/race/${race.id}`, {
-      ...race
+      ...race,
+      id: undefined,
     });
   }
 

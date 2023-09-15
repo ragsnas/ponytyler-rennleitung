@@ -23,8 +23,13 @@ export class RaceController {
   findRacesForShow(@Param('showId') showId: string) {
     return this.raceService.races({
       where: { showId: Number(showId) },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { orderNumber: 'asc' },
     });
+  }
+
+  @Get()
+  findRaces() {
+    return this.raceService.races({});
   }
 
   @Get(':id')
@@ -33,7 +38,10 @@ export class RaceController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() data: Prisma.RaceUpdateInput) {
+  update(
+    @Param('id') id: string,
+    @Body() data: Prisma.RaceUncheckedUpdateInput,
+  ) {
     return this.raceService.updateRace({ where: { id: Number(id) }, data });
   }
 

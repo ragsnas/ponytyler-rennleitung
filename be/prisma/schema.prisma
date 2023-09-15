@@ -24,8 +24,8 @@ model Song {
   artist String
   selectable Boolean @default(true)
   deleted Boolean @default(false)
-  pickedByPerson1 Race[] @ignore @relation(name: "SongForPerson1")
-  pickedByPerson2 Race[] @ignore @relation(name: "SongForPerson2")
+  pickedByPerson1 Race[] @relation(name: "SongForPerson1")
+  pickedByPerson2 Race[] @relation(name: "SongForPerson2")
 }
 
 model Race {

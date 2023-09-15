@@ -1,13 +1,16 @@
-<h3>{{ show?.name }}</h3>
-<p>{{ show?.date }}</p>
+<h3>{{ show?.name }} / {{ show?.date | date: "YYYY-MM-dd HH:mm" }}</h3>
 
-<button mat-raised-button [routerLink]="'create-race'">Add Race for this Show</button>
+
+
+<ui-button-list>
+    <button mat-raised-button [routerLink]="'create-race'">Add Race for this Show</button>
+</ui-button-list>
 
 
 <table mat-table *ngIf="races$ | async as races" [dataSource]="races" class="mat-elevation-z8">
 
     <ng-container matColumnDef="orderNumber">
-      <th mat-header-cell *matHeaderCellDef><mat-icon>number</mat-icon></th>
+      <th mat-header-cell *matHeaderCellDef><mat-icon>tag</mat-icon></th>
       <td mat-cell *matCellDef="let element">
         {{element.orderNumber + 1}}
       </td>

@@ -15,6 +15,7 @@ import { BackendApiModule } from 'projects/backend-api/src/public-api';
 import { SongSearchModule } from 'projects/song-search/src/public-api';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTableModule } from '@angular/material/table';
+import { ButtonListModule } from 'projects/ui/button-list/src/public-api';
 
 const routes: Routes = [
   { path: '', component: ShowsComponent },
@@ -42,7 +43,8 @@ const routes: Routes = [
     MatFormFieldModule,
     MatButtonModule,
     BackendApiModule,
-    SongSearchModule
+    SongSearchModule,
+    ButtonListModule
   ],
   exports: [ShowComponent],
 })

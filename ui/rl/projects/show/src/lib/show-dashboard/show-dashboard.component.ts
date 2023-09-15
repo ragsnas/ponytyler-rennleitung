@@ -7,10 +7,9 @@ import { BehaviorSubject } from 'rxjs';
 @Component({
   selector: 'lib-show-dashboard',
   templateUrl: './show-dashboard.component.html',
-  styleUrls: ['./show-dashboard.component.css']
+  styleUrls: ['./show-dashboard.component.scss'],
 })
 export class ShowDashboardComponent implements OnInit {
-
   show: Show | undefined;
   races$: BehaviorSubject<Race[]> = new BehaviorSubject<Race[]>([]);
 
@@ -18,44 +17,56 @@ export class ShowDashboardComponent implements OnInit {
     private showService: ShowService,
     private raceService: RaceService,
     private route: ActivatedRoute
-    ) { }
+  ) {}
 
   ngOnInit(): void {
-    this.route.paramMap.subscribe(params => {
+    this.loadRaces();
+  }
+  loadRaces() {
+    this.route.paramMap.subscribe((params) => {
       if (params.get('showId')) {
         const showId = params.get('showId') as string;
-        this.showService.getShow(showId).subscribe(show => this.show = show);
-        this.raceService.getRacesForShow(showId).subscribe(races => {
+        this.showService
+          .getShow(showId)
+          .subscribe((show) => (this.show = show));
+        this.raceService.getRacesForShow(showId).subscribe((races) => {
           console.log('races received', races);
-          
-          this.races$.next(races)
+
+          this.races$.next(races);
         });
       }
     });
+
   }
 
   markRaceAsRaced(race: Race): void {
-    this.raceService.updateRace({...race, raced: true} as Race).subscribe({
-      next: (result) => {
-        console.log(`It worked:`, result);
-        
-      },
-      error: (error) => {
-        console.error(`Oh No! It didn't work!:`, error);
-      }
-    })
+    this.raceService
+      .updateRace({
+        ...race,
+        raced: true,
+      } as Race)
+      .subscribe({
+        next: (result) => {
+          console.log(`It worked:`, result);
+          this.loadRaces();
+        },
+        error: (error) => {
+          console.error(`Oh No! It didn't work!:`, error);
+        },
+      });
   }
 
   markRaceAsNotRaced(race: Race): void {
-    this.raceService.updateRace({...race, raced: false} as Race).subscribe({
-      next: (result) => {
-        console.log(`It worked:`, result);
-        
-      },
-      error: (error) => {
-        console.error(`Oh No! It didn't work!:`, error);
-      }
-    })
+    this.raceService
+      .updateRace({ ...race, raced: false } as Race)
+      .subscribe({
+        next: (result) => {
+          console.log(`It worked:`, result);
+          this.loadRaces();
+        },
+        error: (error) => {
+          console.error(`Oh No! It didn't work!:`, error);
+        },
+      });
   }
-
 }

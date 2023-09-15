@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
+import { Prisma, Race } from '@prisma/client';
 import { PrismaService } from './prisma.service';
-import { Race, Prisma } from '@prisma/client';
 
 @Injectable()
 export class RaceService {
@@ -28,6 +28,7 @@ export class RaceService {
       cursor,
       where,
       orderBy,
+      include: { song1: true, song2: true },
     });
   }
 
@@ -54,11 +55,25 @@ export class RaceService {
 
   async updateRace(params: {
     where: Prisma.RaceWhereUniqueInput;
-    data: Prisma.RaceUpdateInput;
+    data: Prisma.RaceUncheckedUpdateInput;
   }): Promise<Race> {
     const { where, data } = params;
+    console.log(`updating race`);
     return this.prisma.race.update({
-      data,
+      data: {
+        person1: data.person1,
+        song1: { connect: { id: Number(data.song1Id) } },
+        person2: data.person1,
+        song2: { connect: { id: Number(data.song2Id) } },
+        createdAt: data.createdAt,
+        orderNumber: data.orderNumber,
+        raced: data.raced,
+        show: {
+          connect: {
+            id: Number(data.showId),
+          },
+        },
+      },
       where,
     });
   }
