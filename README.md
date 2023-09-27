@@ -13,6 +13,10 @@ First, start the Frontend in `ui/rl` like this:
 
 ```npm run start```
 
+Then, if you haven't done yet, create the database like this:
+
+```npx prisma generate```
+
 Then, start the Backend in `be` like this:
 
 ```npm run start```
