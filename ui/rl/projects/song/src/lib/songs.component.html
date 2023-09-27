@@ -1,6 +1,15 @@
 <h1>Songs</h1>
 
-<table mat-table *ngIf="songs$ | async as songs" [dataSource]="songs" class="mat-elevation-z8">
+<div *ngIf="filterForm" [formGroup]="filterForm">
+  <div>
+      <mat-form-field appearance="outline">
+          <mat-label>Filter</mat-label>
+          <input matInput placeholder="i.e. Toxic or Total Eclipse of the Heart..." formControlName="filter">
+      </mat-form-field>
+  </div>
+</div>
+
+<table mat-table *ngIf="filteredSongs$ | async as songs" [dataSource]="songs" class="mat-elevation-z8">
 
     <ng-container matColumnDef="selectable">
       <th mat-header-cell *matHeaderCellDef><mat-icon>checkbox</mat-icon></th>
