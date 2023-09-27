@@ -26,15 +26,7 @@ export class ShowService {
     return this.http.get<Show>(`api/show/${showId}`);
   }
 
-  createShow(show: Show) {
-    this.http.post('api/show', show).subscribe({
-      next: (result) => {
-        console.log(`It worked:`, result);
-        
-      },
-      error: (error) => {
-        console.error(`Oh No! It didn't work!:`, error);
-      }
-    });
+  createShow(show: Show): Observable<Show> {
+    return this.http.post<Show>('api/show', show);
   }
 }
