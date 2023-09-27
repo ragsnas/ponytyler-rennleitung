@@ -1,8 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { FormControl, FormGroup } from '@angular/forms';
-import { RaceService } from '../../../../backend-api/src/lib/race.service';
+import { ActivatedRoute, Router } from '@angular/router';
 import { Song, SongService } from 'projects/song/src/public-api';
-import { ActivatedRoute, ActivatedRouteSnapshot } from '@angular/router';
+import { RaceService } from '../../../../backend-api/src/lib/race.service';
 
 @Component({
   selector: 'lib-create-race',
@@ -20,7 +20,7 @@ export class CreateRaceComponent implements OnInit {
     orderNumber: new FormControl(''),
   });
   
-  constructor(private raceService: RaceService, private songService: SongService, private route: ActivatedRoute) { }
+  constructor(private raceService: RaceService, private songService: SongService, private route: ActivatedRoute, private router: Router) { }
   
   ngOnInit(): void {
   }
@@ -32,7 +32,7 @@ export class CreateRaceComponent implements OnInit {
     }).subscribe({
       next: (result) => {
         console.log(`It worked:`, result);
-        
+        this.router.navigate(['..'], {relativeTo: this.route});
       },
       error: (error) => {
         console.error(`Oh No! It didn't work!:`, error);

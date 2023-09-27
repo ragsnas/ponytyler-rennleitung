@@ -26,16 +26,15 @@ export class SongService {
     
   }
   
-  createSong(song: Song): void {
-    this.http.post('api/song', song).subscribe({
-      next: (result) => {
-        console.log(`It worked:`, result);        
-      },
-      error: (error) => {
-        console.error(`Oh No! It didn't work!:`, error);
-      }
+  getSelectableSongs(): Observable<Song[]> {
+    return this.http.get<Song[]>('api/song/selectable').pipe(result => {
+      return result
     });
     
+  }
+  
+  createSong(song: Song): Observable<Song> {
+    return this.http.post<Song>('api/song', song);
   }
 
   updateSong(song: Song) {

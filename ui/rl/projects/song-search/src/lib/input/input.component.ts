@@ -45,7 +45,7 @@ export class InputComponent implements OnInit, ControlValueAccessor, Validator {
   constructor(private songsService: SongService) {}
 
   ngOnInit(): void {
-    this.songsService.getSongs().subscribe({
+    this.songsService.getSelectableSongs().subscribe({
       next: (songs) => {
         this.songs = songs;
       },

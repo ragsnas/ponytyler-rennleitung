@@ -36,6 +36,26 @@ export class SongController {
     });
   }
 
+  @Get('selectable')
+  findAllSelectable() {
+    return this.songService.songs({
+      where: {
+        AND: {
+          deleted: { equals: false },
+          selectable: { equals: true },
+        },
+      },
+      orderBy: [
+        {
+          artist: 'asc',
+        },
+        {
+          name: 'asc',
+        },
+      ],
+    });
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.songService.song({ id: Number(id) });
