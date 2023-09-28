@@ -1,6 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, OnInit } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
+import { environment } from 'src/environments/environment';
 
 export interface Song {
   id?: number
@@ -20,24 +21,25 @@ export class SongService {
     
   }
   getSongs(): Observable<Song[]> {
-    return this.http.get<Song[]>('api/song').pipe(result => {
+    return this.http.get<Song[]>(environment.apiUrl + '/api/song').pipe(result => {
       return result
+
     });
     
   }
   
   getSelectableSongs(): Observable<Song[]> {
-    return this.http.get<Song[]>('api/song/selectable').pipe(result => {
+    return this.http.get<Song[]>(environment.apiUrl + 'api/song/selectable').pipe(result => {
       return result
     });
     
   }
   
   createSong(song: Song): Observable<Song> {
-    return this.http.post<Song>('api/song', song);
+    return this.http.post<Song>(environment.apiUrl + 'api/song', song);
   }
 
   updateSong(song: Song) {
-    return this.http.patch(`api/song/${song.id}`, song);
+    return this.http.patch(environment.apiUrl + `api/song/${song.id}`, song);
   }
 }

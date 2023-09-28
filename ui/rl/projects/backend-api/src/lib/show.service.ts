@@ -1,6 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
+import { environment } from 'src/environments/environment';
 
 export interface Show {
   id?: string;
@@ -15,18 +16,18 @@ export class ShowService {
   constructor(private http: HttpClient) {}
 
   getOldShows(): Observable<Show[]> {
-    return this.http.get<Show[]>('api/show/old-shows')
+    return this.http.get<Show[]>(environment.apiUrl + 'api/show/old-shows')
   }
 
   getCurrentShows(): Observable<Show[]> | undefined {
-    return this.http.get<Show[]>('api/show/current-shows')
+    return this.http.get<Show[]>(environment.apiUrl + 'api/show/current-shows')
   }
 
   getShow(showId: string): Observable<Show> {
-    return this.http.get<Show>(`api/show/${showId}`);
+    return this.http.get<Show>(environment.apiUrl + `api/show/${showId}`);
   }
 
   createShow(show: Show): Observable<Show> {
-    return this.http.post<Show>('api/show', show);
+    return this.http.post<Show>(environment.apiUrl + 'api/show', show);
   }
 }

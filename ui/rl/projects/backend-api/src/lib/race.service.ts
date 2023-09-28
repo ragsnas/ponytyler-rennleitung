@@ -2,6 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { Song } from './song.service';
+import { environment } from 'src/environments/environment';
 
 export interface Race {
   id?: string;
@@ -25,12 +26,12 @@ export class RaceService {
 
   getRacesForShow(showId: string, raced: boolean = false): Observable<Race[]> {
     return this.http.get<Race[]>(
-      'api/race/for-show/' + showId + (raced ? '?raced=true' : '')
+      environment.apiUrl + '/api/race/for-show/' + showId + (raced ? '?raced=true' : '')
     );
   }
 
   createRace(race: Race) {
-    return this.http.post('api/race', {
+    return this.http.post( environment.apiUrl +  '/api/race', {
       showId: race.showId,
       person1: race.person1,
       song1Id: race.song1!.id,
@@ -42,7 +43,7 @@ export class RaceService {
   updateRace(race: Race) {
     console.log(`will update race with`, race);
 
-    return this.http.patch(`api/race/${race.id}`, {
+    return this.http.patch(`${environment.apiUrl}/api/race/${race.id}`, {
       ...race,
       id: undefined,
     });
