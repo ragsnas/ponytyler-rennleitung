@@ -5,6 +5,7 @@
     "ng": "ng",
     "start": "ng serve",
     "build": "ng build",
+    "build:raspberry": "ng build --deploy-url /rl",
     "watch": "ng build --watch --configuration development",
     "test": "ng test"
   },
