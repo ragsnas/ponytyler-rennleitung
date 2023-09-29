@@ -1,11 +1,11 @@
 import { Component, OnInit } from '@angular/core';
 import { FormControl, FormGroup } from '@angular/forms';
 import {
-    BehaviorSubject,
-    Observable,
-    combineLatest,
-    map,
-    startWith
+  BehaviorSubject,
+  Observable,
+  combineLatest,
+  map,
+  startWith,
 } from 'rxjs';
 import { Song, SongService } from '../../../backend-api/src/lib/song.service';
 
@@ -18,24 +18,34 @@ export class SongsComponent implements OnInit {
   songs$: BehaviorSubject<Song[]> = new BehaviorSubject<Song[]>([]);
   filteredSongs$: Observable<Song[]> | undefined;
   filter = new FormControl<string>('');
-  filterForm = new FormGroup({filter: this.filter});
+  filterForm = new FormGroup({ filter: this.filter });
 
   constructor(private songService: SongService) {}
 
   ngOnInit(): void {
     this.loadSongs();
-    this.filter.valueChanges.pipe(startWith('')).subscribe(valueChange => console.log(`filter valueChange`, valueChange));
+    this.filter.valueChanges
+      .pipe(startWith(''))
+      .subscribe((valueChange) =>
+        console.log(`filter valueChange`, valueChange)
+      );
     this.filteredSongs$ = combineLatest([
       this.songs$,
-      this.filter.valueChanges.pipe(startWith(''), map(valueChange => valueChange ?? '')),
+      this.filter.valueChanges.pipe(
+        startWith(''),
+        map((valueChange) => (valueChange ? valueChange.toLowerCase() : ''))
+      ),
     ]).pipe(
       map(([songs, searchString]: [Song[], string]) => {
         const filteredSongs = songs.filter(
           (song) =>
-            song.artist.indexOf(searchString) >= 0 ||
-            song.name.indexOf(searchString) >= 0
+            song.artist.toLowerCase().indexOf(searchString) >= 0 ||
+            song.name.toLowerCase().indexOf(searchString) >= 0
         );
-        console.log(`filteredSongs for searchString ${searchString}:`, filteredSongs);
+        console.log(
+          `filteredSongs for searchString ${searchString}:`,
+          filteredSongs
+        );
         return filteredSongs;
       })
     );
