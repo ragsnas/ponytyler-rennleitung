@@ -68,6 +68,7 @@ export class RaceService {
         createdAt: data.createdAt,
         orderNumber: data.orderNumber,
         raced: data.raced,
+        bikeWon: data.bikeWon,
         show: {
           connect: {
             id: Number(data.showId),

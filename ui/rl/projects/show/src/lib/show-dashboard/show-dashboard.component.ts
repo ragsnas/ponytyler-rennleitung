@@ -41,6 +41,26 @@ export class ShowDashboardComponent implements OnInit {
 
   }
 
+  bikeWon(bike: number, race: Race) {
+    console.log(`bikeWon > called with bike:`, bike);
+    
+    this.raceService
+      .updateRace({
+        ...race,
+        bikeWon: bike,
+        raced: true,
+      } as Race)
+      .subscribe({
+        next: (result) => {
+          console.log(`It worked:`, result);
+          this.loadRaces();
+        },
+        error: (error) => {
+          console.error(`Oh No! It didn't work!:`, error);
+        },
+      });
+  }    
+
   markRaceAsRaced(race: Race): void {
     console.log(`markRaceAsRaced with race > race.raced`, race.raced);
     console.log(`markRaceAsRaced with after race.raced`, {...race, raced: race.raced}.raced);

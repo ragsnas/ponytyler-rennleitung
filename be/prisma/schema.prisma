@@ -41,6 +41,7 @@ model Race {
   person2 String
   song2 Song @relation(name: "SongForPerson2", fields: [song2Id], references: [id])
   song2Id Int
+  bikeWon Int @default(0)
 }
 
 model User {
