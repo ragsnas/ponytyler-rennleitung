@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { FormControl, FormGroup } from '@angular/forms';
+import { FormControl, FormGroup, RequiredValidator, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Song, SongService } from 'projects/song/src/public-api';
 import { RaceService } from '../../../../backend-api/src/lib/race.service';
@@ -13,10 +13,10 @@ export class CreateRaceComponent implements OnInit {
   
   public form: FormGroup = new FormGroup({
     name: new FormControl(''),
-    person1: new FormControl(''),
-    song1: new FormControl<Song|undefined>(undefined),
-    person2: new FormControl(''),
-    song2: new FormControl<Song|undefined>(undefined),
+    person1: new FormControl('', [Validators.required]),
+    song1: new FormControl<Song|undefined>(undefined, [Validators.required]),
+    person2: new FormControl('', [Validators.required]),
+    song2: new FormControl<Song|undefined>(undefined, [Validators.required]),
     orderNumber: new FormControl(''),
   });
   
