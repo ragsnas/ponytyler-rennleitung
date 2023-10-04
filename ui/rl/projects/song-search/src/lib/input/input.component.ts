@@ -8,8 +8,14 @@ import {
   ValidationErrors,
   Validator,
 } from '@angular/forms';
+import { Race, RaceService } from 'projects/backend-api/src/lib/race.service';
 import { Song, SongService } from 'projects/song/src/public-api';
-import { Observable, map, startWith } from 'rxjs';
+import { Observable, combineLatest, filter, map, startWith } from 'rxjs';
+
+export interface SongWithRaceInfo extends Song {
+  alreadyPlayed: boolean;
+  alreadyWished: boolean;
+}
 
 @Component({
   selector: 'lib-song-auto-complete',
@@ -32,9 +38,12 @@ export class InputComponent implements OnInit, ControlValueAccessor, Validator {
   @Input()
   label: string | undefined;
 
+  @Input()
+  showId: string | undefined;
+
   songControl = new FormControl('');
-  songs: Song[] = [];
-  filteredOptions: Observable<Song[]> | undefined;
+  songs: SongWithRaceInfo[] = [];
+  filteredOptions: Observable<SongWithRaceInfo[]> | undefined;
   selectedSong: Song | undefined = undefined;
 
   disabled = false;
@@ -42,16 +51,32 @@ export class InputComponent implements OnInit, ControlValueAccessor, Validator {
   onTouched = () => {};
   onValidatorChange = () => {};
 
-  constructor(private songsService: SongService) {}
+  constructor(private songsService: SongService, private raceService: RaceService) {}
 
   ngOnInit(): void {
-    this.songsService.getSelectableSongs().subscribe({
-      next: (songs) => {
+    combineLatest([
+      this.songsService.getSelectableSongs(),
+      this.raceService.getRacesForShow(this.showId || '', true),
+      this.raceService.getRacesForShow(this.showId || '', false)
+    ]).pipe(
+      map(([songs, racesFinished, racesUpcoming]: [Song[], Race[], Race[]]) => {
+        const songIdsAlreadyPlayed = racesFinished.map(race => race.bikeWon === 1 ? race.song1Id : race.song2Id);
+        const songIdsAlreadyWished = racesUpcoming.map(race => [race.song1Id, race.song2Id]).flat();
+        return songs.map(song => ({
+          ...song,
+          alreadyPlayed: songIdsAlreadyPlayed.some(songId => song.id === songId),
+          alreadyWished: songIdsAlreadyWished.some(songId => song.id === songId),
+        } as SongWithRaceInfo));
+      })
+    )
+    .subscribe({
+      next: (songs: SongWithRaceInfo[]) => {
         this.songs = songs;
       },
     });
     this.filteredOptions = this.songControl.valueChanges.pipe(
       startWith(''),
+      filter(value => typeof value !== "object"),
       map((value) => this._filter(value || ''))
     );
     this.songControl.valueChanges.subscribe((value) => {
@@ -67,8 +92,9 @@ export class InputComponent implements OnInit, ControlValueAccessor, Validator {
       );
       if (matchingSong) {
         console.log(`matching song found:`, matchingSong);
-        this.selectedSong = matchingSong;
-        this.onChange(matchingSong);
+        const { alreadyPlayed, alreadyWished, ...selectedSong } = matchingSong;
+        this.selectedSong = selectedSong as Song;
+        this.onChange(selectedSong);
       }
     });
   }
@@ -96,8 +122,9 @@ export class InputComponent implements OnInit, ControlValueAccessor, Validator {
     this.onTouched();
   }
 
-  private _filter(value: string): Song[] {
-    const filterValue = value.toLowerCase() || '';
+  private _filter(value: string): SongWithRaceInfo[] {
+    console.log(`_filter value:`, value);
+    const filterValue = (value || '').toLowerCase();
     return this.songs.filter(
       (song) =>
         song.name.toLowerCase().includes(filterValue) ||

@@ -6,6 +6,7 @@ import { BackendApiModule } from 'projects/backend-api/src/public-api';
 import { InputComponent } from './input/input.component';
 import { ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
+import { MatIconModule } from '@angular/material/icon';
 
 @NgModule({
   declarations: [InputComponent],
@@ -15,6 +16,7 @@ import { CommonModule } from '@angular/common';
     MatFormFieldModule,
     MatAutocompleteModule,
     MatInputModule,
+    MatIconModule,
     ReactiveFormsModule
   ],
   exports: [InputComponent],

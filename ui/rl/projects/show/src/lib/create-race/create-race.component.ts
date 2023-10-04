@@ -19,12 +19,18 @@ export class CreateRaceComponent implements OnInit {
     song2: new FormControl<Song|undefined>(undefined, [Validators.required]),
     orderNumber: new FormControl(''),
   });
+  showId: string | undefined;
   
-  constructor(private raceService: RaceService, private songService: SongService, private route: ActivatedRoute, private router: Router) { }
-  
-  ngOnInit(): void {
-  }
+  constructor(
+    private raceService: RaceService,
+    private songService: SongService,
+    private route: ActivatedRoute,
+    private router: Router) {}
 
+  ngOnInit(): void {
+    this.showId = this.route.snapshot.paramMap.get('showId') || undefined;
+  }
+  
   createRace() {
     this.raceService.createRace({
       ...this.form.getRawValue(),

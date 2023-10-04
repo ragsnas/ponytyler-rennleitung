@@ -16,6 +16,7 @@ export interface Race {
   song2?: Song;
   orderNumber: string;
   raced?: boolean;
+  bikeWon: number;
 }
 
 @Injectable({

@@ -8,9 +8,17 @@
              [formControl]="songControl"
              [matAutocomplete]="auto">
       <mat-autocomplete autoActiveFirstOption #auto="matAutocomplete">
-        <mat-option *ngFor="let option of filteredOptions | async" [value]="option">
+        <mat-option
+        *ngFor="let option of filteredOptions | async"
+        [value]="option"
+        [disabled]="option.alreadyPlayed"
+        [ngClass]="{'alreadyPlayed': option.alreadyPlayed, 'alreadyWished': option.alreadyWished }">
             {{option.artist}} - {{option.name}}
+            <mat-icon *ngIf="option.alreadyPlayed">block</mat-icon>
+            <mat-icon *ngIf="option.alreadyWished">warning</mat-icon>
         </mat-option>
       </mat-autocomplete>
     </mat-form-field>
   </form>
+
+  

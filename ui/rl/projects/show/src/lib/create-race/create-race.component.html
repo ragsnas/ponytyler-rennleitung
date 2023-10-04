@@ -6,7 +6,7 @@
         </mat-form-field>
     </div>
     <div>
-        <lib-song-auto-complete label="Song for Black Bike" formControlName="song1"></lib-song-auto-complete>
+        <lib-song-auto-complete [showId]="showId" label="Song for Black Bike" formControlName="song1"></lib-song-auto-complete>
     </div>
     <hr>
     <div>
@@ -16,8 +16,10 @@
         </mat-form-field>
     </div>
     <div>
-        <lib-song-auto-complete label="Song for White Bike" formControlName="song2"></lib-song-auto-complete>
+        <lib-song-auto-complete [showId]="showId" label="Song for White Bike" formControlName="song2"></lib-song-auto-complete>
     </div>
 
     <button mat-raised-button color="primary" (click)="createRace()" [disabled]="form.invalid">Speichern</button>
 </div>
+
+<pre>{{ form.getRawValue() | json }}</pre>
