@@ -3,13 +3,13 @@
 
 
 <ui-button-list>
-    <button mat-raised-button [routerLink]="'create-race'">Add Race for this Show</button>
+    <button mat-flat-button [routerLink]="'create-race'">Add Race for this Show</button>
 </ui-button-list>
 
 <h3>Upcoming Races</h3>
 
 
-<table mat-table *ngIf="races$ | async as races" [dataSource]="races" class="mat-elevation-z8">
+<table mat-table *ngIf="races$ | async as races" [dataSource]="races">
 
     <ng-container matColumnDef="orderNumber">
       <th mat-header-cell *matHeaderCellDef><mat-icon>tag</mat-icon></th>
@@ -76,7 +76,7 @@
   <h3>Past Races</h3>
 
 
-<table mat-table *ngIf="finishedRaces$ | async as finishedRaces" [dataSource]="finishedRaces" class="mat-elevation-z8">
+<table mat-table *ngIf="finishedRaces$ | async as finishedRaces" [dataSource]="finishedRaces">
 
     <ng-container matColumnDef="orderNumber">
       <th mat-header-cell *matHeaderCellDef><mat-icon>tag</mat-icon></th>

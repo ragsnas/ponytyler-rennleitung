@@ -2,7 +2,7 @@
 
 <h3>Aktive Shows</h3>
 
-<table mat-table *ngIf="currentShows$ | async as currentShows" [dataSource]="currentShows" class="mat-elevation-z8">
+<table mat-table *ngIf="currentShows$ | async as currentShows" [dataSource]="currentShows">
 
     <ng-container matColumnDef="date">
       <th mat-header-cell *matHeaderCellDef><mat-icon>calendar_month</mat-icon></th>
@@ -31,7 +31,7 @@
 
 <h3>Vergangene Shows</h3>
 
-<table mat-table *ngIf="oldShows$ | async as oldShows" [dataSource]="oldShows" class="mat-elevation-z8">
+<table mat-table *ngIf="oldShows$ | async as oldShows" [dataSource]="oldShows">
 
     <ng-container matColumnDef="date">
       <th mat-header-cell *matHeaderCellDef><mat-icon>calendar_month</mat-icon></th>
@@ -49,5 +49,5 @@
   </table>
 
  <ui-button-list>
-     <button mat-raised-button [routerLink]="'create'">Add Show</button>
+     <button mat-flat-button [routerLink]="'create'">Add Show</button>
  </ui-button-list>
