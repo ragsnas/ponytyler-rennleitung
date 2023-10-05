@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { FormControl, FormGroup, RequiredValidator, Validators } from '@angular/forms';
+import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Song, SongService } from 'projects/song/src/public-api';
 import { RaceService } from '../../../../backend-api/src/lib/race.service';

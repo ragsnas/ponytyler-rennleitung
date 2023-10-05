@@ -22,8 +22,12 @@ export class CreateShowComponent {
   ) {}
 
   createShow() {
-    const { name, date, time } = this.form.getRawValue();
-    date.setTime(time);
+    const { name, date, time }: {name: string, date: Date, time: string} = this.form.getRawValue();
+    console.log(`date: ${date}, time: ${time}`);
+    console.log(`hours: ${time.substring(0, 2)}, minutes: ${time.substring(3)}`);
+    date.setHours(Number(time.substring(0, 2)));
+    date.setMinutes(Number(time.substring(3)));
+    console.log(`altered date with time set: ${date}`);
     this.showService.createShow({ name, date }).subscribe({
       next: (result) => {
         console.log(`It worked:`, result);
