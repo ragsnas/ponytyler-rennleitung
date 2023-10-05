@@ -60,7 +60,16 @@ export class InputComponent implements OnInit, ControlValueAccessor, Validator {
       this.raceService.getRacesForShow(this.showId || '', false)
     ]).pipe(
       map(([songs, racesFinished, racesUpcoming]: [Song[], Race[], Race[]]) => {
-        const songIdsAlreadyPlayed = racesFinished.map(race => race.bikeWon === 1 ? race.song1Id : race.song2Id);
+        const songIdsAlreadyPlayed = racesFinished.map(race => {
+          const result = [];
+          if (race.bikeWon === 1) {
+            return race.song1Id;
+          }
+          if (race.bikeWon === 2) {
+            return race.song2Id;
+          }
+          return [race.song1Id, race.song2Id];
+        }).flat();
         const songIdsAlreadyWished = racesUpcoming.map(race => [race.song1Id, race.song2Id]).flat();
         return songs.map(song => ({
           ...song,
