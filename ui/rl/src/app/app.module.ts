@@ -8,6 +8,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatMenuModule } from '@angular/material/menu';
 import { CommonModule } from '@angular/common';
+import { FormControlPipeModule } from 'projects/utilities/form-control-pipe/src/public-api';
 
 @NgModule({
   declarations: [AppComponent],

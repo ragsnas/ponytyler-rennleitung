@@ -1,53 +1,61 @@
 <h2>Shows</h2>
 
-<h3>Aktive Shows</h3>
+<ui-button-list>
+  <button mat-flat-button color="primary" [routerLink]="'create'">Add Show</button>
+</ui-button-list>
 
-<table mat-table *ngIf="currentShows$ | async as currentShows" [dataSource]="currentShows">
-
-    <ng-container matColumnDef="date">
-      <th mat-header-cell *matHeaderCellDef><mat-icon>calendar_month</mat-icon></th>
-      <td mat-cell *matCellDef="let element" [routerLink]="element.id">
-        {{ element.date | date: "YYYY-MM-dd HH:mm" }}
-      </td>
-    </ng-container>
-    <ng-container matColumnDef="name">
-      <th mat-header-cell *matHeaderCellDef>Name</th>
-      <td mat-cell *matCellDef="let element" [routerLink]="element.id"> {{element.name}} </td>
-    </ng-container>
-  
-    <ng-container matColumnDef="actions">
-      <th mat-header-cell *matHeaderCellDef>Actions</th>
-      <td mat-cell *matCellDef="let element"> 
-        <button *ngIf="!element.checked" mat-icon-button aria-label="Add Race" [routerLink]="element.id + '/create-race'">
-            <mat-icon>add-box</mat-icon>
-          </button>
-      </td>
-    </ng-container>
+<ng-container *ngIf="currentShows$ | async as currentShows">
+  <ng-container *ngIf="currentShows.length > 0">
+    <h3 >Aktive Shows</h3>
+    <table mat-table [dataSource]="currentShows">
     
-    <tr mat-header-row *matHeaderRowDef="['date', 'name', 'actions']"></tr>
-    <tr mat-row *matRowDef="let row; columns: ['date', 'name', 'actions'];"></tr>
-</table>
+        <ng-container matColumnDef="date">
+          <th mat-header-cell *matHeaderCellDef><mat-icon>calendar_month</mat-icon></th>
+          <td mat-cell *matCellDef="let element" [routerLink]="element.id">
+            {{ element.date | date: "YYYY-MM-dd HH:mm" }}
+          </td>
+        </ng-container>
+        <ng-container matColumnDef="name">
+          <th mat-header-cell *matHeaderCellDef>Name</th>
+          <td mat-cell *matCellDef="let element" [routerLink]="element.id"> {{element.name}} </td>
+        </ng-container>
+      
+        <ng-container matColumnDef="actions">
+          <th mat-header-cell *matHeaderCellDef>Actions</th>
+          <td mat-cell *matCellDef="let element"> 
+            <button *ngIf="!element.checked" mat-icon-button aria-label="Add Race" [routerLink]="element.id + '/create-race'">
+                <mat-icon>add-box</mat-icon>
+              </button>
+          </td>
+        </ng-container>
+        
+        <tr mat-header-row *matHeaderRowDef="['date', 'name', 'actions']"></tr>
+        <tr mat-row *matRowDef="let row; columns: ['date', 'name', 'actions'];"></tr>
+    </table>
+  </ng-container>
+</ng-container>
 
 
-<h3>Vergangene Shows</h3>
+<ng-container *ngIf="oldShows$ | async as oldShows">
+  <ng-container *ngIf="oldShows.length > 0">
 
-<table mat-table *ngIf="oldShows$ | async as oldShows" [dataSource]="oldShows">
+    <h3>Vergangene Shows</h3>
 
-    <ng-container matColumnDef="date">
-      <th mat-header-cell *matHeaderCellDef><mat-icon>calendar_month</mat-icon></th>
-      <td mat-cell *matCellDef="let element">
-        {{ element.date | date: "YYYY-MM-dd HH:mm" }}
-      </td>
-    </ng-container>
-    <ng-container matColumnDef="name">
-      <th mat-header-cell *matHeaderCellDef>Name</th>
-      <td mat-cell *matCellDef="let element"> {{element.name}} </td>
-    </ng-container>
-  
-    <tr mat-header-row *matHeaderRowDef="['date', 'name']"></tr>
-    <tr mat-row *matRowDef="let row; columns: ['date', 'name'];"></tr>
-  </table>
+    <table mat-table *ngIf="oldShows$ | async as oldShows" [dataSource]="oldShows">
+        <ng-container matColumnDef="date">
+          <th mat-header-cell *matHeaderCellDef><mat-icon>calendar_month</mat-icon></th>
+          <td mat-cell *matCellDef="let element">
+            {{ element.date | date: "YYYY-MM-dd HH:mm" }}
+          </td>
+        </ng-container>
+        <ng-container matColumnDef="name">
+          <th mat-header-cell *matHeaderCellDef>Name</th>
+          <td mat-cell *matCellDef="let element"> {{element.name}} </td>
+        </ng-container>
+      
+        <tr mat-header-row *matHeaderRowDef="['date', 'name']"></tr>
+        <tr mat-row *matRowDef="let row; columns: ['date', 'name'];"></tr>
+      </table>
 
- <ui-button-list>
-     <button mat-flat-button [routerLink]="'create'">Add Show</button>
- </ui-button-list>
+  </ng-container>
+</ng-container>

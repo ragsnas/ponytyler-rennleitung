@@ -290,6 +290,37 @@
           }
         }
       }
+    },
+    "@utilities/form-control-pipe": {
+      "projectType": "library",
+      "root": "projects/utilities/form-control-pipe",
+      "sourceRoot": "projects/utilities/form-control-pipe/src",
+      "prefix": "lib",
+      "architect": {
+        "build": {
+          "builder": "@angular-devkit/build-angular:ng-packagr",
+          "options": {
+            "project": "projects/utilities/form-control-pipe/ng-package.json"
+          },
+          "configurations": {
+            "production": {
+              "tsConfig": "projects/utilities/form-control-pipe/tsconfig.lib.prod.json"
+            },
+            "development": {
+              "tsConfig": "projects/utilities/form-control-pipe/tsconfig.lib.json"
+            }
+          },
+          "defaultConfiguration": "production"
+        },
+        "test": {
+          "builder": "@angular-devkit/build-angular:karma",
+          "options": {
+            "main": "projects/utilities/form-control-pipe/src/test.ts",
+            "tsConfig": "projects/utilities/form-control-pipe/tsconfig.spec.json",
+            "karmaConfig": "projects/utilities/form-control-pipe/karma.conf.js"
+          }
+        }
+      }
     }
   }
 }

@@ -6,6 +6,9 @@
       "@ui/button-list": [
         "dist/ui/button-list"
       ],
+      "@utilities/form-control-pipe": [
+        "dist/utilities/form-control-pipe"
+      ],
       "auth": [
         "dist/auth"
       ],

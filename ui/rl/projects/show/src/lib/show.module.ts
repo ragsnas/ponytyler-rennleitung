@@ -1,21 +1,23 @@
+import { CommonModule } from '@angular/common';
 import { HttpClientModule } from '@angular/common/http';
 import { NgModule } from '@angular/core';
-import { RouterModule, Routes } from '@angular/router';
-import { ShowsComponent } from './shows/shows.component';
-import { CreateShowComponent } from './create-show/create-show.component';
-import { ShowComponent } from './show/show.component';
-import { ReactiveFormsModule } from '@angular/forms';
-import { MatInputModule } from '@angular/material/input';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
+import { MatNativeDateModule } from '@angular/material/core';
+import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatFormFieldModule } from '@angular/material/form-field';
-import { CommonModule } from '@angular/common';
-import { ShowDashboardComponent } from './show-dashboard/show-dashboard.component';
-import { CreateRaceComponent } from './create-race/create-race.component';
+import { MatIconModule } from '@angular/material/icon';
+import { MatInputModule } from '@angular/material/input';
+import { MatTableModule } from '@angular/material/table';
+import { RouterModule, Routes } from '@angular/router';
 import { BackendApiModule } from 'projects/backend-api/src/public-api';
 import { SongSearchModule } from 'projects/song-search/src/public-api';
-import { MatIconModule } from '@angular/material/icon';
-import { MatTableModule } from '@angular/material/table';
 import { ButtonListModule } from 'projects/ui/button-list/src/public-api';
+import { CreateRaceComponent } from './create-race/create-race.component';
+import { CreateShowComponent } from './create-show/create-show.component';
+import { ShowDashboardComponent } from './show-dashboard/show-dashboard.component';
+import { ShowComponent } from './show/show.component';
+import { ShowsComponent } from './shows/shows.component';
 
 const routes: Routes = [
   { path: '', component: ShowsComponent },
@@ -37,14 +39,17 @@ const routes: Routes = [
     RouterModule.forChild(routes),
     HttpClientModule,
     ReactiveFormsModule,
+    FormsModule,
     MatTableModule,
     MatIconModule,
     MatInputModule,
     MatFormFieldModule,
     MatButtonModule,
+    MatDatepickerModule,
+    MatNativeDateModule,
     BackendApiModule,
     SongSearchModule,
-    ButtonListModule
+    ButtonListModule,
   ],
   exports: [ShowComponent],
 })
