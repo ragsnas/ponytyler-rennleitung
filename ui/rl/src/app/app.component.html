@@ -8,9 +8,13 @@
   </mat-menu>
   <h1>Pony Tyler Rennleitung</h1>
   <span class="toolbar-spacer"></span>
-  <button mat-icon-button class="example-icon add-box-icon" aria-label="Example icon-button with heart icon">
-    <mat-icon>add_box</mat-icon>
-  </button>
+  <ng-container *ngIf="currentShow$ | async as currentShow">
+    <button mat-icon-button aria-label="Add Show" [routerLink]="['show', currentShow.id, 'create-race']">
+      <mat-icon>add_box</mat-icon>
+    </button>
+
+  </ng-container>
+
 </mat-toolbar>
 
 <div class="main-stage">

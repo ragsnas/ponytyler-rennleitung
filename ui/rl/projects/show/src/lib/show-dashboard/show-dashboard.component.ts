@@ -3,6 +3,7 @@ import { ActivatedRoute } from '@angular/router';
 import { Race, RaceService } from 'projects/backend-api/src/lib/race.service';
 import { Show, ShowService } from 'projects/backend-api/src/lib/show.service';
 import { BehaviorSubject } from 'rxjs';
+import {MatSnackBar} from "@angular/material/snack-bar";
 
 @Component({
   selector: 'lib-show-dashboard',
@@ -17,33 +18,40 @@ export class ShowDashboardComponent implements OnInit {
   constructor(
     private showService: ShowService,
     private raceService: RaceService,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private snackBar: MatSnackBar
   ) {}
 
   ngOnInit(): void {
     this.loadRaces();
   }
   loadRaces() {
-    this.route.paramMap.subscribe((params) => {
-      if (params.get('showId')) {
-        const showId = params.get('showId') as string;
-        this.showService
-          .getShow(showId)
-          .subscribe((show) => (this.show = show));
-        this.raceService.getRacesForShow(showId).subscribe((races) => {
-          this.races$.next(races);
+    this.route.paramMap.subscribe({next: (params) => {
+        if (params.get('showId')) {
+          const showId = params.get('showId') as string;
+          this.showService
+            .getShow(showId)
+            .subscribe((show) => (this.show = show));
+          this.raceService.getRacesForShow(showId).subscribe((races) => {
+            this.races$.next(races);
+          });
+          this.raceService.getRacesForShow(showId, true).subscribe((races) => {
+            this.finishedRaces$.next(races);
+          });
+        }
+      },
+      error: (error) => {
+        this.snackBar.open(`Error during loading of Races: ${JSON.stringify(error)}`, 'OK', {
+          duration: 10000, announcementMessage: `Error`, panelClass: 'error'
         });
-        this.raceService.getRacesForShow(showId, true).subscribe((races) => {
-          this.finishedRaces$.next(races);
-        });
-      }
+      },
     });
 
   }
 
   bikeWon(bike: number, race: Race) {
     console.log(`bikeWon > called with bike:`, bike);
-    
+
     this.raceService
       .updateRace({
         ...race,
@@ -52,11 +60,13 @@ export class ShowDashboardComponent implements OnInit {
       } as Race)
       .subscribe({
         next: (result) => {
-          console.log(`It worked:`, result);
+          this.snackBar.open(`Marked Race as "Bike ${bike} won!" Congrats ${bike === 1 ? race.person1 : race.person2}`, 'OK', {panelClass: 'success', duration: 500});
           this.loadRaces();
         },
         error: (error) => {
-          console.error(`Oh No! It didn't work!:`, error);
+          this.snackBar.open(`Error during marking of the Race: ${JSON.stringify(error)}`, 'OK', {
+            duration: 10000, announcementMessage: `Error`, panelClass: 'error'
+          });
         },
       });
   }
@@ -70,17 +80,18 @@ export class ShowDashboardComponent implements OnInit {
       } as Race)
       .subscribe({
         next: (result) => {
-          console.log(`It worked:`, result);
+          this.snackBar.open(`Marked Race as "Both Won"`, 'OK', {panelClass: 'success', duration: 500});
           this.loadRaces();
         },
         error: (error) => {
-          console.error(`Oh No! It didn't work!:`, error);
+          this.snackBar.open(`Error during Marking of the Race: ${JSON.stringify(error)}`, 'OK', {
+            duration: 10000, panelClass: 'error'
+          });
         },
       });
   }
 
   markRaceAsRaced(race: Race): void {
-    
     this.raceService
       .updateRace({
         ...race,
@@ -88,11 +99,13 @@ export class ShowDashboardComponent implements OnInit {
       } as Race)
       .subscribe({
         next: (result) => {
-          console.log(`It worked:`, result);
+          this.snackBar.open(`Marked Race as over`, 'OK', {panelClass: 'success', duration: 500});
           this.loadRaces();
         },
         error: (error) => {
-          console.error(`Oh No! It didn't work!:`, error);
+          this.snackBar.open(`Error during Marking of the Race: ${JSON.stringify(error)}`, 'OK', {
+            duration: 10000, panelClass: 'error'
+          });
         },
       });
   }
@@ -102,11 +115,13 @@ export class ShowDashboardComponent implements OnInit {
       .updateRace({ ...race, raced: false } as Race)
       .subscribe({
         next: (result) => {
-          console.log(`It worked:`, result);
+          this.snackBar.open(`Marked Race as NOT over`, 'OK', {panelClass: 'success', duration: 500});
           this.loadRaces();
         },
         error: (error) => {
-          console.error(`Oh No! It didn't work!:`, error);
+          this.snackBar.open(`Error during Marking of the Race: ${JSON.stringify(error)}`, 'OK', {
+            duration: 10000, panelClass: 'error'
+          });
         },
       });
   }

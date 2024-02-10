@@ -19,11 +19,14 @@ import { CreateShowComponent } from './create-show/create-show.component';
 import { ShowDashboardComponent } from './show-dashboard/show-dashboard.component';
 import { ShowComponent } from './show/show.component';
 import { ShowsComponent } from './shows/shows.component';
+import { UpdateRaceComponent } from "./update-race/update-race.component";
+import {MatSnackBarModule} from "@angular/material/snack-bar";
 
 const routes: Routes = [
   { path: '', component: ShowsComponent },
   { path: 'create', component: CreateShowComponent },
   { path: ':showId/create-race', component: CreateRaceComponent },
+  { path: ':showId/race/:raceId', component: UpdateRaceComponent },
   { path: ':showId', component: ShowDashboardComponent },
 ];
 
@@ -34,6 +37,7 @@ const routes: Routes = [
     CreateShowComponent,
     ShowDashboardComponent,
     CreateRaceComponent,
+    UpdateRaceComponent
   ],
   imports: [
     CommonModule,
@@ -52,6 +56,7 @@ const routes: Routes = [
     BackendApiModule,
     SongSearchModule,
     ButtonListModule,
+    MatSnackBarModule
   ],
   exports: [ShowComponent],
 })

@@ -41,6 +41,11 @@ export class RaceController {
     return this.raceService.race({ id: Number(id) });
   }
 
+  @Get(':id/with-songs')
+  findOneWithSongs(@Param('id') id: string) {
+    return this.raceService.raceWithSongs(id);
+  }
+
   @Patch(':id')
   update(
     @Param('id') id: string,

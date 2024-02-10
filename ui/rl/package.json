@@ -4,6 +4,7 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
+    "start:dev": "ng serve --watch",
     "build": "ng build",
     "build:raspberry": "ng build --deploy-url /rl",
     "watch": "ng build --watch --configuration development",

@@ -42,11 +42,14 @@ export class RaceService {
   }
 
   updateRace(race: Race) {
-    console.log(`will update race with`, race);
-
     return this.http.patch(`${environment.apiUrl}/api/race/${race.id}`, {
       ...race,
-      id: undefined,
     });
+  }
+
+  getRace(raceId: string | undefined): Observable<Race> {
+    return this.http.get<Race>(
+      environment.apiUrl + `/api/race/${raceId}/with-songs`
+    );
   }
 }

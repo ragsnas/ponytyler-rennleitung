@@ -1,7 +1,6 @@
 /* You can add global styles to this file, and also import other style files */
 @import 'material-icons/iconfont/material-icons.css';
 
-
 html, body { height: 100%; }
 body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
 
@@ -12,7 +11,7 @@ hr {
     border-style: none;
     border-top-style:dotted;
   }
-  
+
   .mat-table {
     width: 100%;
   }
@@ -21,10 +20,24 @@ hr {
     padding: 0.5em !important;
     margin: 1em 0em 0.5em !important;
   }
-  
+
   h3 {
     padding: 0.5em !important;
     margin: 3em 0em 1em !important;
   }
 
-  
+.mat-snack-bar-container.success {
+  background-color: #056905;
+}
+.mat-snack-bar-container.success .mat-simple-snackbar-action {
+  color: #fff;
+  background-color: #053d05;
+}
+
+.mat-snack-bar-container.error {
+  background-color: #a00000;
+}
+.mat-snack-bar-container.error .mat-simple-snackbar-action {
+  color: #fff;
+  background-color: #4f0606;
+}

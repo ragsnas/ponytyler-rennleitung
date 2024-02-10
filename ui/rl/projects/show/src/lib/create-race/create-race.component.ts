@@ -3,6 +3,9 @@ import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Song, SongService } from 'projects/song/src/public-api';
 import { RaceService } from '../../../../backend-api/src/lib/race.service';
+import {MatSnackBar} from "@angular/material/snack-bar";
+import {Show, ShowService } from 'projects/backend-api/src/lib/show.service';
+import { Observable } from 'rxjs';
 
 @Component({
   selector: 'lib-create-race',
@@ -10,7 +13,7 @@ import { RaceService } from '../../../../backend-api/src/lib/race.service';
   styleUrls: ['./create-race.component.css']
 })
 export class CreateRaceComponent implements OnInit {
-  
+
   public form: FormGroup = new FormGroup({
     name: new FormControl(''),
     person1: new FormControl('', [Validators.required]),
@@ -20,28 +23,40 @@ export class CreateRaceComponent implements OnInit {
     orderNumber: new FormControl(''),
   });
   showId: string | undefined;
-  
+  show$: Observable<Show> | undefined;
+
   constructor(
+    private showService: ShowService,
     private raceService: RaceService,
     private songService: SongService,
     private route: ActivatedRoute,
-    private router: Router) {}
+    private router: Router,
+    private snackBar: MatSnackBar) {}
 
   ngOnInit(): void {
     this.showId = this.route.snapshot.paramMap.get('showId') || undefined;
+    if (this.showId) {
+      this.show$ = this.showService.getShow(this.showId);
+    }
   }
-  
+
   createRace() {
+    const race = this.form.getRawValue();
     this.raceService.createRace({
-      ...this.form.getRawValue(),
+      ...race,
       showId: this.route.snapshot.paramMap.get('showId')
     }).subscribe({
       next: (result) => {
-        console.log(`It worked:`, result);
-        this.router.navigate(['..'], {relativeTo: this.route});
+        this.snackBar.open(`Successfully Created Race between ${race.person1} and ${race.person2}`, 'OK', {panelClass: 'success'})
+          .afterDismissed()
+          .subscribe(() => {
+            this.router.navigate(['..'], {relativeTo: this.route});
+          });
       },
       error: (error) => {
-        console.error(`Oh No! It didn't work!:`, error);
+        this.snackBar.open(`Error during Race Creation: ${JSON.stringify(error)}`, 'OK', {
+          duration: 10000, panelClass: 'error'
+        })
       }
     });
   }

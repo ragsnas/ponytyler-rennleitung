@@ -13,25 +13,25 @@ export class ShowController {
     });
   }
 
+  @Get('shows')
+  async getAllShows(): Promise<Show[]> {
+    return this.showService.showsOrderedByActiveAndDate();
+
+  }
+
   @Get('current-shows')
   async getCurrentShows(): Promise<Show[]> {
-    const nowMinus5Hours = new Date();
-    nowMinus5Hours.setHours(nowMinus5Hours.getHours() - 5);
-    const nowPlus5Hours = new Date();
-    nowPlus5Hours.setHours(nowPlus5Hours.getHours() + 5);
     return this.showService.shows({
       orderBy: { date: { sort: 'desc' } },
-      where: { date: { gte: nowMinus5Hours, lte: nowPlus5Hours } },
+      where: { active: true },
     });
   }
 
   @Get('old-shows')
   async getOldShows(): Promise<Show[]> {
-    const nowMinus5Hours = new Date();
-    nowMinus5Hours.setHours(nowMinus5Hours.getHours() - 5);
     return this.showService.shows({
       orderBy: { date: { sort: 'desc' } },
-      where: { date: { lte: nowMinus5Hours } },
+      where: { active: false },
     });
   }
 

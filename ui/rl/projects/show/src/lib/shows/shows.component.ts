@@ -1,6 +1,7 @@
-import { Component, OnInit } from '@angular/core';
-import { Show, ShowService } from 'projects/backend-api/src/lib/show.service';
-import { Observable } from 'rxjs';
+import {Component, OnInit} from '@angular/core';
+import {Show, ShowService} from 'projects/backend-api/src/lib/show.service';
+import {Observable} from 'rxjs';
+import {MatSnackBar} from "@angular/material/snack-bar";
 
 @Component({
   selector: 'lib-shows',
@@ -9,14 +10,30 @@ import { Observable } from 'rxjs';
 })
 export class ShowsComponent implements OnInit {
 
-  oldShows$: Observable<Show[]> | undefined;
-  currentShows$:  Observable<Show[]> | undefined;
+  shows$: Observable<Show[]> | undefined;
 
-  constructor(private showService: ShowService) { }
+  constructor(private showService: ShowService, private snackBar: MatSnackBar) {
+  }
 
   ngOnInit(): void {
-    this.oldShows$ = this.showService.getOldShows();
-    this.currentShows$ = this.showService.getCurrentShows();
+    this.shows$ = this.showService.getAllShows();
+  }
+
+  toggleActive(show: Show) {
+    this.showService.updateShow({
+      ...show,
+      active: !show.active
+    }).subscribe({
+      next: (result) => {
+        console.log(`this worked`);
+        this.shows$ = this.showService.getAllShows();
+      },
+      error: (error) => {
+        this.snackBar.open(`Error during toggling of Show Status: ${JSON.stringify(error)}`, 'OK', {
+          duration: 10000, announcementMessage: `Error`, panelClass: 'error'
+        });
+      }
+    });
   }
 
 }

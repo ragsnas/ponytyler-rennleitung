@@ -1,3 +1,7 @@
+<ng-container *ngIf="show$ | async as show">
+  <h2>Adding Race for Show: {{show.name}}</h2>
+</ng-container>
+
 <div *ngIf="form" [formGroup]="form">
     <div>
         <mat-form-field appearance="outline">

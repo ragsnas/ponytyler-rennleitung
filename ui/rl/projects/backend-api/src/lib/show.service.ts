@@ -7,6 +7,7 @@ export interface Show {
   id?: string;
   name: string;
   date: Date;
+  active: boolean;
 }
 
 @Injectable({
@@ -14,6 +15,10 @@ export interface Show {
 })
 export class ShowService {
   constructor(private http: HttpClient) {}
+
+  getAllShows(): Observable<Show[]> {
+    return this.http.get<Show[]>(environment.apiUrl + '/api/show/shows')
+  }
 
   getOldShows(): Observable<Show[]> {
     return this.http.get<Show[]>(environment.apiUrl + '/api/show/old-shows')
@@ -29,5 +34,9 @@ export class ShowService {
 
   createShow(show: Show): Observable<Show> {
     return this.http.post<Show>(environment.apiUrl + '/api/show', show);
+  }
+
+  updateShow(show: Show): Observable<Show> {
+    return this.http.patch<Show>(environment.apiUrl + `/api/show/${show.id}`, show);
   }
 }

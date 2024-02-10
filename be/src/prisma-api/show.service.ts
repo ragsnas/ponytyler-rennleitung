@@ -31,6 +31,15 @@ export class ShowService {
     });
   }
 
+  async showsOrderedByActiveAndDate(): Promise<Show[]> {
+    return this.prisma.show.findMany({
+      orderBy: [
+        {active: 'desc'},
+        {date: 'desc'}
+      ],
+    });
+  }
+
   async createShow(data: Prisma.ShowCreateInput): Promise<Show> {
     return this.prisma.show.create({
       data,
