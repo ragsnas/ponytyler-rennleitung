@@ -1,4 +1,4 @@
-import { Controller, Param, Get, Post, Body, Patch } from '@nestjs/common';
+import {Controller, Param, Get, Post, Body, Patch, NotFoundException} from '@nestjs/common';
 import { ShowService } from '../prisma-api/show.service';
 import { Show, Prisma } from '@prisma/client';
 
@@ -16,7 +16,19 @@ export class ShowController {
   @Get('shows')
   async getAllShows(): Promise<Show[]> {
     return this.showService.showsOrderedByActiveAndDate();
+  }
 
+  @Get('current-show')
+  async getCurrentShow(): Promise<Show> {
+    const shows: Show[] = await this.showService.shows({
+      orderBy: { date: { sort: 'desc' } },
+      where: { active: true },
+    });
+    if(shows.length > 0) {
+      return shows.pop();
+    } else {
+      throw new NotFoundException('No current shows');
+    }
   }
 
   @Get('current-shows')
@@ -26,7 +38,6 @@ export class ShowController {
       where: { active: true },
     });
   }
-
   @Get('old-shows')
   async getOldShows(): Promise<Show[]> {
     return this.showService.shows({

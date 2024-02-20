@@ -1,0 +1,10 @@
+<ng-container *ngIf="!error">
+  <p>We will be redirecting you to the current race now. Please wait.</p>
+  <p *ngIf="show">
+    Show {{ show.name }} found.
+  </p>
+  <mat-spinner></mat-spinner>
+</ng-container>
+<ng-container *ngIf="error">
+  <p class="error">{{ error }}</p>
+</ng-container>

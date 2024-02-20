@@ -20,13 +20,18 @@ import { ShowDashboardComponent } from './show-dashboard/show-dashboard.componen
 import { ShowComponent } from './show/show.component';
 import { ShowsComponent } from './shows/shows.component';
 import { UpdateRaceComponent } from "./update-race/update-race.component";
-import {MatSnackBarModule} from "@angular/material/snack-bar";
+import { MatSnackBarModule } from "@angular/material/snack-bar";
+import { DirectorDashboardComponent } from './director-dashboard/director-dashboard.component';
+import { DirectorDashboardRedirectComponent } from './director-dashboard-redirect/director-dashboard-redirect.component';
+import {MatProgressSpinnerModule} from "@angular/material/progress-spinner";
 
 const routes: Routes = [
   { path: '', component: ShowsComponent },
   { path: 'create', component: CreateShowComponent },
+  { path: 'director-dashboard-redirect', component: DirectorDashboardRedirectComponent },
   { path: ':showId/create-race', component: CreateRaceComponent },
   { path: ':showId/race/:raceId', component: UpdateRaceComponent },
+  { path: ':showId/director-dashboard', component: DirectorDashboardComponent },
   { path: ':showId', component: ShowDashboardComponent },
 ];
 
@@ -37,7 +42,9 @@ const routes: Routes = [
     CreateShowComponent,
     ShowDashboardComponent,
     CreateRaceComponent,
-    UpdateRaceComponent
+    UpdateRaceComponent,
+    DirectorDashboardComponent,
+    DirectorDashboardRedirectComponent
   ],
   imports: [
     CommonModule,
@@ -56,7 +63,8 @@ const routes: Routes = [
     BackendApiModule,
     SongSearchModule,
     ButtonListModule,
-    MatSnackBarModule
+    MatSnackBarModule,
+    MatProgressSpinnerModule
   ],
   exports: [ShowComponent],
 })
