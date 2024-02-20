@@ -21,6 +21,21 @@ export class RaceService {
     });
   }
 
+  async upcomingRaceWithSongs() {
+    console.log(`upcomingRaceWithSongs Called`);
+    const show = await this.prisma.show.findFirst({
+      where: { active: true },
+      orderBy: {date: 'desc'},
+      take: 1
+    });
+    console.log(`Found current show:`, show);
+    return this.prisma.race.findFirst({
+      where: { showId: Number(show.id), raced: false },
+      include: { song1: true, song2: true },
+      orderBy: {orderNumber: 'asc'}
+    });
+  }
+
   async races(params: {
     skip?: number;
     take?: number;

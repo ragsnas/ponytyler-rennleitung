@@ -23,6 +23,9 @@
       ],
       "song-search": [
         "dist/song-search"
+      ],
+      "views": [
+        "dist/views"
       ]
     },
     "baseUrl": "./",

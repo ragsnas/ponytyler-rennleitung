@@ -36,6 +36,12 @@ export class RaceController {
     return this.raceService.races({});
   }
 
+  @Get('upcoming-with-songs')
+  findUpcomingRaceWithSongs() {
+    return this.raceService.upcomingRaceWithSongs();
+  }
+
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.raceService.race({ id: Number(id) });

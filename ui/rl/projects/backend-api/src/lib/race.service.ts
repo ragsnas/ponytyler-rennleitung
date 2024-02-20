@@ -52,4 +52,10 @@ export class RaceService {
       environment.apiUrl + `/api/race/${raceId}/with-songs`
     );
   }
+
+  getUpcommingRace() {
+    return this.http.get<Race>(
+      environment.apiUrl + `/api/race/upcoming-with-songs`
+    );
+  }
 }
