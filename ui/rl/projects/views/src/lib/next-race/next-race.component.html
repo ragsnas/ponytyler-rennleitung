@@ -1,7 +1,7 @@
 <h2>Upcomming Race</h2>
 
-<ng-container *ngIf="upcommingRace$ | async as upcommingRace">
+<div *ngIf="upcommingRace$ | async as upcommingRace" class="upcomming-race">
       <strong>{{ upcommingRace.person1 }}</strong>, {{ upcommingRace.song1?.artist }} - {{ upcommingRace.song1?.name }}
     <span style="padding: 0px 15px;">vs.</span>
       <strong>{{ upcommingRace.person2 }}</strong>, {{ upcommingRace.song2?.artist }} - {{ upcommingRace.song2?.name }}
-</ng-container>
+</div>
