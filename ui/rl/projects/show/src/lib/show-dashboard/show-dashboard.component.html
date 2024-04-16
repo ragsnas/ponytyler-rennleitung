@@ -9,6 +9,17 @@
   <div class="refresh-bar">
     <mat-progress-bar *ngIf="refreshing" mode="indeterminate"></mat-progress-bar>
   </div>
+  <mat-form-field class="full-width">
+    <mat-label>Refresh Interval</mat-label>
+    <mat-select [formControl]="refreshIntervalFormControl" (selectionChange)="refreshIntervalChange($event)">
+      <mat-option value="5000">5 Sekunden</mat-option>
+      <mat-option value="8000">8 Sekunden</mat-option>
+      <mat-option value="10000">10 Sekunden</mat-option>
+      <mat-option value="15000">15 Sekunden</mat-option>
+      <mat-option value="30000">30 Sekunden</mat-option>
+    </mat-select>
+  </mat-form-field>
+
   <ng-container *ngIf="races.length <= 0" >
     <p>No Races yet</p>
   </ng-container>
