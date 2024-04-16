@@ -6,18 +6,18 @@ import {
   BehaviorSubject,
   combineLatest,
   delay,
-  interval,
+  interval, map,
   Observable,
   of,
   startWith,
   Subject, Subscription,
   switchMap,
-  takeUntil,
-  tap
+  takeUntil, takeWhile,
+  tap, timer
 } from 'rxjs';
 import {MatSnackBar} from "@angular/material/snack-bar";
 import {FormControl, FormGroup} from "@angular/forms";
-import { MatSelectChange } from '@angular/material/select';
+import {MatSelectChange} from '@angular/material/select';
 
 export interface RaceWithSongPlayedInfo extends Race {
   song1AlreadyPlayed: boolean;
@@ -38,11 +38,12 @@ export class ShowDashboardComponent implements OnInit, OnDestroy {
   races$: BehaviorSubject<RaceWithSongPlayedInfo[]> = new BehaviorSubject<RaceWithSongPlayedInfo[]>([]);
   finishedRaces$: BehaviorSubject<Race[]> = new BehaviorSubject<Race[]>([]);
   refreshing: boolean = false;
-  refreshIntervalFormControl: FormControl<string> = new FormControl<string>('5000', {nonNullable: true});
-  timer$: Observable<number> = of(0);
+  refreshIntervalFormControl: FormControl<string> = new FormControl<string>(localStorage.getItem(PONTY_TYPER_REFRESH_TIMER_INTERVAL) || '5000', {nonNullable: true});
   refresh$: Subject<void> = new Subject<void>();
   unsubscribe$: Subject<void> = new Subject<void>();
+  timerSubscription: Subscription = new Subscription();
   loadRacesSubscription: Subscription = new Subscription();
+  secondsRemaining$: Observable<number> = of(0);
 
   constructor(
     private showService: ShowService,
@@ -58,8 +59,7 @@ export class ShowDashboardComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    const refreshInterval = Number(localStorage.getItem(PONTY_TYPER_REFRESH_TIMER_INTERVAL)) || Number(this.refreshIntervalFormControl.getRawValue());
-    this.setTimer(refreshInterval);
+    this.setTimer(Number(this.refreshIntervalFormControl.getRawValue()));
     this.loadRaces();
   }
 
@@ -174,6 +174,11 @@ export class ShowDashboardComponent implements OnInit, OnDestroy {
       });
   }
 
+  refreshIntervalChange($event: MatSelectChange) {
+    localStorage.setItem(PONTY_TYPER_REFRESH_TIMER_INTERVAL, $event.value);
+    this.setTimer($event.value);
+  }
+
   private addAlreadyPlayedInfoToRacesFromFinishedRaces(races: Race[], finishedRaces: Race[]): RaceWithSongPlayedInfo[] {
 
     return races.map((race: Race) => ({
@@ -199,22 +204,18 @@ export class ShowDashboardComponent implements OnInit, OnDestroy {
     );
   }
 
-  refreshIntervalChange($event: MatSelectChange) {
-    console.log(`refreshIntervalChange`, $event.value);
-    localStorage.setItem(PONTY_TYPER_REFRESH_TIMER_INTERVAL, $event.value);
-    this.setTimer($event.value);
-  }
-
   private setTimer(timerInterval: number): void {
-    console.log(`setting timer to:`, timerInterval);
-    this.timer$ = interval(timerInterval).pipe(
-      takeUntil(this.unsubscribe$),
-      tap(() => {
-        console.log(`timer calls`);
-        this.refreshing = true;
-        this.refresh$.next();
-      }),
-      delay(500),
+    this.secondsRemaining$ = timer(0, 1000).pipe(
+      map(n => timerInterval - n*1000),
+      takeWhile(n => n >= 0),
     );
+    this.timerSubscription.unsubscribe();
+    this.timerSubscription = interval(timerInterval).pipe(
+      takeUntil(this.unsubscribe$),
+      tap(() => this.refreshing = true),
+      delay(600),
+    ).subscribe(() => {
+      this.refresh$.next();
+    });
   }
 }
