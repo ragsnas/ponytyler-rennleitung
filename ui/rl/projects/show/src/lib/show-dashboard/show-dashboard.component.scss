@@ -9,3 +9,23 @@ table td {
 .black-bike-won-icon, .white-bike-won-icon {
     border-right: 1px dotted #999;
 }
+
+.refresh-bar {
+  min-height: 50px;
+}
+
+.not-raced {
+  background-color: rgb(220, 220, 220);
+  text-decoration:line-through;
+  color: grey;
+}
+
+.alreadyWished {
+  background-color: rgb(255, 255, 128);
+  color: black;
+}
+
+.alreadyPlayed {
+  background-color: rgb(255, 206, 206);
+  color: rgb(46, 0, 0);
+}

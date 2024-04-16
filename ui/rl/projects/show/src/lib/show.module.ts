@@ -24,6 +24,7 @@ import { MatSnackBarModule } from "@angular/material/snack-bar";
 import { DirectorDashboardComponent } from './director-dashboard/director-dashboard.component';
 import { DirectorDashboardRedirectComponent } from './director-dashboard-redirect/director-dashboard-redirect.component';
 import {MatProgressSpinnerModule} from "@angular/material/progress-spinner";
+import {MatProgressBarModule} from "@angular/material/progress-bar";
 
 const routes: Routes = [
   { path: '', component: ShowsComponent },
@@ -46,26 +47,27 @@ const routes: Routes = [
     DirectorDashboardComponent,
     DirectorDashboardRedirectComponent
   ],
-  imports: [
-    CommonModule,
-    RouterModule.forChild(routes),
-    HttpClientModule,
-    ReactiveFormsModule,
-    FormsModule,
-    MatTableModule,
-    MatIconModule,
-    MatInputModule,
-    MatFormFieldModule,
-    MatButtonModule,
-    MatDatepickerModule,
-    MatNativeDateModule,
-    MatBadgeModule,
-    BackendApiModule,
-    SongSearchModule,
-    ButtonListModule,
-    MatSnackBarModule,
-    MatProgressSpinnerModule
-  ],
+    imports: [
+        CommonModule,
+        RouterModule.forChild(routes),
+        HttpClientModule,
+        ReactiveFormsModule,
+        FormsModule,
+        MatTableModule,
+        MatIconModule,
+        MatInputModule,
+        MatFormFieldModule,
+        MatButtonModule,
+        MatDatepickerModule,
+        MatNativeDateModule,
+        MatBadgeModule,
+        BackendApiModule,
+        SongSearchModule,
+        ButtonListModule,
+        MatSnackBarModule,
+        MatProgressSpinnerModule,
+        MatProgressBarModule
+    ],
   exports: [ShowComponent],
 })
 export class ShowModule {}
