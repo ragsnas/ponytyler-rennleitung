@@ -1,13 +1,18 @@
 table td {
- padding: 5px;
+  padding: 5px;
+  border-right: 5px solid #ffffff;
+  border-bottom: 5px solid #ffffff;
+}
+
+table th {
+  background-color: lightgray;
+  padding: 5px;
+  border-right: 5px solid #ffffff;
+  border-bottom: 5px solid #ffffff;
 }
 
 .winning-bike {
-    background-color: lightpink;
-}
-
-.black-bike-won-icon, .white-bike-won-icon {
-    border-right: 1px dotted #999;
+  background-color: deeppink;
 }
 
 .refresh-bar {
@@ -29,3 +34,28 @@ table td {
   background-color: rgb(255, 206, 206);
   color: rgb(46, 0, 0);
 }
+
+.mark-as-won {
+  float:right;
+  visibility: hidden;
+}
+
+.song-column:hover .mark-as-won {
+  visibility: visible;
+}
+
+.song-column:hover,
+.alreadyWished.song-column:hover,
+.alreadyPlayed.song-column:hover,
+{
+  background-color: lightskyblue !important;
+}
+
+.bike-won {
+  float:right;
+  visibility: hidden;
+}
+.winning-bike .bike-won {
+  visibility: visible;
+}
+

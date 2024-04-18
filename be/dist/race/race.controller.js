@@ -12,10 +12,17 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.RaceController = void 0;
+exports.RaceController = exports.RaceState = void 0;
 const common_1 = require("@nestjs/common");
 const race_service_1 = require("../prisma-api/race.service");
 const client_1 = require("@prisma/client");
+var RaceState;
+(function (RaceState) {
+    RaceState["WAITING_FOR_OPPONENT"] = "WAITING_FOR_OPPONENT";
+    RaceState["WAITING_TO_RACE"] = "WAITING_TO_RACE";
+    RaceState["CANCELED"] = "CANCELED";
+    RaceState["RACED"] = "RACED";
+})(RaceState || (exports.RaceState = RaceState = {}));
 let RaceController = class RaceController {
     constructor(raceService) {
         this.raceService = raceService;
@@ -25,8 +32,11 @@ let RaceController = class RaceController {
     }
     findRacesForShow(showId, raced) {
         return this.raceService.races({
-            where: { showId: Number(showId), raced: raced ? true : false },
-            orderBy: { orderNumber: 'asc' },
+            where: {
+                showId: Number(showId),
+                raceState: raced ? { equals: RaceState.RACED } : { not: { equals: RaceState.RACED } }
+            },
+            orderBy: { orderNumber: raced ? 'desc' : 'asc' },
         });
     }
     findRaces() {

@@ -7,7 +7,7 @@ generator client {
 
 datasource db {
   provider = "sqlite"
-  url      = 'file:./rl.db'
+  url      = "file:./rl.db"
 }
 
 model Show {
@@ -35,6 +35,7 @@ model Race {
   orderNumber Int
   createdAt DateTime
   raced Boolean @default(false)
+  raceState String @default("WAITING_TO_RACE")
   person1 String
   song1 Song @relation(name: "SongForPerson1", fields: [song1Id], references: [id])
   song1Id Int

@@ -1,5 +1,11 @@
 import { RaceService } from 'src/prisma-api/race.service';
 import { Prisma } from '@prisma/client';
+export declare enum RaceState {
+    WAITING_FOR_OPPONENT = "WAITING_FOR_OPPONENT",
+    WAITING_TO_RACE = "WAITING_TO_RACE",
+    CANCELED = "CANCELED",
+    RACED = "RACED"
+}
 export declare class RaceController {
     private readonly raceService;
     constructor(raceService: RaceService);
@@ -9,6 +15,7 @@ export declare class RaceController {
         orderNumber: number;
         createdAt: Date;
         raced: boolean;
+        raceState: string;
         person1: string;
         song1Id: number;
         person2: string;
@@ -21,6 +28,7 @@ export declare class RaceController {
         orderNumber: number;
         createdAt: Date;
         raced: boolean;
+        raceState: string;
         person1: string;
         song1Id: number;
         person2: string;
@@ -33,6 +41,7 @@ export declare class RaceController {
         orderNumber: number;
         createdAt: Date;
         raced: boolean;
+        raceState: string;
         person1: string;
         song1Id: number;
         person2: string;
@@ -60,6 +69,7 @@ export declare class RaceController {
         orderNumber: number;
         createdAt: Date;
         raced: boolean;
+        raceState: string;
         person1: string;
         song1Id: number;
         person2: string;
@@ -72,6 +82,7 @@ export declare class RaceController {
         orderNumber: number;
         createdAt: Date;
         raced: boolean;
+        raceState: string;
         person1: string;
         song1Id: number;
         person2: string;
@@ -84,6 +95,7 @@ export declare class RaceController {
         orderNumber: number;
         createdAt: Date;
         raced: boolean;
+        raceState: string;
         person1: string;
         song1Id: number;
         person2: string;
@@ -96,6 +108,7 @@ export declare class RaceController {
         orderNumber: number;
         createdAt: Date;
         raced: boolean;
+        raceState: string;
         person1: string;
         song1Id: number;
         person2: string;
@@ -108,6 +121,7 @@ export declare class RaceController {
         orderNumber: number;
         createdAt: Date;
         raced: boolean;
+        raceState: string;
         person1: string;
         song1Id: number;
         person2: string;

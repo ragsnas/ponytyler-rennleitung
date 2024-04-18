@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from './prisma.service';
 import { Prisma, Race } from "@prisma/client";
+import {RaceState} from "../race/race.controller";
 
 @Injectable()
 export class RaceService {
@@ -30,7 +31,7 @@ export class RaceService {
     });
     console.log(`Found current show:`, show);
     return this.prisma.race.findFirst({
-      where: { showId: Number(show.id), raced: false },
+      where: { showId: Number(show.id), raceState: {equals: RaceState.WAITING_TO_RACE} },
       include: { song1: true, song2: true },
       orderBy: {orderNumber: 'asc'}
     });
@@ -89,6 +90,7 @@ export class RaceService {
         createdAt: data.createdAt,
         orderNumber: data.orderNumber,
         raced: data.raced,
+        raceState: data.raceState,
         bikeWon: data.bikeWon,
         show: {
           connect: {

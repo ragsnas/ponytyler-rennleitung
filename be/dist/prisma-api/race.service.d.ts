@@ -26,6 +26,7 @@ export declare class RaceService {
         orderNumber: number;
         createdAt: Date;
         raced: boolean;
+        raceState: string;
         person1: string;
         song1Id: number;
         person2: string;

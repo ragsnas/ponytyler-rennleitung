@@ -34,12 +34,14 @@
         <ng-container matColumnDef="song1">
             <th mat-header-cell *matHeaderCellDef>Black Bike</th>
             <td mat-cell
+              (click)="bikeWon(1, element)"
               *matCellDef="let element"
               [ngClass]="{'alreadyPlayed': element.song1AlreadyPlayed, 'alreadyWished': element.song1AlreadyWished }"
-              (click)="bikeWon(1, element)">
+              class="song-column">
               <strong>{{element.person1}}</strong>
               <br/>
               {{element.song1.artist}}<br/>{{element.song1.name}}
+              <mat-icon class="mark-as-won">sports_score</mat-icon>
             </td>
           </ng-container>
 
@@ -48,10 +50,13 @@
             <td mat-cell
               (click)="bikeWon(2, element)"
               *matCellDef="let element"
-              [ngClass]="{'alreadyPlayed': element.song2AlreadyPlayed, 'alreadyWished': element.song2AlreadyWished }">
+              [ngClass]="{'alreadyPlayed': element.song2AlreadyPlayed, 'alreadyWished': element.song2AlreadyWished }"
+              class="song-column">
+
               <strong>{{element.person2}}</strong>
               <br/>
               {{element.song2.artist}}<br/>{{element.song2.name}}
+              <mat-icon class="mark-as-won">sports_score</mat-icon>
             </td>
           </ng-container>
 
@@ -98,6 +103,7 @@
             <td mat-cell *matCellDef="let element" class="{{ element.bikeWon == '1' || element.bikeWon == '3' ? 'winning-bike' : '' }}">
               <strong>{{element.person1}}</strong>
               <br/>{{element.song1.artist}}<br/>{{element.song1.name}}
+              <mat-icon class="bike-won">sports_score</mat-icon>
             </td>
           </ng-container>
 
@@ -106,6 +112,7 @@
             <td mat-cell *matCellDef="let element" class="{{ element.bikeWon == '2' || element.bikeWon == '3' ? 'winning-bike' : '' }}">
               <strong>{{element.person2}}</strong>
               <br/>{{element.song2.artist}}<br/>{{element.song2.name}}
+              <mat-icon class="bike-won">sports_score</mat-icon>
             </td>
           </ng-container>
 

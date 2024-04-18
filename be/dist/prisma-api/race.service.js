@@ -12,6 +12,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.RaceService = void 0;
 const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("./prisma.service");
+const race_controller_1 = require("../race/race.controller");
 let RaceService = class RaceService {
     constructor(prisma) {
         this.prisma = prisma;
@@ -36,7 +37,7 @@ let RaceService = class RaceService {
         });
         console.log(`Found current show:`, show);
         return this.prisma.race.findFirst({
-            where: { showId: Number(show.id), raced: false },
+            where: { showId: Number(show.id), raceState: { equals: race_controller_1.RaceState.WAITING_TO_RACE } },
             include: { song1: true, song2: true },
             orderBy: { orderNumber: 'asc' }
         });
@@ -82,6 +83,7 @@ let RaceService = class RaceService {
                 createdAt: data.createdAt,
                 orderNumber: data.orderNumber,
                 raced: data.raced,
+                raceState: data.raceState,
                 bikeWon: data.bikeWon,
                 show: {
                     connect: {

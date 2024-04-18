@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, forwardRef } from '@angular/core';
+import {Component, Input, OnInit, forwardRef, OnDestroy} from '@angular/core';
 import {
   AbstractControl,
   ControlValueAccessor,
@@ -10,7 +10,7 @@ import {
 } from '@angular/forms';
 import { Race, RaceService } from 'projects/backend-api/src/lib/race.service';
 import { Song, SongService } from 'projects/song/src/public-api';
-import { Observable, combineLatest, filter, map, startWith } from 'rxjs';
+import {Observable, combineLatest, filter, map, startWith, Subject, takeUntil} from 'rxjs';
 
 export interface SongWithRaceInfo extends Song {
   alreadyPlayed: boolean;
@@ -34,7 +34,7 @@ export interface SongWithRaceInfo extends Song {
     },
   ],
 })
-export class InputComponent implements OnInit, ControlValueAccessor, Validator {
+export class InputComponent implements OnInit, OnDestroy, ControlValueAccessor, Validator {
   @Input()
   label: string | undefined;
 
@@ -45,6 +45,7 @@ export class InputComponent implements OnInit, ControlValueAccessor, Validator {
   songs: SongWithRaceInfo[] = [];
   filteredOptions: Observable<SongWithRaceInfo[]> | undefined;
   selectedSong: Song | undefined = undefined;
+  unsubscribe$: Subject<void> = new Subject<void>();
 
   disabled = false;
   onChange = (value: Song) => {};
@@ -53,15 +54,23 @@ export class InputComponent implements OnInit, ControlValueAccessor, Validator {
 
   constructor(private songsService: SongService, private raceService: RaceService) {}
 
+  ngOnDestroy(): void {
+    this.unsubscribe$.next();
+    this.unsubscribe$.complete();
+  }
+
   ngOnInit(): void {
     combineLatest([
       this.songsService.getSelectableSongs(),
       this.raceService.getRacesForShow(this.showId || '', true),
       this.raceService.getRacesForShow(this.showId || '', false)
     ]).pipe(
+      takeUntil(this.unsubscribe$),
       map(([songs, racesFinished, racesUpcoming]: [Song[], Race[], Race[]]) => {
         const songIdsAlreadyPlayed = racesFinished.map(race => {
-          const result = [];
+          if (race.song1Id) {
+
+          }
           if (race.bikeWon === 1) {
             return race.song1Id;
           }
@@ -80,16 +89,17 @@ export class InputComponent implements OnInit, ControlValueAccessor, Validator {
     )
     .subscribe({
       next: (songs: SongWithRaceInfo[]) => {
+        console.log(`ABBA SongWithRaceInfo:`, songs.filter(song => song.artist.startsWith('ABBA')));
         this.songs = songs;
       },
     });
     this.filteredOptions = this.songControl.valueChanges.pipe(
+      takeUntil(this.unsubscribe$),
       startWith(''),
       filter(value => typeof value !== "object"),
       map((value) => this._filter(value || ''))
     );
     this.songControl.valueChanges.subscribe((value) => {
-      console.log(`valueChanges detects:`, value);  
       if((value as unknown as Song).name) {
         const song = (value as unknown as Song);
         this.songControl.patchValue(song.artist + ' - ' + song.name);
@@ -100,7 +110,6 @@ export class InputComponent implements OnInit, ControlValueAccessor, Validator {
         (song) => song.artist + ' - ' + song.name === value
       );
       if (matchingSong) {
-        console.log(`matching song found:`, matchingSong);
         const { alreadyPlayed, alreadyWished, ...selectedSong } = matchingSong;
         this.selectedSong = selectedSong as Song;
         this.onChange(selectedSong);
@@ -109,7 +118,6 @@ export class InputComponent implements OnInit, ControlValueAccessor, Validator {
   }
 
   writeValue(song: Song): void {
-    console.log(`write value called with`, song);
     this.selectedSong = song;
     if (song) {
       this.songControl.patchValue(song.artist + ' - ' + song.name);
@@ -132,7 +140,6 @@ export class InputComponent implements OnInit, ControlValueAccessor, Validator {
   }
 
   private _filter(value: string): SongWithRaceInfo[] {
-    console.log(`_filter value:`, value);
     const filterValue = (value || '').toLowerCase();
     return this.songs.filter(
       (song) =>

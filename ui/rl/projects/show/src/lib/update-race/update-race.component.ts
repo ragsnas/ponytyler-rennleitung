@@ -1,10 +1,10 @@
-import {Component, OnInit} from '@angular/core';
+import {Component, OnDestroy, OnInit} from '@angular/core';
 import {FormControl, FormGroup, Validators} from '@angular/forms';
 import {ActivatedRoute, Router} from '@angular/router';
 import {Song, SongService} from 'projects/song/src/public-api';
 import {Race, RaceService} from '../../../../backend-api/src/lib/race.service';
 import {MatSnackBar} from "@angular/material/snack-bar";
-import { Observable } from 'rxjs';
+import {Observable, Subject} from 'rxjs';
 import {Show, ShowService } from 'projects/backend-api/src/lib/show.service';
 
 @Component({
