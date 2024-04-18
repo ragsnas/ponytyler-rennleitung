@@ -16,10 +16,10 @@ export class UpdateRaceComponent implements OnInit {
 
   public form: FormGroup = new FormGroup({
     name: new FormControl(''),
-    person1: new FormControl('', [Validators.required]),
-    song1: new FormControl<Song|undefined>(undefined, [Validators.required]),
-    person2: new FormControl('', [Validators.required]),
-    song2: new FormControl<Song|undefined>(undefined, [Validators.required]),
+    person1: new FormControl('' ),
+    song1: new FormControl<Song|undefined>(undefined ),
+    person2: new FormControl('' ),
+    song2: new FormControl<Song|undefined>(undefined ),
     orderNumber: new FormControl(''),
   });
   showId: string | undefined;
@@ -59,8 +59,8 @@ export class UpdateRaceComponent implements OnInit {
     const updatedRace = this.form.getRawValue();
     this.raceService.updateRace({
       ...this.race,
-      song1Id: updatedRace.song1.id || updatedRace.song1Id,
-      song2Id: updatedRace.song2.id || updatedRace.song2Id,
+      song1Id: updatedRace.song1?.id || updatedRace.song1Id || undefined,
+      song2Id: updatedRace.song2?.id || updatedRace.song2Id || undefined,
       ...this.form.getRawValue()
     }).subscribe({
       next: (result) => {

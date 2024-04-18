@@ -1,3 +1,7 @@
+.refresh-bar {
+  min-height: 50px;
+}
+
 table td {
   padding: 5px;
   border-right: 5px solid #ffffff;
@@ -11,36 +15,60 @@ table th {
   border-bottom: 5px solid #ffffff;
 }
 
-.winning-bike {
-  background-color: deeppink;
+.race-state-waiting-for-opponent td {
+  background-color: #e6bff5;
 }
 
-.refresh-bar {
-  min-height: 50px;
+.race-state-waiting-to-race td {
+  background-color: #ffffff;
 }
 
-.not-raced {
+.race-state-canceled td {
   background-color: rgb(220, 220, 220);
   text-decoration:line-through;
   color: grey;
 }
 
-.alreadyWished {
+.race-state-raced td {
+  background-color: lightskyblue;
+}
+
+tr.race-state-waiting-to-race + tr.race-state-waiting-for-opponent td,
+tr.race-state-waiting-to-race + tr.race-state-raced td,
+tr.race-state-waiting-for-opponent + tr.race-state-raced td,
+tr.race-state-raced + tr.race-state-canceled td {
+  border-top:10px solid #333333;
+}
+
+.race-state-raced td.winning-bike {
+  background-color: deepskyblue;
+}
+.bike-won {
+  float:right;
+  visibility: hidden;
+}
+.winning-bike .bike-won {
+  visibility: visible;
+}
+
+.race-state-waiting-to-race td.alreadyWished.song-column,
+.race-state-waiting-for-opponent td.alreadyWished.song-column {
   background-color: rgb(255, 255, 128);
   color: black;
 }
 
-.alreadyPlayed {
+.race-state-waiting-to-race td.alreadyPlayed.song-column,
+.race-state-waiting-for-opponent td.alreadyPlayed.song-column {
   background-color: rgb(255, 206, 206);
   color: rgb(46, 0, 0);
 }
 
-.mark-as-won {
+.race-state-waiting-to-race .bike-won {
   float:right;
   visibility: hidden;
 }
 
-.song-column:hover .mark-as-won {
+.race-state-waiting-to-race .song-column:hover .bike-won {
   visibility: visible;
 }
 
@@ -51,11 +79,4 @@ table th {
   background-color: lightskyblue !important;
 }
 
-.bike-won {
-  float:right;
-  visibility: hidden;
-}
-.winning-bike .bike-won {
-  visibility: visible;
-}
 

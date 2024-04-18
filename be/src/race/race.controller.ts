@@ -43,6 +43,18 @@ export class RaceController {
         });
     }
 
+    @Get('for-show/:showId/all')
+    findAllRacesForShow(
+        @Param('showId') showId: string
+    ) {
+        return this.raceService.races({
+            where: {
+                showId: Number(showId)
+            },
+            orderBy: {orderNumber: 'asc'},
+        });
+    }
+
     @Get()
     findRaces() {
         return this.raceService.races({});

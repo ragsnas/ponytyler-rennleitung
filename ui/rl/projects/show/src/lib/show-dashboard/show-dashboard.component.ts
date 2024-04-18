@@ -1,22 +1,26 @@
 import {Component, OnDestroy, OnInit} from '@angular/core';
 import {ActivatedRoute, ParamMap} from '@angular/router';
-import {Race, RaceService} from 'projects/backend-api/src/lib/race.service';
+import {Race, RaceService, RaceState} from 'projects/backend-api/src/lib/race.service';
 import {Show, ShowService} from 'projects/backend-api/src/lib/show.service';
 import {
   BehaviorSubject,
   combineLatest,
   delay,
-  interval, map,
+  interval,
+  map,
   Observable,
   of,
   startWith,
-  Subject, Subscription,
+  Subject,
+  Subscription,
   switchMap,
-  takeUntil, takeWhile,
-  tap, timer
+  takeUntil,
+  takeWhile,
+  tap,
+  timer
 } from 'rxjs';
 import {MatSnackBar} from "@angular/material/snack-bar";
-import {FormControl, FormGroup} from "@angular/forms";
+import {FormControl} from "@angular/forms";
 import {MatSelectChange} from '@angular/material/select';
 
 export interface RaceWithSongPlayedInfo extends Race {
@@ -27,6 +31,46 @@ export interface RaceWithSongPlayedInfo extends Race {
 }
 
 const PONTY_TYPER_REFRESH_TIMER_INTERVAL = 'pontyTyperRefreshTimerInterval';
+
+function compareRaceState(race1: Race, race2: Race) {
+  const order = {
+    [RaceState.WAITING_TO_RACE]: 1,
+    [RaceState.WAITING_FOR_OPPONENT]: 2,
+    [RaceState.RACED]: 3,
+    [RaceState.CANCELED]: 4,
+  }
+  if (order[race1.raceState as RaceState] > order[race2.raceState as RaceState]) {
+    return 1;
+  }
+  if (order[race1.raceState as RaceState] < order[race2.raceState as RaceState]) {
+    return -1;
+  }
+  return 0;
+}
+
+function compareRacesByOrderNumber(race1: Race, race2: Race, direction: 'asc' | 'desc') {
+  if (race1.orderNumber > race2.orderNumber) {
+    return 1 * (direction === 'asc' ? 1 : -1);
+  }
+  if (race1.orderNumber < race2.orderNumber) {
+    return -1 * (direction === 'asc' ? 1 : -1);
+  }
+  return 0;
+}
+
+function sortRacesForList() {
+  return (race1: Race, race2: Race): number => {
+    const raceStateSortResult = compareRaceState(race1, race2);
+    if (raceStateSortResult !== 0) {
+      return raceStateSortResult;
+    } else if (race1.raceState === RaceState.WAITING_TO_RACE || race1.raceState === RaceState.WAITING_FOR_OPPONENT) {
+      return compareRacesByOrderNumber(race1, race2, 'asc');
+    } else if (race1.raceState === RaceState.RACED || race1.raceState === RaceState.CANCELED) {
+      return compareRacesByOrderNumber(race1, race2, 'desc');
+    }
+    return 0;
+  };
+}
 
 @Component({
   selector: 'lib-show-dashboard',
@@ -74,15 +118,18 @@ export class ShowDashboardComponent implements OnInit, OnDestroy {
           startWith(0),
           switchMap(() => combineLatest([
             this.showService.getShow(showId),
-            this.raceService.getRacesForShow(showId),
-            this.raceService.getRacesForShow(showId, true)
+            this.raceService.getAllRacesForShow(showId),
           ])));
       })
     ).subscribe({
-      next: ([show, races, finishedRaces]) => {
+      next: ([show, races]) => {
         this.show = show;
+        const finishedRaces = races.filter(race => race.raceState === RaceState.RACED);
         this.finishedRaces$.next(finishedRaces);
-        this.races$.next(this.addAlreadyPlayedInfoToRacesFromFinishedRaces(races, finishedRaces));
+        this.races$.next(this.addAlreadyPlayedInfoToRacesFromFinishedRaces(
+          races.sort(sortRacesForList()),
+          finishedRaces
+        ));
         this.refreshing = false;
       },
       error: (error) => {
@@ -95,28 +142,34 @@ export class ShowDashboardComponent implements OnInit, OnDestroy {
   }
 
   bikeWon(bike: number, race: Race) {
-    console.log(`bikeWon > called with bike:`, bike);
+    if(race.raceState !== RaceState.WAITING_TO_RACE) {
+      this.snackBar.open(`Can't mark Winning Bike if Race is not Waiting to be Raced`, 'OK', {
+        duration: 5000, announcementMessage: `Error`, panelClass: 'error'
+      })
+    } else {
+      this.raceService
+        .updateRace({
+          ...race,
+          bikeWon: bike,
+          raceState: RaceState.RACED,
+          raced: true,
+        } as Race)
+        .subscribe({
+          next: (result) => {
+            this.snackBar.open(`Marked Race as "Bike ${bike} won!" Congrats ${bike === 1 ? race.person1 : race.person2}`, 'OK', {
+              panelClass: 'success',
+              duration: 500
+            });
+            this.loadRaces();
+          },
+          error: (error) => {
+            this.snackBar.open(`Error during marking of the Race: ${JSON.stringify(error)}`, 'OK', {
+              duration: 10000, announcementMessage: `Error`, panelClass: 'error'
+            });
+          },
+        });
+    }
 
-    this.raceService
-      .updateRace({
-        ...race,
-        bikeWon: bike,
-        raced: true,
-      } as Race)
-      .subscribe({
-        next: (result) => {
-          this.snackBar.open(`Marked Race as "Bike ${bike} won!" Congrats ${bike === 1 ? race.person1 : race.person2}`, 'OK', {
-            panelClass: 'success',
-            duration: 500
-          });
-          this.loadRaces();
-        },
-        error: (error) => {
-          this.snackBar.open(`Error during marking of the Race: ${JSON.stringify(error)}`, 'OK', {
-            duration: 10000, announcementMessage: `Error`, panelClass: 'error'
-          });
-        },
-      });
   }
 
   markRaceAsPlayBoth(race: Race): void {
@@ -124,6 +177,7 @@ export class ShowDashboardComponent implements OnInit, OnDestroy {
       .updateRace({
         ...race,
         raced: true,
+        raceState: RaceState.RACED,
         bikeWon: 3
       } as Race)
       .subscribe({
@@ -139,11 +193,12 @@ export class ShowDashboardComponent implements OnInit, OnDestroy {
       });
   }
 
-  markRaceAsRaced(race: Race): void {
+  markRaceAsCanceled(race: Race): void {
     this.raceService
       .updateRace({
         ...race,
         raced: true,
+        raceState: RaceState.CANCELED
       } as Race)
       .subscribe({
         next: (result) => {
@@ -160,7 +215,7 @@ export class ShowDashboardComponent implements OnInit, OnDestroy {
 
   markRaceAsNotRaced(race: Race): void {
     this.raceService
-      .updateRace({...race, raced: false, bikeWon: 0} as Race)
+      .updateRace({...race, raced: false, bikeWon: 0, raceState: RaceState.WAITING_TO_RACE} as Race)
       .subscribe({
         next: (result) => {
           this.snackBar.open(`Marked Race as NOT over`, 'OK', {panelClass: 'success', duration: 500});
@@ -180,27 +235,27 @@ export class ShowDashboardComponent implements OnInit, OnDestroy {
   }
 
   private addAlreadyPlayedInfoToRacesFromFinishedRaces(races: Race[], finishedRaces: Race[]): RaceWithSongPlayedInfo[] {
-
+    const racesWaitingToRace = races.filter(race => race.raceState === RaceState.WAITING_TO_RACE || race.raceState === RaceState.WAITING_FOR_OPPONENT);
     return races.map((race: Race) => ({
       ...race,
       song1AlreadyPlayed: this.getSongAlreadyPlayed(finishedRaces, race.song1Id),
-      song1AlreadyWished: this.getSongAlreadyWished(races, race.id, race.song1Id),
+      song1AlreadyWished: this.getSongAlreadyWished(racesWaitingToRace, race.id, race.song1Id),
       song2AlreadyPlayed: this.getSongAlreadyPlayed(finishedRaces, race.song2Id),
-      song2AlreadyWished: this.getSongAlreadyWished(races, race.id, race.song2Id),
+      song2AlreadyWished: this.getSongAlreadyWished(racesWaitingToRace, race.id, race.song2Id),
     }));
   }
 
   private getSongAlreadyPlayed(races: Race[], songId: string | undefined) {
     return races.some((race: Race) =>
-      (race.song1Id === songId && (race.bikeWon === 1 || race.bikeWon === 3))
+      (race.song1Id && race.song1Id === songId && (race.bikeWon === 1 || race.bikeWon === 3))
       ||
-      (race.song2Id === songId && (race.bikeWon === 2 || race.bikeWon === 3))
+      (race.song2Id && race.song2Id === songId && (race.bikeWon === 2 || race.bikeWon === 3))
     );
   }
 
   private getSongAlreadyWished(races: Race[], raceId: string | undefined, songId: string | undefined) {
     return races.some((race: Race) =>
-      (race.song1Id === songId || race.song2Id === songId) && race.id !== raceId
+      ((race.song1Id && race.song1Id === songId) || (race.song2Id && race.song2Id === songId)) && race.id !== raceId
     );
   }
 

@@ -28,6 +28,10 @@
           <th mat-header-cell *matHeaderCellDef><mat-icon>tag</mat-icon></th>
           <td mat-cell *matCellDef="let element">
             {{element.orderNumber + 1}}
+            <mat-icon *ngIf="element.raceState === 'RACED'">done</mat-icon>
+            <mat-icon *ngIf="element.raceState === 'CANCELED'">delete</mat-icon>
+            <mat-icon *ngIf="element.raceState === 'WAITING_TO_RACE'">schedule</mat-icon>
+            <mat-icon *ngIf="element.raceState === 'WAITING_FOR_OPPONENT'">assignment</mat-icon>
           </td>
         </ng-container>
 
@@ -36,12 +40,16 @@
             <td mat-cell
               (click)="bikeWon(1, element)"
               *matCellDef="let element"
-              [ngClass]="{'alreadyPlayed': element.song1AlreadyPlayed, 'alreadyWished': element.song1AlreadyWished }"
+              [ngClass]="{
+              'alreadyPlayed': element.raceState != 'RACED' && element.song1AlreadyPlayed,
+              'alreadyWished': element.raceState != 'RACED' && element.song1AlreadyWished,
+              'winning-bike': element.raceState == 'RACED' && (element.bikeWon == '1' || element.bikeWon == '3')
+              }"
               class="song-column">
               <strong>{{element.person1}}</strong>
               <br/>
-              {{element.song1.artist}}<br/>{{element.song1.name}}
-              <mat-icon class="mark-as-won">sports_score</mat-icon>
+              {{element.song1?.artist}}<br/>{{element.song1?.name}}
+              <mat-icon class="bike-won">sports_score</mat-icon>
             </td>
           </ng-container>
 
@@ -50,88 +58,44 @@
             <td mat-cell
               (click)="bikeWon(2, element)"
               *matCellDef="let element"
-              [ngClass]="{'alreadyPlayed': element.song2AlreadyPlayed, 'alreadyWished': element.song2AlreadyWished }"
+              [ngClass]="{
+              'alreadyPlayed': element.raceState != 'RACED' && element.song2AlreadyPlayed,
+              'alreadyWished': element.raceState != 'RACED' && element.song2AlreadyWished,
+              'winning-bike': element.raceState == 'RACED' && (element.bikeWon == '2' || element.bikeWon == '3')
+              }"
               class="song-column">
-
               <strong>{{element.person2}}</strong>
               <br/>
-              {{element.song2.artist}}<br/>{{element.song2.name}}
-              <mat-icon class="mark-as-won">sports_score</mat-icon>
+              {{element.song2?.artist}}<br/>{{element.song2?.name}}
+              <mat-icon class="bike-won">sports_score</mat-icon>
             </td>
           </ng-container>
 
         <ng-container matColumnDef="actions">
           <th mat-header-cell *matHeaderCellDef>Actions</th>
           <td mat-cell *matCellDef="let element">
-            <button *ngIf="!element.raced" mat-icon-button aria-label="Songs Beide" (click)="markRaceAsPlayBoth(element)"  [disabled]="refreshing">
+            <button *ngIf="element.raceState == 'WAITING_TO_RACE'" mat-icon-button aria-label="Songs Beide" (click)="markRaceAsPlayBoth(element)"  [disabled]="refreshing">
               <mat-icon matBadge="2" matBadgeColor="accent" matBadgeSize="small">sports_score</mat-icon>
-              </button>
-              &nbsp;
-            <button *ngIf="!element.raced" mat-icon-button aria-label="Not Raced" (click)="markRaceAsRaced(element)" [disabled]="refreshing">
-                <mat-icon>check_box_outline_blank</mat-icon>
-              </button>
-            <button *ngIf="element.raced" mat-icon-button aria-label="Editieren" (click)="markRaceAsNotRaced(element)" [disabled]="refreshing">
-                <mat-icon>check_box</mat-icon>
-              </button>
-            <button mat-icon-button aria-label="Update Song" [routerLink]="'race/' +element.id" [disabled]="refreshing">
+            </button>
+            <button mat-icon-button aria-label="Edit Race" [routerLink]="'race/' +element.id" [disabled]="refreshing">
                 <mat-icon>edit</mat-icon>
-              </button>
+            </button>
+            <button *ngIf="element.raceState == 'RACED' || element.raceState == 'CANCELED'" mat-icon-button aria-label="Return Race" (click)="markRaceAsNotRaced(element)">
+              <mat-icon>history</mat-icon>
+            </button>
+            <button *ngIf="element.raceState !== 'CANCELED'" mat-icon-button aria-label="Cancel Race" (click)="markRaceAsCanceled(element)">
+              <mat-icon>delete</mat-icon>
+            </button>
           </td>
         </ng-container>
 
         <tr mat-header-row *matHeaderRowDef="['orderNumber', 'song1', 'song2', 'actions']"></tr>
-        <tr mat-row *matRowDef="let row; columns: ['orderNumber', 'song1', 'song2', 'actions'];"></tr>
-      </table>
-  </ng-container>
-</ng-container>
-
-
-<ng-container *ngIf="finishedRaces$ | async as finishedRaces" >
-  <ng-container *ngIf="finishedRaces.length > 0" >
-    <h3>Past Races</h3>
-
-    <table mat-table [dataSource]="finishedRaces">
-
-        <ng-container matColumnDef="orderNumber">
-          <th mat-header-cell *matHeaderCellDef><mat-icon>tag</mat-icon></th>
-          <td mat-cell *matCellDef="let element">
-            {{element.orderNumber + 1}}
-          </td>
-        </ng-container>
-        <ng-container matColumnDef="song1">
-            <th mat-header-cell *matHeaderCellDef>Song Black Bike</th>
-            <td mat-cell *matCellDef="let element" class="{{ element.bikeWon == '1' || element.bikeWon == '3' ? 'winning-bike' : '' }}">
-              <strong>{{element.person1}}</strong>
-              <br/>{{element.song1.artist}}<br/>{{element.song1.name}}
-              <mat-icon class="bike-won">sports_score</mat-icon>
-            </td>
-          </ng-container>
-
-          <ng-container matColumnDef="song2">
-            <th mat-header-cell *matHeaderCellDef>Song White Bike</th>
-            <td mat-cell *matCellDef="let element" class="{{ element.bikeWon == '2' || element.bikeWon == '3' ? 'winning-bike' : '' }}">
-              <strong>{{element.person2}}</strong>
-              <br/>{{element.song2.artist}}<br/>{{element.song2.name}}
-              <mat-icon class="bike-won">sports_score</mat-icon>
-            </td>
-          </ng-container>
-
-          <ng-container matColumnDef="actions">
-          <th mat-header-cell *matHeaderCellDef>Actions</th>
-          <td mat-cell *matCellDef="let element">
-            <button *ngIf="!element.raced" mat-icon-button aria-label="Delete Song" (click)="markRaceAsRaced(element)">
-                <mat-icon>check_box_outline_blank</mat-icon>
-              </button>
-            <button *ngIf="element.raced" mat-icon-button aria-label="Delete Song" (click)="markRaceAsNotRaced(element)">
-                <mat-icon>check_box</mat-icon>
-              </button>
-          </td>
-        </ng-container>
-
-        <tr mat-header-row *matHeaderRowDef="['orderNumber', 'song1', 'song2', 'actions']"></tr>
-        <tr mat-row
-          *matRowDef="let row; columns: ['orderNumber', 'song1', 'song2', 'actions'];"
-          [ngClass]="{'not-raced': row.bikeWon === 0}"></tr>
+        <tr mat-row *matRowDef="let row; columns: ['orderNumber', 'song1', 'song2', 'actions'];" [ngClass]="{
+              'race-state-waiting-to-race': row.raceState == 'WAITING_TO_RACE',
+              'race-state-waiting-for-opponent': row.raceState == 'WAITING_FOR_OPPONENT',
+              'race-state-raced': row.raceState == 'RACED',
+              'race-state-canceled': row.raceState == 'CANCELED'
+              }"></tr>
       </table>
   </ng-container>
 </ng-container>

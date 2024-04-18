@@ -1,4 +1,4 @@
-import {Component, Input, OnInit, forwardRef, OnDestroy} from '@angular/core';
+import {Component, forwardRef, Input, OnDestroy, OnInit} from '@angular/core';
 import {
   AbstractControl,
   ControlValueAccessor,
@@ -8,9 +8,9 @@ import {
   ValidationErrors,
   Validator,
 } from '@angular/forms';
-import { Race, RaceService } from 'projects/backend-api/src/lib/race.service';
-import { Song, SongService } from 'projects/song/src/public-api';
-import {Observable, combineLatest, filter, map, startWith, Subject, takeUntil} from 'rxjs';
+import {Race, RaceService, RaceState} from 'projects/backend-api/src/lib/race.service';
+import {Song, SongService} from 'projects/song/src/public-api';
+import {combineLatest, filter, map, Observable, startWith, Subject, takeUntil} from 'rxjs';
 
 export interface SongWithRaceInfo extends Song {
   alreadyPlayed: boolean;
@@ -50,7 +50,6 @@ export class InputComponent implements OnInit, OnDestroy, ControlValueAccessor, 
   disabled = false;
   onChange = (value: Song) => {};
   onTouched = () => {};
-  onValidatorChange = () => {};
 
   constructor(private songsService: SongService, private raceService: RaceService) {}
 
@@ -62,15 +61,13 @@ export class InputComponent implements OnInit, OnDestroy, ControlValueAccessor, 
   ngOnInit(): void {
     combineLatest([
       this.songsService.getSelectableSongs(),
-      this.raceService.getRacesForShow(this.showId || '', true),
-      this.raceService.getRacesForShow(this.showId || '', false)
+      this.raceService.getAllRacesForShow(this.showId || '')
     ]).pipe(
       takeUntil(this.unsubscribe$),
-      map(([songs, racesFinished, racesUpcoming]: [Song[], Race[], Race[]]) => {
+      map(([songs, races]: [Song[], Race[]]) => {
+        const racesFinished = races.filter(race => race.raceState === RaceState.RACED);
+        const racesUpcoming = races.filter(race => race.raceState === RaceState.WAITING_TO_RACE || race.raceState === RaceState.WAITING_FOR_OPPONENT);
         const songIdsAlreadyPlayed = racesFinished.map(race => {
-          if (race.song1Id) {
-
-          }
           if (race.bikeWon === 1) {
             return race.song1Id;
           }
@@ -79,6 +76,8 @@ export class InputComponent implements OnInit, OnDestroy, ControlValueAccessor, 
           }
           return [race.song1Id, race.song2Id];
         }).flat();
+        console.log(`racesFinished`, racesFinished);
+        console.log(`racesUpcoming`, racesUpcoming);
         const songIdsAlreadyWished = racesUpcoming.map(race => [race.song1Id, race.song2Id]).flat();
         return songs.map(song => ({
           ...song,
@@ -89,7 +88,6 @@ export class InputComponent implements OnInit, OnDestroy, ControlValueAccessor, 
     )
     .subscribe({
       next: (songs: SongWithRaceInfo[]) => {
-        console.log(`ABBA SongWithRaceInfo:`, songs.filter(song => song.artist.startsWith('ABBA')));
         this.songs = songs;
       },
     });

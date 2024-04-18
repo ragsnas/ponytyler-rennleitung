@@ -29,13 +29,11 @@ let RaceService = class RaceService {
         });
     }
     async upcomingRaceWithSongs() {
-        console.log(`upcomingRaceWithSongs Called`);
         const show = await this.prisma.show.findFirst({
             where: { active: true },
             orderBy: { date: 'desc' },
             take: 1
         });
-        console.log(`Found current show:`, show);
         return this.prisma.race.findFirst({
             where: { showId: Number(show.id), raceState: { equals: race_controller_1.RaceState.WAITING_TO_RACE } },
             include: { song1: true, song2: true },
@@ -60,6 +58,7 @@ let RaceService = class RaceService {
         });
         return this.prisma.race.create({
             data: {
+                raceState: this.calculateRaceState(data),
                 person1: data.person1,
                 song1Id: Number(data.song1Id),
                 person2: data.person2,
@@ -77,13 +76,13 @@ let RaceService = class RaceService {
         return this.prisma.race.update({
             data: {
                 person1: data.person1,
-                song1: { connect: { id: Number(data.song1Id) } },
+                song1: data.song1Id ? { connect: { id: Number(data.song1Id) } } : undefined,
                 person2: data.person2,
-                song2: { connect: { id: Number(data.song2Id) } },
+                song2: data.song2Id ? { connect: { id: Number(data.song2Id) } } : undefined,
                 createdAt: data.createdAt,
                 orderNumber: data.orderNumber,
                 raced: data.raced,
-                raceState: data.raceState,
+                raceState: this.calculateRaceState(data),
                 bikeWon: data.bikeWon,
                 show: {
                     connect: {
@@ -93,6 +92,15 @@ let RaceService = class RaceService {
             },
             where,
         });
+    }
+    calculateRaceState(data) {
+        if (data.raceState === race_controller_1.RaceState.WAITING_FOR_OPPONENT && data.song1Id && data.song2Id && data.person1 && data.person2) {
+            return race_controller_1.RaceState.WAITING_TO_RACE;
+        }
+        else if (data.raceState === race_controller_1.RaceState.WAITING_TO_RACE && !(data.song1Id && data.song2Id && data.person1 && data.person2)) {
+            return race_controller_1.RaceState.WAITING_FOR_OPPONENT;
+        }
+        return data.raceState || race_controller_1.RaceState.WAITING_TO_RACE;
     }
     async deleteRace(where) {
         return this.prisma.race.delete({

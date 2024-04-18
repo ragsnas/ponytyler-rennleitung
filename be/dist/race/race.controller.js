@@ -39,6 +39,14 @@ let RaceController = class RaceController {
             orderBy: { orderNumber: raced ? 'desc' : 'asc' },
         });
     }
+    findAllRacesForShow(showId) {
+        return this.raceService.races({
+            where: {
+                showId: Number(showId)
+            },
+            orderBy: { orderNumber: 'asc' },
+        });
+    }
     findRaces() {
         return this.raceService.races({});
     }
@@ -74,6 +82,13 @@ __decorate([
     __metadata("design:paramtypes", [String, String]),
     __metadata("design:returntype", void 0)
 ], RaceController.prototype, "findRacesForShow", null);
+__decorate([
+    (0, common_1.Get)('for-show/:showId/all'),
+    __param(0, (0, common_1.Param)('showId')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", void 0)
+], RaceController.prototype, "findAllRacesForShow", null);
 __decorate([
     (0, common_1.Get)(),
     __metadata("design:type", Function),

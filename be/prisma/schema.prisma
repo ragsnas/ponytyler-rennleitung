@@ -36,12 +36,12 @@ model Race {
   createdAt DateTime
   raced Boolean @default(false)
   raceState String @default("WAITING_TO_RACE")
-  person1 String
-  song1 Song @relation(name: "SongForPerson1", fields: [song1Id], references: [id])
-  song1Id Int
-  person2 String
-  song2 Song @relation(name: "SongForPerson2", fields: [song2Id], references: [id])
-  song2Id Int
+  person1 String?
+  song1 Song? @relation(name: "SongForPerson1", fields: [song1Id], references: [id])
+  song1Id Int?
+  person2 String?
+  song2 Song? @relation(name: "SongForPerson2", fields: [song2Id], references: [id])
+  song2Id Int?
   bikeWon Int @default(0)
 }
 

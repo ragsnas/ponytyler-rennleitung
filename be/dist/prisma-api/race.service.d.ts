@@ -45,5 +45,6 @@ export declare class RaceService {
         where: Prisma.RaceWhereUniqueInput;
         data: Prisma.RaceUncheckedUpdateInput;
     }): Promise<Race>;
+    private calculateRaceState;
     deleteRace(where: Prisma.RaceWhereUniqueInput): Promise<Race>;
 }

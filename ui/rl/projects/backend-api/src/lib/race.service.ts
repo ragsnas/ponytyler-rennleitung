@@ -16,7 +16,15 @@ export interface Race {
   song2?: Song;
   orderNumber: string;
   raced?: boolean;
+  raceState?: RaceState;
   bikeWon: number;
+}
+
+export enum RaceState {
+  WAITING_FOR_OPPONENT = 'WAITING_FOR_OPPONENT',
+  WAITING_TO_RACE = 'WAITING_TO_RACE',
+  CANCELED = 'CANCELED',
+  RACED = 'RACED',
 }
 
 @Injectable({
@@ -31,13 +39,20 @@ export class RaceService {
     );
   }
 
+  getAllRacesForShow(showId: string, raced: boolean = false): Observable<Race[]> {
+    return this.http.get<Race[]>(
+      `${environment.apiUrl}/api/race/for-show/${showId}/all`
+    );
+  }
+
   createRace(race: Race) {
     return this.http.post( environment.apiUrl +  '/api/race', {
       showId: race.showId,
       person1: race.person1,
-      song1Id: race.song1!.id,
+      song1Id: race.song1?.id,
       person2: race.person2,
-      song2Id: race.song2!.id,
+      song2Id: race.song2?.id,
+      raceState: race.raceState,
     });
   }
 

@@ -1,11 +1,11 @@
-import { Component, OnInit } from '@angular/core';
-import { FormControl, FormGroup, Validators } from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
-import { Song, SongService } from 'projects/song/src/public-api';
-import { RaceService } from '../../../../backend-api/src/lib/race.service';
+import {Component, OnInit} from '@angular/core';
+import {FormControl, FormGroup} from '@angular/forms';
+import {ActivatedRoute, Router} from '@angular/router';
+import {Song, SongService} from 'projects/song/src/public-api';
+import {RaceService, RaceState} from '../../../../backend-api/src/lib/race.service';
 import {MatSnackBar} from "@angular/material/snack-bar";
-import {Show, ShowService } from 'projects/backend-api/src/lib/show.service';
-import { Observable } from 'rxjs';
+import {Show, ShowService} from 'projects/backend-api/src/lib/show.service';
+import {Observable} from 'rxjs';
 
 @Component({
   selector: 'lib-create-race',
@@ -16,10 +16,10 @@ export class CreateRaceComponent implements OnInit {
 
   public form: FormGroup = new FormGroup({
     name: new FormControl(''),
-    person1: new FormControl('', [Validators.required]),
-    song1: new FormControl<Song|undefined>(undefined, [Validators.required]),
-    person2: new FormControl('', [Validators.required]),
-    song2: new FormControl<Song|undefined>(undefined, [Validators.required]),
+    person1: new FormControl(''),
+    song1: new FormControl<Song | undefined>(undefined),
+    person2: new FormControl(''),
+    song2: new FormControl<Song | undefined>(undefined),
     orderNumber: new FormControl(''),
   });
   showId: string | undefined;
@@ -31,7 +31,8 @@ export class CreateRaceComponent implements OnInit {
     private songService: SongService,
     private route: ActivatedRoute,
     private router: Router,
-    private snackBar: MatSnackBar) {}
+    private snackBar: MatSnackBar) {
+  }
 
   ngOnInit(): void {
     this.showId = this.route.snapshot.paramMap.get('showId') || undefined;
@@ -42,12 +43,18 @@ export class CreateRaceComponent implements OnInit {
 
   createRace() {
     const race = this.form.getRawValue();
+    const raceState = race.person1 && race.person2 && race.song1Id && race.song2Id ? RaceState.WAITING_TO_RACE : RaceState.WAITING_FOR_OPPONENT;
     this.raceService.createRace({
       ...race,
+      raceState,
       showId: this.route.snapshot.paramMap.get('showId')
     }).subscribe({
       next: (result) => {
-        this.snackBar.open(`Successfully Created Race between ${race.person1} and ${race.person2}`, 'OK', {panelClass: 'success'})
+        let snackBarMessage = `Successfully Created Race between ${race.person1} and ${race.person2}`;
+        if (raceState === RaceState.WAITING_FOR_OPPONENT) {
+          snackBarMessage = `Successfully Created Race for Waiting List`;
+        }
+        this.snackBar.open(snackBarMessage, 'OK', {panelClass: 'success'})
           .afterDismissed()
           .subscribe(() => {
             this.router.navigate(['..'], {relativeTo: this.route});

@@ -35,6 +35,19 @@ export declare class RaceController {
         song2Id: number;
         bikeWon: number;
     }[]>;
+    findAllRacesForShow(showId: string): Promise<{
+        id: number;
+        showId: number;
+        orderNumber: number;
+        createdAt: Date;
+        raced: boolean;
+        raceState: string;
+        person1: string;
+        song1Id: number;
+        person2: string;
+        song2Id: number;
+        bikeWon: number;
+    }[]>;
     findRaces(): Promise<{
         id: number;
         showId: number;
