@@ -38,6 +38,7 @@ export declare class SongController {
         selectable: boolean;
         deleted: boolean;
     }[]>;
+    syncWithSingleSourceOfTruth(): Promise<boolean>;
     update(id: string, data: Prisma.SongUpdateInput): Promise<{
         id: number;
         name: string;

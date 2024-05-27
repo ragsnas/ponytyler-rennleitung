@@ -98,7 +98,11 @@ export class SongSyncComponent {
     const artist = fileName.substring(0, fileName.indexOf('-')).trim();
     const name = fileName
       .substring(fileName.indexOf('-') + 1, fileName.lastIndexOf('.'))
-      .trim();
+        .replace('[PTHQ]', '')
+        .replace('[PT]', '')
+        .replace('&amp;', '&')
+        .trim()
+      ;
     return this.songService.createSong({
       artist,
       name,

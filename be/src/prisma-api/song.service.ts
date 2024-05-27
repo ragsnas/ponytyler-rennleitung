@@ -1,6 +1,6 @@
-import { Injectable } from '@nestjs/common';
-import { PrismaService } from './prisma.service';
-import { Song, Prisma } from '@prisma/client';
+import {Injectable} from '@nestjs/common';
+import {PrismaService} from './prisma.service';
+import {Prisma, Song} from '@prisma/client';
 
 @Injectable()
 export class SongService {
@@ -54,5 +54,9 @@ export class SongService {
     return this.prisma.song.delete({
       where,
     });
+  }
+
+  async syncWithSingleSourceOfTruth(): Promise<boolean> {
+    return false;
   }
 }

@@ -80,6 +80,11 @@ export class SongController {
       },
     });
   }
+  
+  @Get('sync-with-single-source-of-truth')
+  syncWithSingleSourceOfTruth() {
+    return this.songService.syncWithSingleSourceOfTruth();
+  }
 
   @Patch(':id')
   update(@Param('id') id: string, @Body() data: Prisma.SongUpdateInput) {

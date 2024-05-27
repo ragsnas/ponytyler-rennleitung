@@ -44,7 +44,6 @@ export class UpdateRaceComponent implements OnInit {
     this.raceId = this.route.snapshot.paramMap.get('raceId') || undefined;
     this.raceService.getRace(this.raceId).subscribe({ next: (race: Race) => {
       this.race = race;
-      console.log(`Race received:`, race);
       this.form.patchValue(race);
     },
       error: (error) => {

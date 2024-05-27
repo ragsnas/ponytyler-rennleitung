@@ -35,18 +35,18 @@ export class RaceService {
 
   getRacesForShow(showId: string, raced: boolean = false): Observable<Race[]> {
     return this.http.get<Race[]>(
-      environment.apiUrl + '/api/race/for-show/' + showId + (raced ? '?raced=true' : '')
+      environment.apiUrl + 'api/race/for-show/' + showId + (raced ? '?raced=true' : '')
     );
   }
 
   getAllRacesForShow(showId: string, raced: boolean = false): Observable<Race[]> {
     return this.http.get<Race[]>(
-      `${environment.apiUrl}/api/race/for-show/${showId}/all`
+      `${environment.apiUrl}api/race/for-show/${showId}/all`
     );
   }
 
   createRace(race: Race) {
-    return this.http.post( environment.apiUrl +  '/api/race', {
+    return this.http.post( environment.apiUrl +  'api/race', {
       showId: race.showId,
       person1: race.person1,
       song1Id: race.song1?.id,
@@ -57,20 +57,20 @@ export class RaceService {
   }
 
   updateRace(race: Race) {
-    return this.http.patch(`${environment.apiUrl}/api/race/${race.id}`, {
+    return this.http.patch(`${environment.apiUrl}api/race/${race.id}`, {
       ...race,
     });
   }
 
   getRace(raceId: string | undefined): Observable<Race> {
     return this.http.get<Race>(
-      environment.apiUrl + `/api/race/${raceId}/with-songs`
+      environment.apiUrl + `api/race/${raceId}/with-songs`
     );
   }
 
   getUpcommingRace() {
     return this.http.get<Race>(
-      environment.apiUrl + `/api/race/upcoming-with-songs`
+      environment.apiUrl + `api/race/upcoming-with-songs`
     );
   }
 }

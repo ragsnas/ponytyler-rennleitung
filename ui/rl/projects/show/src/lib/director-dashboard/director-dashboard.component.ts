@@ -50,8 +50,6 @@ export class DirectorDashboardComponent implements OnInit {
   }
 
   bikeWon(bike: number, race: Race) {
-    console.log(`bikeWon > called with bike:`, bike);
-
     this.raceService
       .updateRace({
         ...race,

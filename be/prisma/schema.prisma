@@ -20,7 +20,7 @@ model Show {
 
 model Song {
   id Int @id @default(autoincrement())
-  name String @unique
+  name String
   artist String
   selectable Boolean @default(true)
   deleted Boolean @default(false)

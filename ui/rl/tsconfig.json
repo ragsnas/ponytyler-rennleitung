@@ -9,11 +9,20 @@
       "@utilities/form-control-pipe": [
         "dist/utilities/form-control-pipe"
       ],
+      "audio-player": [
+        "dist/audio-player"
+      ],
       "auth": [
         "dist/auth"
       ],
       "backend-api": [
         "dist/backend-api"
+      ],
+      "race-admin": [
+        "dist/race-admin"
+      ],
+      "race-track": [
+        "dist/race-track"
       ],
       "show": [
         "dist/show"
@@ -23,6 +32,9 @@
       ],
       "song-search": [
         "dist/song-search"
+      ],
+      "video-player": [
+        "dist/video-player"
       ],
       "views": [
         "dist/views"

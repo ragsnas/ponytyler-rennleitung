@@ -1,5 +1,5 @@
 import { PrismaService } from './prisma.service';
-import { Song, Prisma } from '@prisma/client';
+import { Prisma, Song } from '@prisma/client';
 export declare class SongService {
     private prisma;
     constructor(prisma: PrismaService);
@@ -17,4 +17,5 @@ export declare class SongService {
         data: Prisma.SongUpdateInput;
     }): Promise<Song>;
     deleteSong(where: Prisma.SongWhereUniqueInput): Promise<Song>;
+    syncWithSingleSourceOfTruth(): Promise<boolean>;
 }

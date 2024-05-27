@@ -77,6 +77,9 @@ let SongController = class SongController {
             },
         });
     }
+    syncWithSingleSourceOfTruth() {
+        return this.songService.syncWithSingleSourceOfTruth();
+    }
     update(id, data) {
         return this.songService.updateSong({ where: { id: Number(id) }, data });
     }
@@ -118,6 +121,12 @@ __decorate([
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", void 0)
 ], SongController.prototype, "search", null);
+__decorate([
+    (0, common_1.Get)('sync-with-single-source-of-truth'),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", void 0)
+], SongController.prototype, "syncWithSingleSourceOfTruth", null);
 __decorate([
     (0, common_1.Patch)(':id'),
     __param(0, (0, common_1.Param)('id')),

@@ -18,7 +18,6 @@ export class UpcommingRacesComponent implements OnInit {
       filter((shows: Show[]) => shows.some((show: Show) => show.active)),
       map((shows: Show[]) => shows[0])
     ).subscribe((show:Show) => {
-      console.log(`Show found`, show);
       if (show.id) {
         this.upcommingRaces$ = this.raceService.getRacesForShow(show.id, false);
       }

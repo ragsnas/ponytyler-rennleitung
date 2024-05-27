@@ -355,6 +355,130 @@
           }
         }
       }
+    },
+    "race-track": {
+      "projectType": "library",
+      "root": "projects/race-track",
+      "sourceRoot": "projects/race-track/src",
+      "prefix": "lib",
+      "architect": {
+        "build": {
+          "builder": "@angular-devkit/build-angular:ng-packagr",
+          "options": {
+            "project": "projects/race-track/ng-package.json"
+          },
+          "configurations": {
+            "production": {
+              "tsConfig": "projects/race-track/tsconfig.lib.prod.json"
+            },
+            "development": {
+              "tsConfig": "projects/race-track/tsconfig.lib.json"
+            }
+          },
+          "defaultConfiguration": "production"
+        },
+        "test": {
+          "builder": "@angular-devkit/build-angular:karma",
+          "options": {
+            "main": "projects/race-track/src/test.ts",
+            "tsConfig": "projects/race-track/tsconfig.spec.json",
+            "karmaConfig": "projects/race-track/karma.conf.js"
+          }
+        }
+      }
+    },
+    "video-player": {
+      "projectType": "library",
+      "root": "projects/video-player",
+      "sourceRoot": "projects/video-player/src",
+      "prefix": "lib",
+      "architect": {
+        "build": {
+          "builder": "@angular-devkit/build-angular:ng-packagr",
+          "options": {
+            "project": "projects/video-player/ng-package.json"
+          },
+          "configurations": {
+            "production": {
+              "tsConfig": "projects/video-player/tsconfig.lib.prod.json"
+            },
+            "development": {
+              "tsConfig": "projects/video-player/tsconfig.lib.json"
+            }
+          },
+          "defaultConfiguration": "production"
+        },
+        "test": {
+          "builder": "@angular-devkit/build-angular:karma",
+          "options": {
+            "main": "projects/video-player/src/test.ts",
+            "tsConfig": "projects/video-player/tsconfig.spec.json",
+            "karmaConfig": "projects/video-player/karma.conf.js"
+          }
+        }
+      }
+    },
+    "audio-player": {
+      "projectType": "library",
+      "root": "projects/audio-player",
+      "sourceRoot": "projects/audio-player/src",
+      "prefix": "lib",
+      "architect": {
+        "build": {
+          "builder": "@angular-devkit/build-angular:ng-packagr",
+          "options": {
+            "project": "projects/audio-player/ng-package.json"
+          },
+          "configurations": {
+            "production": {
+              "tsConfig": "projects/audio-player/tsconfig.lib.prod.json"
+            },
+            "development": {
+              "tsConfig": "projects/audio-player/tsconfig.lib.json"
+            }
+          },
+          "defaultConfiguration": "production"
+        },
+        "test": {
+          "builder": "@angular-devkit/build-angular:karma",
+          "options": {
+            "main": "projects/audio-player/src/test.ts",
+            "tsConfig": "projects/audio-player/tsconfig.spec.json",
+            "karmaConfig": "projects/audio-player/karma.conf.js"
+          }
+        }
+      }
+    },
+    "race-admin": {
+      "projectType": "library",
+      "root": "projects/race-admin",
+      "sourceRoot": "projects/race-admin/src",
+      "prefix": "lib",
+      "architect": {
+        "build": {
+          "builder": "@angular-devkit/build-angular:ng-packagr",
+          "options": {
+            "project": "projects/race-admin/ng-package.json"
+          },
+          "configurations": {
+            "production": {
+              "tsConfig": "projects/race-admin/tsconfig.lib.prod.json"
+            },
+            "development": {
+              "tsConfig": "projects/race-admin/tsconfig.lib.json"
+            }
+          },
+          "defaultConfiguration": "production"
+        },
+        "test": {
+          "builder": "@angular-devkit/build-angular:karma",
+          "options": {
+            "main": "projects/race-admin/src/test.ts",
+            "tsConfig": "projects/race-admin/tsconfig.spec.json",
+            "karmaConfig": "projects/race-admin/karma.conf.js"
+          }
+        }
+      }
     }
   }
 }

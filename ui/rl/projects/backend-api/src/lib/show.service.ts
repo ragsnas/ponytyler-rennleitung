@@ -17,30 +17,30 @@ export class ShowService {
   constructor(private http: HttpClient) {}
 
   getAllShows(): Observable<Show[]> {
-    return this.http.get<Show[]>(environment.apiUrl + '/api/show/shows')
+    return this.http.get<Show[]>(environment.apiUrl + 'api/show/shows')
   }
 
   getOldShows(): Observable<Show[]> {
-    return this.http.get<Show[]>(environment.apiUrl + '/api/show/old-shows')
+    return this.http.get<Show[]>(environment.apiUrl + 'api/show/old-shows')
   }
 
   getCurrentShows(): Observable<Show[]> | undefined {
-    return this.http.get<Show[]>(environment.apiUrl + '/api/show/current-shows')
+    return this.http.get<Show[]>(environment.apiUrl + 'api/show/current-shows')
   }
 
   getCurrentShow(): Observable<Show> | undefined {
-    return this.http.get<Show>(environment.apiUrl + '/api/show/current-show')
+    return this.http.get<Show>(environment.apiUrl + 'api/show/current-show')
   }
 
   getShow(showId: string): Observable<Show> {
-    return this.http.get<Show>(environment.apiUrl + `/api/show/${showId}`);
+    return this.http.get<Show>(environment.apiUrl + `api/show/${showId}`);
   }
 
   createShow(show: Show): Observable<Show> {
-    return this.http.post<Show>(environment.apiUrl + '/api/show', show);
+    return this.http.post<Show>(environment.apiUrl + 'api/show', show);
   }
 
   updateShow(show: Show): Observable<Show> {
-    return this.http.patch<Show>(environment.apiUrl + `/api/show/${show.id}`, show);
+    return this.http.patch<Show>(environment.apiUrl + `api/show/${show.id}`, show);
   }
 }
