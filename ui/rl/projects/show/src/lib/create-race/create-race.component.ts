@@ -24,6 +24,7 @@ export class CreateRaceComponent implements OnInit {
   });
   showId: string | undefined;
   show$: Observable<Show> | undefined;
+  createInProcess = false;
 
   constructor(
     private showService: ShowService,
@@ -42,6 +43,7 @@ export class CreateRaceComponent implements OnInit {
   }
 
   createRace() {
+    this.createInProcess = true;
     const race = this.form.getRawValue();
     const raceState = race.person1 && race.person2 && race.song1Id && race.song2Id ? RaceState.WAITING_TO_RACE : RaceState.WAITING_FOR_OPPONENT;
     this.raceService.createRace({
@@ -54,7 +56,7 @@ export class CreateRaceComponent implements OnInit {
         if (raceState === RaceState.WAITING_FOR_OPPONENT) {
           snackBarMessage = `Successfully Created Race for Waiting List`;
         }
-        this.snackBar.open(snackBarMessage, 'OK', {panelClass: 'success'})
+        this.snackBar.open(snackBarMessage, 'OK', {duration: 500, panelClass: 'success'})
           .afterDismissed()
           .subscribe(() => {
             this.router.navigate(['..'], {relativeTo: this.route});
