@@ -1,6 +1,7 @@
 import { NgModule } from '@angular/core';
 import { YesNoDialogComponent } from './yes-no-dialog.component';
 import { ButtonListModule } from 'projects/ui/button-list/src/lib/button-list.module';
+import {MatButtonModule} from "@angular/material/button";
 
 
 
@@ -9,7 +10,8 @@ import { ButtonListModule } from 'projects/ui/button-list/src/lib/button-list.mo
     YesNoDialogComponent,
   ],
   imports: [
-    ButtonListModule
+    ButtonListModule,
+    MatButtonModule
   ],
   exports: [
     YesNoDialogComponent

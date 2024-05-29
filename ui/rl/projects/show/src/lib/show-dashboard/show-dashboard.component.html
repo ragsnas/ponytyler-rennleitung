@@ -105,10 +105,12 @@
   </ng-container>
 
   <ng-container>
-    <button mat-flat-button color="accent" [routerLink]="'../'">
-      <mat-icon>arrow_back</mat-icon>
-    </button>
-    <button (click)="deleteShow()" mat-flat-button color="warn">Delete Show</button>
+    <ui-button-list>
+      <button mat-flat-button color="accent" [routerLink]="'../'">
+        <mat-icon>arrow_back</mat-icon>
+      </button>
+      <button (click)="deleteShow()" mat-flat-button color="warn">Delete Show</button>
+    </ui-button-list>
   </ng-container>
 
 </ng-container>

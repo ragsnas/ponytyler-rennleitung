@@ -4,6 +4,6 @@
 <p *ngIf="text">{{ text }}</p>
 
 <ui-button-list>
-  <button mat-button (click)="yes()">{{ optionYes ? optionYes : 'Yes'}}</button>
-  <button mat-button (click)="no()">{{ optionNo ? optionNo : 'No'}}</button>
+  <button mat-flat-button color="primary" (click)="yes()">{{ optionYes ? optionYes : 'Yes'}}</button>
+  <button mat-flat-button color="accent" (click)="no()">{{ optionNo ? optionNo : 'No'}}</button>
 </ui-button-list>

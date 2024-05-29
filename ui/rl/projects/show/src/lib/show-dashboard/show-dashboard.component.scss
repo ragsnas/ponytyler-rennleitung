@@ -30,7 +30,7 @@ table th {
 }
 
 .race-state-raced td {
-  background-color: lightskyblue;
+  background-color: #c3e8ff;
 }
 
 tr.race-state-waiting-to-race + tr.race-state-waiting-for-opponent td,
@@ -41,7 +41,7 @@ tr.race-state-raced + tr.race-state-canceled td {
 }
 
 .race-state-raced td.winning-bike {
-  background-color: deepskyblue;
+  background-color: #469fbb;
 }
 .bike-won {
   float:right;
@@ -76,7 +76,7 @@ tr.race-state-raced + tr.race-state-canceled td {
 .alreadyWished.song-column:hover,
 .alreadyPlayed.song-column:hover,
 {
-  background-color: lightskyblue !important;
+  background-color: #e0eeff !important;
 }
 
 
