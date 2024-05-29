@@ -1,9 +1,12 @@
-<h3 *ngIf="title">
+<h2 *ngIf="title">
   {{  title ? title : 'Yes Or No?'  }}
-</h3>
+</h2>
+<mat-dialog-content>
 <p *ngIf="text">{{ text }}</p>
-
-<ui-button-list>
-  <button mat-flat-button color="primary" (click)="yes()">{{ optionYes ? optionYes : 'Yes'}}</button>
-  <button mat-flat-button color="accent" (click)="no()">{{ optionNo ? optionNo : 'No'}}</button>
-</ui-button-list>
+</mat-dialog-content>
+<mat-dialog-actions>
+  <ui-button-list>
+    <button mat-flat-button color="primary" (click)="yes()">{{ optionYes ? optionYes : 'Yes'}}</button>
+    <button mat-flat-button color="accent" (click)="no()">{{ optionNo ? optionNo : 'No'}}</button>
+  </ui-button-list>
+</mat-dialog-actions>

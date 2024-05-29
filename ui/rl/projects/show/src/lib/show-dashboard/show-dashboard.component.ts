@@ -279,7 +279,14 @@ export class ShowDashboardComponent implements OnInit, OnDestroy {
   }
 
   deleteShow() {
-    const dialog = this.dialog.open(YesNoDialogComponent, {data: {}});
+    const dialog = this.dialog.open(YesNoDialogComponent, {
+      data: {
+        title: `Do you want to delete the Show "${this.show?.name}"?`,
+        text: `This will delete the Show and all the related Races.`,
+        optionYes: 'Yes, Delete',
+        optionNo: 'No, Cancel'
+      }
+    });
     dialog.afterClosed().subscribe(result => {
       if(result) {
         this.showService.deleteShow(this.show?.id as string).subscribe({
