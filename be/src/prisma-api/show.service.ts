@@ -62,4 +62,20 @@ export class ShowService {
       where,
     });
   }
+
+  deleteShowWithRaces(id: string) {
+    const deleteRaces = this.prisma.race.deleteMany({
+      where: {
+        showId: Number(id),
+      },
+    });
+
+    const deleteShow = this.prisma.show.delete({
+      where: {
+        id: Number(id),
+      },
+    });
+
+    return this.prisma.$transaction([deleteRaces, deleteShow]);
+  }
 }

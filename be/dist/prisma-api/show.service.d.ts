@@ -18,4 +18,10 @@ export declare class ShowService {
         data: Prisma.ShowUpdateInput;
     }): Promise<Show>;
     deleteShow(where: Prisma.ShowWhereUniqueInput): Promise<Show>;
+    deleteShowWithRaces(id: string): Promise<[Prisma.BatchPayload, {
+        id: number;
+        name: string;
+        date: Date;
+        active: boolean;
+    }]>;
 }

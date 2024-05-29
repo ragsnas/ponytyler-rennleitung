@@ -23,5 +23,10 @@
         <lib-song-auto-complete [showId]="showId" label="Song for White Bike" formControlName="song2"></lib-song-auto-complete>
     </div>
 
-    <button mat-flat-button color="primary" [disabled]="createInProcess" (click)="createRace()" [disabled]="form.invalid">Speichern</button>
+  <ui-button-list>
+    <button mat-flat-button color="accent" [routerLink]="'../'">
+      <mat-icon>arrow_back</mat-icon>
+    </button>
+    <button mat-flat-button color="primary" (click)="createRace()" [disabled]="form.invalid || createInProcess">Speichern</button>
+  </ui-button-list>
 </div>

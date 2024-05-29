@@ -11,4 +11,5 @@ export declare class ShowController {
     getPostById(id: string): Promise<Show>;
     createShow(showData: Prisma.ShowCreateInput): Promise<Show>;
     updateShow(id: string, showData: Prisma.ShowUpdateInput): Promise<Show>;
+    deleteShowById(id: string): Promise<any>;
 }

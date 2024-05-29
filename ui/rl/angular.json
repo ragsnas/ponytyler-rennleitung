@@ -479,6 +479,37 @@
           }
         }
       }
+    },
+    "@ui/yes-no-dialog": {
+      "projectType": "library",
+      "root": "projects/ui/yes-no-dialog",
+      "sourceRoot": "projects/ui/yes-no-dialog/src",
+      "prefix": "lib",
+      "architect": {
+        "build": {
+          "builder": "@angular-devkit/build-angular:ng-packagr",
+          "options": {
+            "project": "projects/ui/yes-no-dialog/ng-package.json"
+          },
+          "configurations": {
+            "production": {
+              "tsConfig": "projects/ui/yes-no-dialog/tsconfig.lib.prod.json"
+            },
+            "development": {
+              "tsConfig": "projects/ui/yes-no-dialog/tsconfig.lib.json"
+            }
+          },
+          "defaultConfiguration": "production"
+        },
+        "test": {
+          "builder": "@angular-devkit/build-angular:karma",
+          "options": {
+            "main": "projects/ui/yes-no-dialog/src/test.ts",
+            "tsConfig": "projects/ui/yes-no-dialog/tsconfig.spec.json",
+            "karmaConfig": "projects/ui/yes-no-dialog/karma.conf.js"
+          }
+        }
+      }
     }
   }
 }

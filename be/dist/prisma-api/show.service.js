@@ -56,6 +56,19 @@ let ShowService = class ShowService {
             where,
         });
     }
+    deleteShowWithRaces(id) {
+        const deleteRaces = this.prisma.race.deleteMany({
+            where: {
+                showId: Number(id),
+            },
+        });
+        const deleteShow = this.prisma.show.delete({
+            where: {
+                id: Number(id),
+            },
+        });
+        return this.prisma.$transaction([deleteRaces, deleteShow]);
+    }
 };
 exports.ShowService = ShowService;
 exports.ShowService = ShowService = __decorate([

@@ -2,7 +2,12 @@
 
 <ng-container *ngIf="races$ | async as races">
   <div class="refresh-bar" style="display: flex;flex-direction: row;justify-content: space-between;align-items:center;gap: 15px;">
-    <button mat-flat-button color="primary" [routerLink]="'create-race'" style="flex-basis: auto;">Add Race for this Show</button>
+    <ui-button-list  style="flex-basis: auto;">
+      <button mat-flat-button color="accent" [routerLink]="'../'">
+        <mat-icon>arrow_back</mat-icon>
+      </button>
+      <button mat-flat-button color="primary" [routerLink]="'create-race'">Add Race for this Show</button>
+    </ui-button-list>
     <mat-form-field style="flex-basis: auto;">
       <mat-label>Refresh Interval</mat-label>
       <mat-select [formControl]="refreshIntervalFormControl" (selectionChange)="refreshIntervalChange($event)">
@@ -13,8 +18,8 @@
         <mat-option value="30000">30 Sekunden</mat-option>
       </mat-select>
     </mat-form-field>
-    <p *ngIf="!refreshing" style="flex-grow: 3;">Next Refresh in {{ secondsRemaining$ | async | date:'mm:ss' }}</p>
-    <mat-progress-bar *ngIf="refreshing" mode="indeterminate"  style="flex-grow: 3;"></mat-progress-bar>
+    <p *ngIf="!refreshing" style="flex-grow: 2;">Next Refresh in {{ secondsRemaining$ | async | date:'mm:ss' }}</p>
+    <mat-spinner *ngIf="refreshing" mode="indeterminate"  style="flex-grow: 2;margin:0 auto;" [diameter]="25"></mat-spinner>
   </div>
 
   <ng-container *ngIf="races.length <= 0" >
@@ -98,4 +103,13 @@
               }"></tr>
       </table>
   </ng-container>
+
+  <ng-container>
+    <button mat-flat-button color="accent" [routerLink]="'../'">
+      <mat-icon>arrow_back</mat-icon>
+    </button>
+    <button (click)="deleteShow()" mat-flat-button color="warn">Delete Show</button>
+  </ng-container>
+
 </ng-container>
+

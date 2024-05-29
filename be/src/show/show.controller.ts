@@ -1,4 +1,4 @@
-import {Controller, Param, Get, Post, Body, Patch, NotFoundException} from '@nestjs/common';
+import {Controller, Param, Get, Post, Body, Patch, NotFoundException, Delete} from '@nestjs/common';
 import { ShowService } from '../prisma-api/show.service';
 import { Show, Prisma } from '@prisma/client';
 
@@ -24,7 +24,7 @@ export class ShowController {
       orderBy: { date: { sort: 'desc' } },
       where: { active: true },
     });
-    if(shows.length > 0) {
+    if (shows.length > 0) {
       return shows.pop();
     } else {
       throw new NotFoundException('No current shows');
@@ -68,5 +68,10 @@ export class ShowController {
       data: showData,
       where: { id: Number(id) },
     });
+  }
+
+  @Delete(':id')
+  async deleteShowById(@Param('id') id: string): Promise<any> {
+    return this.showService.deleteShowWithRaces(id);
   }
 }

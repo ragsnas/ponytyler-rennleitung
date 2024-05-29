@@ -6,6 +6,9 @@
       "@ui/button-list": [
         "dist/ui/button-list"
       ],
+      "@ui/yes-no-dialog": [
+        "dist/ui/yes-no-dialog"
+      ],
       "@utilities/form-control-pipe": [
         "dist/utilities/form-control-pipe"
       ],

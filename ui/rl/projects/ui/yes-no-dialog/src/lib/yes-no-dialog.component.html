@@ -1,0 +1,9 @@
+<h3 *ngIf="title">
+  {{  title ? title : 'Yes Or No?'  }}
+</h3>
+<p *ngIf="text">{{ text }}</p>
+
+<ui-button-list>
+  <button mat-button (click)="yes()">{{ optionYes ? optionYes : 'Yes'}}</button>
+  <button mat-button (click)="no()">{{ optionNo ? optionNo : 'No'}}</button>
+</ui-button-list>

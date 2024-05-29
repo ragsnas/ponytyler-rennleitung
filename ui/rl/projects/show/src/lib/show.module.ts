@@ -14,6 +14,7 @@ import { RouterModule, Routes } from '@angular/router';
 import { BackendApiModule } from 'projects/backend-api/src/public-api';
 import { SongSearchModule } from 'projects/song-search/src/public-api';
 import { ButtonListModule } from 'projects/ui/button-list/src/public-api';
+import { YesNoDialogModule } from 'projects/ui/yes-no-dialog/src/lib/yes-no-dialog.module';
 import { CreateRaceComponent } from './create-race/create-race.component';
 import { CreateShowComponent } from './create-show/create-show.component';
 import { ShowDashboardComponent } from './show-dashboard/show-dashboard.component';
@@ -26,6 +27,7 @@ import { DirectorDashboardRedirectComponent } from './director-dashboard-redirec
 import {MatProgressSpinnerModule} from "@angular/material/progress-spinner";
 import {MatProgressBarModule} from "@angular/material/progress-bar";
 import {MatSelectModule} from "@angular/material/select";
+import {MatDialogModule} from "@angular/material/dialog";
 
 const routes: Routes = [
   { path: '', component: ShowsComponent },
@@ -68,7 +70,9 @@ const routes: Routes = [
     MatSnackBarModule,
     MatProgressSpinnerModule,
     MatProgressBarModule,
-    MatSelectModule
+    MatSelectModule,
+    MatDialogModule,
+    YesNoDialogModule
   ],
   exports: [ShowComponent],
 })

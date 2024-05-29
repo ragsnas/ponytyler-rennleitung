@@ -56,13 +56,14 @@ export class CreateRaceComponent implements OnInit {
         if (raceState === RaceState.WAITING_FOR_OPPONENT) {
           snackBarMessage = `Successfully Created Race for Waiting List`;
         }
-        this.snackBar.open(snackBarMessage, 'OK', {duration: 500, panelClass: 'success'})
+        this.snackBar.open(snackBarMessage, 'OK', {duration: 400, panelClass: 'success'})
           .afterDismissed()
           .subscribe(() => {
             this.router.navigate(['..'], {relativeTo: this.route});
           });
       },
       error: (error) => {
+        this.createInProcess = false;
         this.snackBar.open(`Error during Race Creation: ${JSON.stringify(error)}`, 'OK', {
           duration: 10000, panelClass: 'error'
         })

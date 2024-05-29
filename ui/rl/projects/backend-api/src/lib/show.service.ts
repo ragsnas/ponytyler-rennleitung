@@ -43,4 +43,8 @@ export class ShowService {
   updateShow(show: Show): Observable<Show> {
     return this.http.patch<Show>(environment.apiUrl + `api/show/${show.id}`, show);
   }
+
+  deleteShow(showId: string) {
+    return this.http.delete<Show>(environment.apiUrl + `api/show/${showId}`);
+  }
 }

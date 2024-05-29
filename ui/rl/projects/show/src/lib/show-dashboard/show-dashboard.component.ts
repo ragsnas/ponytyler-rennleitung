@@ -1,5 +1,5 @@
 import {Component, OnDestroy, OnInit} from '@angular/core';
-import {ActivatedRoute, ParamMap} from '@angular/router';
+import {ActivatedRoute, ParamMap, Router} from '@angular/router';
 import {Race, RaceService, RaceState} from 'projects/backend-api/src/lib/race.service';
 import {Show, ShowService} from 'projects/backend-api/src/lib/show.service';
 import {
@@ -22,6 +22,8 @@ import {
 import {MatSnackBar} from "@angular/material/snack-bar";
 import {FormControl} from "@angular/forms";
 import {MatSelectChange} from '@angular/material/select';
+import {MatDialog} from "@angular/material/dialog";
+import { YesNoDialogComponent } from "projects/ui/yes-no-dialog/src/lib/yes-no-dialog.component"
 
 export interface RaceWithSongPlayedInfo extends Race {
   song1AlreadyPlayed: boolean;
@@ -93,7 +95,9 @@ export class ShowDashboardComponent implements OnInit, OnDestroy {
     private showService: ShowService,
     private raceService: RaceService,
     private route: ActivatedRoute,
-    private snackBar: MatSnackBar
+    private router: Router,
+    private snackBar: MatSnackBar,
+    private dialog: MatDialog
   ) {
   }
 
@@ -271,6 +275,25 @@ export class ShowDashboardComponent implements OnInit, OnDestroy {
       delay(600),
     ).subscribe(() => {
       this.refresh$.next();
+    });
+  }
+
+  deleteShow() {
+    const dialog = this.dialog.open(YesNoDialogComponent, {data: {}});
+    dialog.afterClosed().subscribe(result => {
+      if(result) {
+        this.showService.deleteShow(this.show?.id as string).subscribe({
+          next: (result) => {
+            this.snackBar.open(`Show was deleted`, 'OK', {panelClass: 'success', duration: 500});
+            this.router.navigate(['../']);
+          },
+          error: (error) => {
+            this.snackBar.open(`Show could not be deleted: ${JSON.stringify(error)}`, 'OK', {
+              duration: 10000, panelClass: 'error'
+            });
+          },
+        });;
+      }
     });
   }
 }
