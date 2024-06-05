@@ -235,7 +235,11 @@ export class ShowDashboardComponent implements OnInit, OnDestroy {
 
   refreshIntervalChange($event: MatSelectChange) {
     localStorage.setItem(PONTY_TYPER_REFRESH_TIMER_INTERVAL, $event.value);
-    this.setTimer($event.value);
+    if ($event.value === 'stop') {
+      this.stopTimer();
+    } else {
+      this.setTimer($event.value);
+    }
   }
 
   private addAlreadyPlayedInfoToRacesFromFinishedRaces(races: Race[], finishedRaces: Race[]): RaceWithSongPlayedInfo[] {
@@ -276,6 +280,11 @@ export class ShowDashboardComponent implements OnInit, OnDestroy {
     ).subscribe(() => {
       this.refresh$.next();
     });
+  }
+
+  private stopTimer(): void {
+    this.secondsRemaining$ = of(0);
+    this.timerSubscription.unsubscribe();
   }
 
   deleteShow() {

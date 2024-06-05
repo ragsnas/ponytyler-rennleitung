@@ -22,6 +22,8 @@ export declare class ShowService {
         id: number;
         name: string;
         date: Date;
+        duration: number;
+        finished: boolean;
         active: boolean;
     }]>;
 }

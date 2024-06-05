@@ -20,7 +20,7 @@ table th {
 }
 
 .race-state-waiting-to-race td {
-  background-color: #ffffff;
+  background-color: #f5f5f5;
 }
 
 .race-state-canceled td {
@@ -43,12 +43,44 @@ tr.race-state-raced + tr.race-state-canceled td {
 .race-state-raced td.winning-bike {
   background-color: #469fbb;
 }
-.bike-won {
-  float:right;
-  visibility: hidden;
+
+.song-already-played-info {
+  font-weight: bolder;
+  padding-left: 10px;
+  .mat-icon {
+    font-size: 20px;
+  }
 }
-.winning-bike .bike-won {
-  visibility: visible;
+
+.bike-has-lost {
+  min-width: 60px;
+  min-height: 60px;
+  float:right;
+  color: lightcoral;
+}
+
+.bike-has-won {
+  min-width: 60px;
+  min-height: 60px;
+  float:right;
+  color: blueviolet;
+}
+
+.bike-won-button {
+  min-width: 60px;
+  min-height: 60px;
+  float:right;
+  text-align: center;
+  .bike-won {
+    visibility: visible;
+  }
+}
+
+.bike-won {
+  padding: 20px;
+}
+.losing-bike .bike-won-button .bike-won {
+  visibility: hidden;
 }
 
 .race-state-waiting-to-race td.alreadyWished.song-column,
@@ -64,11 +96,17 @@ tr.race-state-raced + tr.race-state-canceled td {
 }
 
 .race-state-waiting-to-race .bike-won {
-  float:right;
-  visibility: hidden;
+  background-color: #eee;
+  visibility: visible;
 }
 
 .race-state-waiting-to-race .song-column:hover .bike-won {
+  background-color: #999;
+  visibility: visible;
+}
+
+.race-state-waiting-to-race .song-column:active .bike-won {
+  background-color: #f1b0b7;
   visibility: visible;
 }
 

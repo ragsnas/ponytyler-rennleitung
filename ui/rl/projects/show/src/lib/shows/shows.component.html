@@ -9,6 +9,15 @@
     <h3 >Aktive Shows</h3>
     <table mat-table [dataSource]="currentShows">
 
+      <ng-container matColumnDef="finished">
+        <th mat-header-cell *matHeaderCellDef></th>
+        <td mat-cell *matCellDef="let element">
+          <mat-icon *ngIf="element.finished">check</mat-icon>
+          <mat-icon *ngIf="element.active">play_circle</mat-icon>
+          <mat-icon *ngIf="!element.active && !element.finished">calendar_month</mat-icon>
+        </td>
+      </ng-container>
+
         <ng-container matColumnDef="date">
           <th mat-header-cell *matHeaderCellDef><mat-icon>calendar_month</mat-icon></th>
           <td mat-cell *matCellDef="let element" [routerLink]="element.id">
@@ -19,11 +28,6 @@
           <th mat-header-cell *matHeaderCellDef>Name</th>
           <td mat-cell *matCellDef="let element" [routerLink]="element.id"> {{element.name}} </td>
         </ng-container>
-
-      <ng-container matColumnDef="active">
-        <th mat-header-cell *matHeaderCellDef>Running</th>
-        <td mat-cell *matCellDef="let element"> <mat-icon *ngIf="element.active">check</mat-icon> </td>
-      </ng-container>
 
         <ng-container matColumnDef="actions">
           <th mat-header-cell *matHeaderCellDef>Actions</th>
@@ -39,11 +43,28 @@
             <button mat-icon-button aria-label="Add Race" [routerLink]="element.id + '/create-race'">
               <mat-icon>add-box</mat-icon>
             </button>
+
+            <button mat-icon-button aria-label="Edit Show" [routerLink]="element.id + '/edit'">
+              <mat-icon>edit</mat-icon>
+            </button>
+
+            <button *ngIf="element.active" mat-icon-button aria-label="Set Show to finished" title="Set Show to finished" (click)="toggleFinished(element)">
+              <mat-icon>check_small</mat-icon>
+            </button>
+            <button *ngIf="element.active" mat-icon-button aria-label="Set Show to finished" title="Set Show to finished" (click)="toggleFinished(element)">
+              <mat-icon>check_small</mat-icon>
+            </button>
+            <button *ngIf="element.finished" mat-icon-button aria-label="Re-Activate Show" (click)="toggleFinished(element)">
+              <mat-icon>history</mat-icon>
+            </button>
+
           </td>
         </ng-container>
 
-        <tr mat-header-row *matHeaderRowDef="['date', 'name', 'active', 'actions']"></tr>
-        <tr mat-row *matRowDef="let row; columns: ['date', 'name', 'active' ,'actions'];" class="{{ row.active ? 'active-show': '' }}"></tr>
+        <tr mat-header-row *matHeaderRowDef="['finished', 'date', 'name', 'actions']"></tr>
+        <tr mat-row *matRowDef="let row; columns: ['finished', 'date', 'name', 'actions'];"
+          [ngClass]="{ 'active-show': row.active, 'finished-show': row.finished, 'upcoming-show': !row.finished && !row.active }"
+        ></tr>
     </table>
   </ng-container>
 </ng-container>

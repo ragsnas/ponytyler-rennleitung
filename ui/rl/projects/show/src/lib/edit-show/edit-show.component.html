@@ -1,4 +1,7 @@
-<div *ngIf="form" [formGroup]="form">
+<div *ngIf="form && show" [formGroup]="form">
+
+  <h2>Update of Show #{{showId}} ({{show.name}})</h2>
+
   <div>
       <mat-form-field appearance="outline">
           <mat-label>Show Name</mat-label>
@@ -37,5 +40,5 @@
     </ui-button-list>
   </div>
 
-  <button mat-flat-button color="primary" [disabled]="!form.valid" (click)="createShow()">Speichern</button>
+  <button mat-flat-button color="primary" [disabled]="!form.valid" (click)="updateShow()">Speichern</button>
 </div>

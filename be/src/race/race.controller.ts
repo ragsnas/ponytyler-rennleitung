@@ -18,7 +18,6 @@ export enum RaceState {
     RACED = 'RACED',
 }
 
-
 @Controller('api/race')
 export class RaceController {
     constructor(private readonly raceService: RaceService) {
@@ -88,4 +87,18 @@ export class RaceController {
     remove(@Param('id') id: string) {
         return this.raceService.deleteRace({id: Number(id)});
     }
+
+    @Get('average-races-per-hour')
+    async calculateAverageRacesPerHour() {
+        const races = await this.raceService.races({
+            where: {
+                raceState: {equals: RaceState.RACED},
+                show: {finished: {equals: true}}
+            },
+        });
+
+        return races.length || 0;
+    }
+
+
 }

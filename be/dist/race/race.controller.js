@@ -65,6 +65,15 @@ let RaceController = class RaceController {
     remove(id) {
         return this.raceService.deleteRace({ id: Number(id) });
     }
+    async calculateAverageRacesPerHour() {
+        const races = await this.raceService.races({
+            where: {
+                raceState: { equals: RaceState.RACED },
+                show: { finished: { equals: true } }
+            },
+        });
+        return races.length || 0;
+    }
 };
 exports.RaceController = RaceController;
 __decorate([
@@ -130,6 +139,12 @@ __decorate([
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", void 0)
 ], RaceController.prototype, "remove", null);
+__decorate([
+    (0, common_1.Get)('average-races-per-hour'),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", Promise)
+], RaceController.prototype, "calculateAverageRacesPerHour", null);
 exports.RaceController = RaceController = __decorate([
     (0, common_1.Controller)('api/race'),
     __metadata("design:paramtypes", [race_service_1.RaceService])

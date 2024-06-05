@@ -141,4 +141,5 @@ export declare class RaceController {
         song2Id: number;
         bikeWon: number;
     }>;
+    calculateAverageRacesPerHour(): Promise<number>;
 }

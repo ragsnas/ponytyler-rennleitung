@@ -38,6 +38,7 @@ export class ShowController {
       where: { active: true },
     });
   }
+
   @Get('old-shows')
   async getOldShows(): Promise<Show[]> {
     return this.showService.shows({

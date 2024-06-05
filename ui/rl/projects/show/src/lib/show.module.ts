@@ -28,11 +28,13 @@ import {MatProgressSpinnerModule} from "@angular/material/progress-spinner";
 import {MatProgressBarModule} from "@angular/material/progress-bar";
 import {MatSelectModule} from "@angular/material/select";
 import {MatDialogModule} from "@angular/material/dialog";
+import {EditShowComponent} from "./edit-show/edit-show.component";
 
 const routes: Routes = [
   { path: '', component: ShowsComponent },
-  { path: 'create', component: CreateShowComponent },
   { path: 'director-dashboard-redirect', component: DirectorDashboardRedirectComponent },
+  { path: 'create', component: CreateShowComponent },
+  { path: ':showId/edit', component: EditShowComponent },
   { path: ':showId/create-race', component: CreateRaceComponent },
   { path: ':showId/race/:raceId', component: UpdateRaceComponent },
   { path: ':showId/director-dashboard', component: DirectorDashboardComponent },
@@ -44,6 +46,7 @@ const routes: Routes = [
     ShowComponent,
     ShowsComponent,
     CreateShowComponent,
+    EditShowComponent,
     ShowDashboardComponent,
     CreateRaceComponent,
     UpdateRaceComponent,

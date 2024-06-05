@@ -7,7 +7,9 @@ export interface Show {
   id?: string;
   name: string;
   date: Date;
+  duration: number;
   active: boolean;
+  finished: boolean;
 }
 
 @Injectable({
