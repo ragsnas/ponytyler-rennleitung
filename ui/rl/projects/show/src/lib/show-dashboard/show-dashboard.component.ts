@@ -1,6 +1,7 @@
 import {Component, OnDestroy, OnInit} from '@angular/core';
 import {ActivatedRoute, ParamMap, Router} from '@angular/router';
 import {Race, RaceService, RaceState} from 'projects/backend-api/src/lib/race.service';
+import {StatisticsService} from 'projects/backend-api/src/lib/statistics.service';
 import {Show, ShowService} from 'projects/backend-api/src/lib/show.service';
 import {
   BehaviorSubject,
@@ -90,10 +91,12 @@ export class ShowDashboardComponent implements OnInit, OnDestroy {
   timerSubscription: Subscription = new Subscription();
   loadRacesSubscription: Subscription = new Subscription();
   secondsRemaining$: Observable<number> = of(0);
+  isListFull: boolean = false;
 
   constructor(
     private showService: ShowService,
     private raceService: RaceService,
+    private statisticsService: StatisticsService,
     private route: ActivatedRoute,
     private router: Router,
     private snackBar: MatSnackBar,
@@ -107,6 +110,10 @@ export class ShowDashboardComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    this.statisticsService.isListFull(
+      this.route.snapshot.paramMap.get('showId')!
+    ).subscribe(isListFull =>
+      this.isListFull = isListFull);
     this.setTimer(Number(this.refreshIntervalFormControl.getRawValue()));
     this.loadRaces();
   }

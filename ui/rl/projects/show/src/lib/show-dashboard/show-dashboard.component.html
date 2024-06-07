@@ -1,5 +1,12 @@
 <h2>{{ show?.name }} / {{ show?.date | date: "YYYY-MM-dd HH:mm" }} ({{ show?.duration }} Minutes)</h2>
 
+<ng-container *ngIf="isListFull">
+  <lib-message type="warn">
+    The List exceeds the Number of Races calculated to be raceable within the defined duration,
+    based on the average Number of Songs raced per Hour in past races.
+  </lib-message>
+</ng-container>
+
 <ng-container *ngIf="races$ | async as races">
   <div class="refresh-bar" style="display: flex;flex-direction: row;justify-content: space-between;align-items:center;gap: 15px;">
     <ui-button-list  style="flex-basis: auto;">

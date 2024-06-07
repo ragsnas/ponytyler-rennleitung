@@ -3,6 +3,7 @@ import { NgModule } from '@angular/core';
 import { RaceService } from './race.service';
 import { ShowService } from './show.service';
 import { SongService } from './song.service';
+import { StatisticsService } from "./statistics.service";
 
 
 
@@ -13,7 +14,8 @@ import { SongService } from './song.service';
   providers: [
     SongService,
     ShowService,
-    RaceService
+    RaceService,
+    StatisticsService
   ]
 })
 export class BackendApiModule { }

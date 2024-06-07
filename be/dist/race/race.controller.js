@@ -73,9 +73,7 @@ let RaceController = class RaceController {
             const totalTime = shows
                 .map(show => show.duration)
                 .reduce((accumulator, currentValue) => accumulator + currentValue) || 0;
-            const averageSongsByHour = Math.round(numberOfRaces / (totalTime / 60));
-            console.log(`\ncalculateAverageRacesPerHour\n- numberOfRaces: ${numberOfRaces}\n- totalTime: ${totalTime}, average: ${averageSongsByHour}`);
-            return averageSongsByHour;
+            return Math.round(numberOfRaces / (totalTime / 60));
         }));
     }
     findUpcomingRaceWithSongs() {

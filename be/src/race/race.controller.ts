@@ -88,10 +88,7 @@ export class RaceController {
                 .map(show => show.duration)
                 .reduce((accumulator: number, currentValue: number) => accumulator + currentValue) || 0;
 
-            const averageSongsByHour = Math.round(numberOfRaces / (totalTime / 60))
-            console.log(`\ncalculateAverageRacesPerHour\n- numberOfRaces: ${numberOfRaces}\n- totalTime: ${totalTime}, average: ${averageSongsByHour}`);
-
-            return averageSongsByHour;
+            return Math.round(numberOfRaces / (totalTime / 60))
         }));
 
     }

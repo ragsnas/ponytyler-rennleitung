@@ -3,6 +3,7 @@ import {FormControl, FormGroup} from '@angular/forms';
 import {ActivatedRoute, Router} from '@angular/router';
 import {Song, SongService} from 'projects/song/src/public-api';
 import {Race, RaceService, RaceState} from 'projects/backend-api/src/lib/race.service';
+import {StatisticsService} from 'projects/backend-api/src/lib/statistics.service';
 import {MatSnackBar} from "@angular/material/snack-bar";
 import {Show, ShowService} from 'projects/backend-api/src/lib/show.service';
 import {combineLatest, filter, map, Observable} from 'rxjs';
@@ -31,6 +32,7 @@ export class CreateRaceComponent implements OnInit {
   constructor(
     private showService: ShowService,
     private raceService: RaceService,
+    private statisticsService: StatisticsService,
     private songService: SongService,
     private route: ActivatedRoute,
     private router: Router,
@@ -41,16 +43,8 @@ export class CreateRaceComponent implements OnInit {
     this.showId = this.route.snapshot.paramMap.get('showId') || undefined;
     if (this.showId) {
       this.show$ = this.showService.getShow(this.showId);
-      combineLatest([
-        this.raceService.averageRacesPerHour(),
-        this.raceService.getAllRacesForShow(this.showId, true).pipe(
-          map((races: Race[]) => races.filter((race: Race) => race.raceState === RaceState.RACED))
-        ),
-        this.show$
-      ]).subscribe(([averageRacesPerHour, races, show]: [number, Race[], Show]) => {
-        console.log(`ngoninit combine latest`, {averageRacesPerHour, races, show});
-        this.averageRacesPerHour = averageRacesPerHour;
-        this.listIsFull = ((show.duration / 60) * averageRacesPerHour) > races.length;
+      this.statisticsService.isListFull(this.showId).subscribe((listIsFull) => {
+        this.listIsFull = listIsFull;
       });
     }
   }
