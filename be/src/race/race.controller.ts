@@ -9,7 +9,10 @@ import {
     Query,
 } from '@nestjs/common';
 import {RaceService} from 'src/prisma-api/race.service';
-import {Prisma} from '@prisma/client';
+import {ShowService} from "src/prisma-api/show.service";
+import {Prisma, Race, Show} from "@prisma/client";
+import {combineLatest, map} from "rxjs";
+
 
 export enum RaceState {
     WAITING_FOR_OPPONENT = 'WAITING_FOR_OPPONENT',
@@ -20,7 +23,10 @@ export enum RaceState {
 
 @Controller('api/race')
 export class RaceController {
-    constructor(private readonly raceService: RaceService) {
+    constructor(
+        private readonly raceService: RaceService,
+        private readonly showService: ShowService
+    ) {
     }
 
     @Post()
@@ -59,6 +65,37 @@ export class RaceController {
         return this.raceService.races({});
     }
 
+    @Get('average-races-per-hour')
+    calculateAverageRacesPerHour() {
+        return combineLatest([
+            this.raceService.races({
+                where: {
+                    raceState: {equals: RaceState.RACED},
+                    show: {finished: {equals: true}}
+                },
+            }),
+            this.showService.shows({
+                where: {
+                    finished: {equals: true}
+                },
+            })
+        ]).pipe(map(([races, shows]) => {
+            const numberOfRaces = races
+                .map(race => race.bikeWon === 3 ? 2 as number : 1 as number)
+                .reduce((accumulator: number, currentValue: number) => accumulator + currentValue) || 0;
+
+            const totalTime = shows
+                .map(show => show.duration)
+                .reduce((accumulator: number, currentValue: number) => accumulator + currentValue) || 0;
+
+            const averageSongsByHour = Math.round(numberOfRaces / (totalTime / 60))
+            console.log(`\ncalculateAverageRacesPerHour\n- numberOfRaces: ${numberOfRaces}\n- totalTime: ${totalTime}, average: ${averageSongsByHour}`);
+
+            return averageSongsByHour;
+        }));
+
+    }
+
     @Get('upcoming-with-songs')
     findUpcomingRaceWithSongs() {
         return this.raceService.upcomingRaceWithSongs();
@@ -87,18 +124,4 @@ export class RaceController {
     remove(@Param('id') id: string) {
         return this.raceService.deleteRace({id: Number(id)});
     }
-
-    @Get('average-races-per-hour')
-    async calculateAverageRacesPerHour() {
-        const races = await this.raceService.races({
-            where: {
-                raceState: {equals: RaceState.RACED},
-                show: {finished: {equals: true}}
-            },
-        });
-
-        return races.length || 0;
-    }
-
-
 }

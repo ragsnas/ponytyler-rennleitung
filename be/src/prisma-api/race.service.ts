@@ -10,12 +10,14 @@ export class RaceService {
   async race(
     raceWhereUniqueInput: Prisma.RaceWhereUniqueInput,
   ): Promise<Race | null> {
+    console.log(`\nrace called with `, raceWhereUniqueInput);
     return this.prisma.race.findUnique({
       where: raceWhereUniqueInput,
     });
   }
 
   async raceWithSongs(raceId: string): Promise<Race | null> {
+    console.log(`\nraceWithSongs called with `, raceId);
     return this.prisma.race.findUnique({
       where: { id: Number(raceId) },
       include: { song1: true, song2: true },

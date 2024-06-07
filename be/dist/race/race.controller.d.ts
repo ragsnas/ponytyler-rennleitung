@@ -1,5 +1,6 @@
 import { RaceService } from 'src/prisma-api/race.service';
-import { Prisma } from '@prisma/client';
+import { ShowService } from "src/prisma-api/show.service";
+import { Prisma } from "@prisma/client";
 export declare enum RaceState {
     WAITING_FOR_OPPONENT = "WAITING_FOR_OPPONENT",
     WAITING_TO_RACE = "WAITING_TO_RACE",
@@ -8,7 +9,8 @@ export declare enum RaceState {
 }
 export declare class RaceController {
     private readonly raceService;
-    constructor(raceService: RaceService);
+    private readonly showService;
+    constructor(raceService: RaceService, showService: ShowService);
     create(data: Prisma.RaceUncheckedCreateInput): Promise<{
         id: number;
         showId: number;
@@ -61,6 +63,7 @@ export declare class RaceController {
         song2Id: number;
         bikeWon: number;
     }[]>;
+    calculateAverageRacesPerHour(): import("rxjs").Observable<number>;
     findUpcomingRaceWithSongs(): Promise<{
         song1: {
             id: number;
@@ -141,5 +144,4 @@ export declare class RaceController {
         song2Id: number;
         bikeWon: number;
     }>;
-    calculateAverageRacesPerHour(): Promise<number>;
 }

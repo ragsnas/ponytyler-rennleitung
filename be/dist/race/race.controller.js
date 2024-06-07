@@ -15,7 +15,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.RaceController = exports.RaceState = void 0;
 const common_1 = require("@nestjs/common");
 const race_service_1 = require("../prisma-api/race.service");
+const show_service_1 = require("../prisma-api/show.service");
 const client_1 = require("@prisma/client");
+const rxjs_1 = require("rxjs");
 var RaceState;
 (function (RaceState) {
     RaceState["WAITING_FOR_OPPONENT"] = "WAITING_FOR_OPPONENT";
@@ -24,8 +26,9 @@ var RaceState;
     RaceState["RACED"] = "RACED";
 })(RaceState || (exports.RaceState = RaceState = {}));
 let RaceController = class RaceController {
-    constructor(raceService) {
+    constructor(raceService, showService) {
         this.raceService = raceService;
+        this.showService = showService;
     }
     create(data) {
         return this.raceService.createRace(data);
@@ -50,6 +53,31 @@ let RaceController = class RaceController {
     findRaces() {
         return this.raceService.races({});
     }
+    calculateAverageRacesPerHour() {
+        return (0, rxjs_1.combineLatest)([
+            this.raceService.races({
+                where: {
+                    raceState: { equals: RaceState.RACED },
+                    show: { finished: { equals: true } }
+                },
+            }),
+            this.showService.shows({
+                where: {
+                    finished: { equals: true }
+                },
+            })
+        ]).pipe((0, rxjs_1.map)(([races, shows]) => {
+            const numberOfRaces = races
+                .map(race => race.bikeWon === 3 ? 2 : 1)
+                .reduce((accumulator, currentValue) => accumulator + currentValue) || 0;
+            const totalTime = shows
+                .map(show => show.duration)
+                .reduce((accumulator, currentValue) => accumulator + currentValue) || 0;
+            const averageSongsByHour = Math.round(numberOfRaces / (totalTime / 60));
+            console.log(`\ncalculateAverageRacesPerHour\n- numberOfRaces: ${numberOfRaces}\n- totalTime: ${totalTime}, average: ${averageSongsByHour}`);
+            return averageSongsByHour;
+        }));
+    }
     findUpcomingRaceWithSongs() {
         return this.raceService.upcomingRaceWithSongs();
     }
@@ -64,15 +92,6 @@ let RaceController = class RaceController {
     }
     remove(id) {
         return this.raceService.deleteRace({ id: Number(id) });
-    }
-    async calculateAverageRacesPerHour() {
-        const races = await this.raceService.races({
-            where: {
-                raceState: { equals: RaceState.RACED },
-                show: { finished: { equals: true } }
-            },
-        });
-        return races.length || 0;
     }
 };
 exports.RaceController = RaceController;
@@ -104,6 +123,12 @@ __decorate([
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", void 0)
 ], RaceController.prototype, "findRaces", null);
+__decorate([
+    (0, common_1.Get)('average-races-per-hour'),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", void 0)
+], RaceController.prototype, "calculateAverageRacesPerHour", null);
 __decorate([
     (0, common_1.Get)('upcoming-with-songs'),
     __metadata("design:type", Function),
@@ -139,14 +164,9 @@ __decorate([
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", void 0)
 ], RaceController.prototype, "remove", null);
-__decorate([
-    (0, common_1.Get)('average-races-per-hour'),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", []),
-    __metadata("design:returntype", Promise)
-], RaceController.prototype, "calculateAverageRacesPerHour", null);
 exports.RaceController = RaceController = __decorate([
     (0, common_1.Controller)('api/race'),
-    __metadata("design:paramtypes", [race_service_1.RaceService])
+    __metadata("design:paramtypes", [race_service_1.RaceService,
+        show_service_1.ShowService])
 ], RaceController);
 //# sourceMappingURL=race.controller.js.map

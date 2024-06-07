@@ -29,6 +29,7 @@ import {MatProgressBarModule} from "@angular/material/progress-bar";
 import {MatSelectModule} from "@angular/material/select";
 import {MatDialogModule} from "@angular/material/dialog";
 import {EditShowComponent} from "./edit-show/edit-show.component";
+import {MessageModule} from 'projects/ui/message/src/public-api';
 
 const routes: Routes = [
   { path: '', component: ShowsComponent },
@@ -75,7 +76,8 @@ const routes: Routes = [
     MatProgressBarModule,
     MatSelectModule,
     MatDialogModule,
-    YesNoDialogModule
+    YesNoDialogModule,
+    MessageModule
   ],
   exports: [ShowComponent],
 })

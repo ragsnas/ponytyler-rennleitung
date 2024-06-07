@@ -18,11 +18,13 @@ let RaceService = class RaceService {
         this.prisma = prisma;
     }
     async race(raceWhereUniqueInput) {
+        console.log(`\nrace called with `, raceWhereUniqueInput);
         return this.prisma.race.findUnique({
             where: raceWhereUniqueInput,
         });
     }
     async raceWithSongs(raceId) {
+        console.log(`\nraceWithSongs called with `, raceId);
         return this.prisma.race.findUnique({
             where: { id: Number(raceId) },
             include: { song1: true, song2: true },

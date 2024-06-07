@@ -73,4 +73,10 @@ export class RaceService {
       environment.apiUrl + `api/race/upcoming-with-songs`
     );
   }
+
+  averageRacesPerHour() {
+    return this.http.get<number>(
+      environment.apiUrl + `api/race/average-races-per-hour`
+    );
+  }
 }

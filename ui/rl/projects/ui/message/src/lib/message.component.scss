@@ -1,0 +1,22 @@
+.message {
+  border: 1px dotted #333333;
+  padding:10px;
+  margin: 10px 0px 10px 0px;
+}
+
+.message-error {
+  color: white;
+  background-color: darkred;
+}
+.message-warn {
+  color: red;
+  background-color: #f5f5f5;
+}
+.message-info {
+  color: darkblue;
+  background-color: lightblue;
+}
+.message-success {
+  color: white;
+  background-color: darkgreen;
+}

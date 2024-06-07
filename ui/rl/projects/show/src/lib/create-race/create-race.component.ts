@@ -2,15 +2,15 @@ import {Component, OnInit} from '@angular/core';
 import {FormControl, FormGroup} from '@angular/forms';
 import {ActivatedRoute, Router} from '@angular/router';
 import {Song, SongService} from 'projects/song/src/public-api';
-import {RaceService, RaceState} from '../../../../backend-api/src/lib/race.service';
+import {Race, RaceService, RaceState} from 'projects/backend-api/src/lib/race.service';
 import {MatSnackBar} from "@angular/material/snack-bar";
 import {Show, ShowService} from 'projects/backend-api/src/lib/show.service';
-import {Observable} from 'rxjs';
+import {combineLatest, filter, map, Observable} from 'rxjs';
 
 @Component({
   selector: 'lib-create-race',
   templateUrl: './create-race.component.html',
-  styleUrls: ['./create-race.component.css']
+  styleUrls: ['./create-race.component.scss']
 })
 export class CreateRaceComponent implements OnInit {
 
@@ -24,7 +24,9 @@ export class CreateRaceComponent implements OnInit {
   });
   showId: string | undefined;
   show$: Observable<Show> | undefined;
-  createInProcess = false;
+  createInProcess: boolean = false;
+  listIsFull: boolean = false;
+  averageRacesPerHour: number | undefined;
 
   constructor(
     private showService: ShowService,
@@ -39,6 +41,17 @@ export class CreateRaceComponent implements OnInit {
     this.showId = this.route.snapshot.paramMap.get('showId') || undefined;
     if (this.showId) {
       this.show$ = this.showService.getShow(this.showId);
+      combineLatest([
+        this.raceService.averageRacesPerHour(),
+        this.raceService.getAllRacesForShow(this.showId, true).pipe(
+          map((races: Race[]) => races.filter((race: Race) => race.raceState === RaceState.RACED))
+        ),
+        this.show$
+      ]).subscribe(([averageRacesPerHour, races, show]: [number, Race[], Show]) => {
+        console.log(`ngoninit combine latest`, {averageRacesPerHour, races, show});
+        this.averageRacesPerHour = averageRacesPerHour;
+        this.listIsFull = ((show.duration / 60) * averageRacesPerHour) > races.length;
+      });
     }
   }
 

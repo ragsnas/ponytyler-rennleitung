@@ -1,7 +1,12 @@
 <ng-container *ngIf="show$ | async as show">
   <h2>Adding Race for Show: {{show.name}}</h2>
 </ng-container>
-
+<ng-container *ngIf="listIsFull">
+  <lib-message type="warn">
+    The List exceeds the Number of Races calculated to be raceable within the defined duration,
+    based on the average Number of Songs raced per Hour in past races.
+  </lib-message>
+</ng-container>
 <div *ngIf="form" [formGroup]="form">
     <div>
         <mat-form-field appearance="outline">

@@ -6,6 +6,9 @@
       "@ui/button-list": [
         "dist/ui/button-list"
       ],
+      "@ui/message": [
+        "dist/ui/message"
+      ],
       "@ui/yes-no-dialog": [
         "dist/ui/yes-no-dialog"
       ],

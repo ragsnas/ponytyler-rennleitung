@@ -76,8 +76,6 @@ export class InputComponent implements OnInit, OnDestroy, ControlValueAccessor, 
           }
           return [race.song1Id, race.song2Id];
         }).flat();
-        console.log(`racesFinished`, racesFinished);
-        console.log(`racesUpcoming`, racesUpcoming);
         const songIdsAlreadyWished = racesUpcoming.map(race => [race.song1Id, race.song2Id]).flat();
         return songs.map(song => ({
           ...song,
