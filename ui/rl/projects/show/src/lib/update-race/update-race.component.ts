@@ -3,7 +3,7 @@ import {FormControl, FormGroup, Validators} from '@angular/forms';
 import {ActivatedRoute, Router} from '@angular/router';
 import {Song, SongService} from 'projects/song/src/public-api';
 import {Race, RaceService} from '../../../../backend-api/src/lib/race.service';
-import {MatSnackBar} from "@angular/material/snack-bar";
+import {MatLegacySnackBar as MatSnackBar} from "@angular/material/legacy-snack-bar";
 import {Observable, Subject} from 'rxjs';
 import {Show, ShowService } from 'projects/backend-api/src/lib/show.service';
 

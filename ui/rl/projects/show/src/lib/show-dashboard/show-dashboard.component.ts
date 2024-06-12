@@ -20,10 +20,10 @@ import {
   tap,
   timer
 } from 'rxjs';
-import {MatSnackBar} from "@angular/material/snack-bar";
+import {MatLegacySnackBar as MatSnackBar} from "@angular/material/legacy-snack-bar";
 import {FormControl} from "@angular/forms";
-import {MatSelectChange} from '@angular/material/select';
-import {MatDialog} from "@angular/material/dialog";
+import {MatLegacySelectChange as MatSelectChange} from '@angular/material/legacy-select';
+import {MatLegacyDialog as MatDialog} from "@angular/material/legacy-dialog";
 import { YesNoDialogComponent } from "projects/ui/yes-no-dialog/src/lib/yes-no-dialog.component"
 
 export interface RaceWithSongPlayedInfo extends Race {

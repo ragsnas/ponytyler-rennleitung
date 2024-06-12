@@ -5,9 +5,9 @@ import {RouterModule, Routes} from "@angular/router";
 import { NextRaceComponent } from './next-race/next-race.component';
 import { BackendApiModule } from 'projects/backend-api/src/public-api';
 import { UpcommingRacesComponent } from './upcomming-races/upcomming-races.component';
-import {MatTableModule} from "@angular/material/table";
-import {MatListModule} from "@angular/material/list";
-import {MatButtonModule} from "@angular/material/button";
+import {MatLegacyTableModule as MatTableModule} from "@angular/material/legacy-table";
+import {MatLegacyListModule as MatListModule} from "@angular/material/legacy-list";
+import {MatLegacyButtonModule as MatButtonModule} from "@angular/material/legacy-button";
 
 const routes: Routes = [
   { path: '', component: ViewsComponent },

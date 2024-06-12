@@ -2,11 +2,11 @@ import {Component, OnInit} from '@angular/core';
 import {Song, SongService} from '../../public-api';
 import {Observable, of, Subject} from 'rxjs';
 import {distance, closest} from 'fastest-levenshtein';
-import {MatSnackBar} from "@angular/material/snack-bar";
+import {MatLegacySnackBar as MatSnackBar} from "@angular/material/legacy-snack-bar";
 import {ActivatedRoute, Router} from "@angular/router";
 import {FormControl} from "@angular/forms";
-import {MatSelectionListChange} from "@angular/material/list";
-import {MatSelectChange} from "@angular/material/select";
+import {MatLegacySelectionListChange as MatSelectionListChange} from "@angular/material/legacy-list";
+import {MatLegacySelectChange as MatSelectChange} from "@angular/material/legacy-select";
 
 export interface SongWithDuplicateMeta extends Song {
   duplicate: Song
