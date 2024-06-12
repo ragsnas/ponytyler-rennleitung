@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="PhpIncludePathManager">
+    <include_path>
+      <path value="$PROJECT_DIR$/song-sync/vendor/psr/http-factory" />
+      <path value="$PROJECT_DIR$/song-sync/vendor/psr/http-message" />
+      <path value="$PROJECT_DIR$/song-sync/vendor/psr/http-server-handler" />
+      <path value="$PROJECT_DIR$/song-sync/vendor/slim/slim" />
+      <path value="$PROJECT_DIR$/song-sync/vendor/composer" />
+      <path value="$PROJECT_DIR$/song-sync/vendor/laminas/laminas-diactoros" />
+      <path value="$PROJECT_DIR$/song-sync/vendor/nikic/fast-route" />
+      <path value="$PROJECT_DIR$/song-sync/vendor/psr/log" />
+      <path value="$PROJECT_DIR$/song-sync/vendor/psr/container" />
+      <path value="$PROJECT_DIR$/song-sync/vendor/psr/http-server-middleware" />
+    </include_path>
+  </component>
+  <component name="PhpProjectSharedConfiguration" php_language_level="8.0">
+    <option name="suggestChangeDefaultLanguageLevel" value="false" />
+  </component>
+</project>

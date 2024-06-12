@@ -23,6 +23,7 @@
     "@angular/platform-browser": "^14.0.0",
     "@angular/platform-browser-dynamic": "^14.0.0",
     "@angular/router": "^14.0.0",
+    "fastest-levenshtein": "^1.0.16",
     "material-icons": "^1.13.12",
     "rxjs": "~7.5.0",
     "tslib": "^2.3.0",

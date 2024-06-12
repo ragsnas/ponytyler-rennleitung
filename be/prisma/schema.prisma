@@ -26,6 +26,7 @@ model Song {
   artist String
   selectable Boolean @default(true)
   deleted Boolean @default(false)
+  origin String @default("FROM_FILE_SYNC")
   pickedByPerson1 Race[] @relation(name: "SongForPerson1")
   pickedByPerson2 Race[] @relation(name: "SongForPerson2")
 }

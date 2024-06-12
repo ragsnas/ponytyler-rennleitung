@@ -71,6 +71,7 @@ export declare class RaceController {
             artist: string;
             selectable: boolean;
             deleted: boolean;
+            origin: string;
         };
         song2: {
             id: number;
@@ -78,6 +79,7 @@ export declare class RaceController {
             artist: string;
             selectable: boolean;
             deleted: boolean;
+            origin: string;
         };
     } & {
         id: number;

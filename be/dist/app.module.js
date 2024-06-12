@@ -13,12 +13,13 @@ const app_service_1 = require("./app.service");
 const race_module_1 = require("./race/race.module");
 const show_module_1 = require("./show/show.module");
 const song_module_1 = require("./song/song.module");
+const cron_module_1 = require("./cron/cron.module");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
 exports.AppModule = AppModule = __decorate([
     (0, common_1.Module)({
-        imports: [race_module_1.RaceModule, song_module_1.SongModule, show_module_1.ShowModule],
+        imports: [race_module_1.RaceModule, song_module_1.SongModule, show_module_1.ShowModule, cron_module_1.CronModule],
         controllers: [app_controller_1.AppController],
         providers: [app_service_1.AppService],
     })

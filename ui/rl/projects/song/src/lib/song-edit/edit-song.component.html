@@ -1,0 +1,19 @@
+<h2>Edit Song</h2>
+<div *ngIf="form" [formGroup]="form">
+    <div>
+        <mat-form-field appearance="outline">
+            <mat-label>Title</mat-label>
+            <input matInput placeholder="i.e. Toxic or Total Eclipse of the Heart..." formControlName="name">
+        </mat-form-field>
+    </div>
+    <div>
+        <mat-form-field appearance="outline">
+            <mat-label>Artist/Band</mat-label>
+            <input matInput placeholder="i.e. Britney Spears or Queen" formControlName="artist">
+        </mat-form-field>
+    </div>
+    <div>
+            <mat-checkbox formControlName="selectable">Selectable</mat-checkbox>
+    </div>
+    <button mat-flat-button color="primary" (click)="editSong()">Speichern</button>
+</div>

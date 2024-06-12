@@ -1,6 +1,6 @@
-import { Component, OnInit } from '@angular/core';
-import { Song, SongService } from '../../public-api';
-import { Observable } from 'rxjs';
+import {Component} from '@angular/core';
+import {Origin, Song, SongService} from '../../public-api';
+import {Observable} from 'rxjs';
 
 @Component({
   selector: 'lib-song-sync',
@@ -108,6 +108,7 @@ export class SongSyncComponent {
       name,
       deleted: false,
       selectable: true,
+      origin: Origin.FROM_FILE_SYNC
     });
   }
 

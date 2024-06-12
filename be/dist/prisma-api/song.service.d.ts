@@ -1,5 +1,11 @@
 import { PrismaService } from './prisma.service';
 import { Prisma, Song } from '@prisma/client';
+export declare enum Origin {
+    LEGACY = "LEGACY",
+    FROM_DIRECT_INPUT = "FROM_DIRECT_INPUT",
+    FROM_FILE_SYNC = "FROM_FILE_SYNC",
+    FROM_CLOUD_SYNC = "FROM_CLOUD_SYNC"
+}
 export declare class SongService {
     private prisma;
     constructor(prisma: PrismaService);

@@ -9,9 +9,16 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.SongService = void 0;
+exports.SongService = exports.Origin = void 0;
 const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("./prisma.service");
+var Origin;
+(function (Origin) {
+    Origin["LEGACY"] = "LEGACY";
+    Origin["FROM_DIRECT_INPUT"] = "FROM_DIRECT_INPUT";
+    Origin["FROM_FILE_SYNC"] = "FROM_FILE_SYNC";
+    Origin["FROM_CLOUD_SYNC"] = "FROM_CLOUD_SYNC";
+})(Origin || (exports.Origin = Origin = {}));
 let SongService = class SongService {
     constructor(prisma) {
         this.prisma = prisma;

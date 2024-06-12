@@ -1,0 +1,12 @@
+<ng-container *ngIf="origin == 'LEGACY'">
+  <mat-icon>question_mark</mat-icon>
+</ng-container>
+<ng-container *ngIf="origin == 'FROM_FILE_SYNC'">
+  <mat-icon>file_upload</mat-icon>
+</ng-container>
+<ng-container *ngIf="origin == 'FROM_CLOUD_SYNC'">
+  <mat-icon>cloud</mat-icon>
+</ng-container>
+<ng-container *ngIf="origin == 'FROM_DIRECT_INPUT'">
+  <mat-icon>keyboard</mat-icon>
+</ng-container>

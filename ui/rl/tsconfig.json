@@ -3,11 +3,17 @@
   "compileOnSave": false,
   "compilerOptions": {
     "paths": {
+      "@cron/song-sync": [
+        "dist/cron/song-sync"
+      ],
       "@ui/button-list": [
         "dist/ui/button-list"
       ],
       "@ui/message": [
         "dist/ui/message"
+      ],
+      "@ui/song-sync-origin": [
+        "dist/ui/song-sync-origin"
       ],
       "@ui/yes-no-dialog": [
         "dist/ui/yes-no-dialog"

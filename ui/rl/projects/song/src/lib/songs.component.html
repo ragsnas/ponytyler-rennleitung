@@ -21,6 +21,10 @@
         <mat-icon>sync</mat-icon>
         Sync Songs
       </button>
+      <button mat-flat-button color="primary" [routerLink]="'duplicates'">
+        <mat-icon>difference</mat-icon>
+        Find Duplicates
+      </button>
   </ui-button-list>
   </div>
 </div>
@@ -45,23 +49,33 @@
       <td mat-cell *matCellDef="let element"> {{element.artist}} </td>
     </ng-container>
 
-    <ng-container matColumnDef="actions">
-      <th mat-header-cell *matHeaderCellDef>Actions</th>
+    <ng-container matColumnDef="origin">
+      <th mat-header-cell *matHeaderCellDef>Origin</th>
       <td mat-cell *matCellDef="let element">
-        <button mat-icon-button aria-label="Delete Song" (click)="deleteSong(element)">
-            <mat-icon>delete</mat-icon>
-          </button>
-        <button *ngIf="element.selectable" mat-icon-button aria-label="Block Song" (click)="blockSong(element)">
-            <mat-icon>block</mat-icon>
-          </button>
-        <button *ngIf="!element.selectable" mat-icon-button aria-label="Unblock Song" (click)="unblockSong(element)">
-            <mat-icon>check-box</mat-icon>
-          </button>
+        <lib-song-sync-origin [origin]="element.origin"></lib-song-sync-origin>
       </td>
     </ng-container>
 
-    <tr mat-header-row *matHeaderRowDef="['selectable', 'artist', 'name', 'actions']"></tr>
-    <tr mat-row *matRowDef="let row; columns: ['selectable', 'artist', 'name', 'actions'];" [ngClass]="{'song-blocked': !row.selectable}"></tr>
+    <ng-container matColumnDef="actions">
+      <th mat-header-cell *matHeaderCellDef>Actions</th>
+      <td mat-cell *matCellDef="let element">
+        <button mat-icon-button aria-label="Edit Song" [routerLink]="element.id">
+          <mat-icon>edit</mat-icon>
+        </button>
+        <button mat-icon-button aria-label="Delete Song" (click)="deleteSong(element)">
+          <mat-icon>delete</mat-icon>
+        </button>
+        <button *ngIf="element.selectable" mat-icon-button aria-label="Block Song" (click)="blockSong(element)">
+          <mat-icon>block</mat-icon>
+        </button>
+        <button *ngIf="!element.selectable" mat-icon-button aria-label="Unblock Song" (click)="unblockSong(element)">
+          <mat-icon>check-box</mat-icon>
+        </button>
+      </td>
+    </ng-container>
+
+    <tr mat-header-row *matHeaderRowDef="['selectable', 'artist', 'name', 'origin', 'actions']"></tr>
+    <tr mat-row *matRowDef="let row; columns: ['selectable', 'artist', 'name', 'origin', 'actions'];" [ngClass]="{'song-blocked': !row.selectable}"></tr>
   </table>
 
 

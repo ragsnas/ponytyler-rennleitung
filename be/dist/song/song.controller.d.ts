@@ -9,6 +9,7 @@ export declare class SongController {
         artist: string;
         selectable: boolean;
         deleted: boolean;
+        origin: string;
     }>;
     findAll(): Promise<{
         id: number;
@@ -16,6 +17,7 @@ export declare class SongController {
         artist: string;
         selectable: boolean;
         deleted: boolean;
+        origin: string;
     }[]>;
     findAllSelectable(): Promise<{
         id: number;
@@ -23,6 +25,7 @@ export declare class SongController {
         artist: string;
         selectable: boolean;
         deleted: boolean;
+        origin: string;
     }[]>;
     findOne(id: string): Promise<{
         id: number;
@@ -30,6 +33,7 @@ export declare class SongController {
         artist: string;
         selectable: boolean;
         deleted: boolean;
+        origin: string;
     }>;
     search(text: string): Promise<{
         id: number;
@@ -37,6 +41,7 @@ export declare class SongController {
         artist: string;
         selectable: boolean;
         deleted: boolean;
+        origin: string;
     }[]>;
     syncWithSingleSourceOfTruth(): Promise<boolean>;
     update(id: string, data: Prisma.SongUpdateInput): Promise<{
@@ -45,6 +50,7 @@ export declare class SongController {
         artist: string;
         selectable: boolean;
         deleted: boolean;
+        origin: string;
     }>;
     remove(id: string): Promise<{
         id: number;
@@ -52,5 +58,6 @@ export declare class SongController {
         artist: string;
         selectable: boolean;
         deleted: boolean;
+        origin: string;
     }>;
 }
