@@ -24,7 +24,7 @@ import {MatSnackBar} from "@angular/material/snack-bar";
 import {FormControl} from "@angular/forms";
 import {MatSelectChange} from '@angular/material/select';
 import {MatDialog} from "@angular/material/dialog";
-import { YesNoDialogComponent } from "projects/ui/yes-no-dialog/src/lib/yes-no-dialog.component"
+import {YesNoDialogComponent} from "projects/ui/yes-no-dialog/src/lib/yes-no-dialog.component"
 
 export interface RaceWithSongPlayedInfo extends Race {
   song1AlreadyPlayed: boolean;
@@ -92,6 +92,7 @@ export class ShowDashboardComponent implements OnInit, OnDestroy {
   loadRacesSubscription: Subscription = new Subscription();
   secondsRemaining$: Observable<number> = of(0);
   isListFull: boolean = false;
+  moreThanOnePersonWaitingForOpponent: boolean = false;
 
   constructor(
     private showService: ShowService,
@@ -141,6 +142,7 @@ export class ShowDashboardComponent implements OnInit, OnDestroy {
           races.sort(sortRacesForList()),
           finishedRaces
         ));
+        this.moreThanOnePersonWaitingForOpponent = races.filter((race: Race) => race.raceState === RaceState.WAITING_FOR_OPPONENT).length > 1;
         this.refreshing = false;
       },
       error: (error) => {
@@ -315,8 +317,45 @@ export class ShowDashboardComponent implements OnInit, OnDestroy {
               duration: 10000, panelClass: 'error'
             });
           },
-        });;
+        });
       }
     });
+  }
+
+  mergeTopWaitingForOpponentRaces(race: Race) {
+    const race1: Race = race;
+    const otherRaceWaitingForOpponent: Race | undefined = this.races$.value.find((otherRace: Race) => race.id !== otherRace.id && otherRace.raceState === RaceState.WAITING_FOR_OPPONENT);
+    if(race && otherRaceWaitingForOpponent) {
+      const person1 = race.person1 || race.person2;
+      const song1Id = race.song1Id || race.song2Id;
+      const person2 = otherRaceWaitingForOpponent.person1 || otherRaceWaitingForOpponent.person2;
+      const song2Id = otherRaceWaitingForOpponent.song1Id || otherRaceWaitingForOpponent.song2Id;
+      combineLatest([
+        this.raceService.updateRace({
+          ...race1,
+          person1,
+          song1Id,
+          person2,
+          song2Id,
+          raceState: RaceState.WAITING_TO_RACE
+        }),
+        this.raceService.updateRace({
+          ...otherRaceWaitingForOpponent,
+          raceState: RaceState.CANCELED,
+          raced: false,
+          bikeWon: 0
+        })
+      ]).subscribe({
+        next: () => {
+          this.snackBar.open(`Races where merged successfully`, 'OK', {panelClass: 'success', duration: 500});
+          this.loadRaces();
+        },
+        error: (error) => {
+          this.snackBar.open(`Races could not be merged: ${JSON.stringify(error)}`, 'OK', {
+            duration: 10000, panelClass: 'error'
+          });
+        },
+      });
+    }
   }
 }

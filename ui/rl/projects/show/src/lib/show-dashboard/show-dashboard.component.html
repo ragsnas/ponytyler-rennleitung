@@ -109,6 +109,9 @@
             <button *ngIf="element.raceState !== 'CANCELED'" mat-icon-button aria-label="Cancel Race" (click)="markRaceAsCanceled(element)">
               <mat-icon>delete</mat-icon>
             </button>
+            <button *ngIf="element.raceState == 'WAITING_FOR_OPPONENT'" mat-icon-button aria-label="Merge Races" (click)="mergeTopWaitingForOpponentRaces(element)">
+              <mat-icon>merge</mat-icon>
+            </button>
           </td>
         </ng-container>
 
