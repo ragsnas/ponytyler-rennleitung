@@ -542,37 +542,6 @@
         }
       }
     },
-    "@cron/song-sync": {
-      "projectType": "library",
-      "root": "projects/cron/song-sync",
-      "sourceRoot": "projects/cron/song-sync/src",
-      "prefix": "lib",
-      "architect": {
-        "build": {
-          "builder": "@angular-devkit/build-angular:ng-packagr",
-          "options": {
-            "project": "projects/cron/song-sync/ng-package.json"
-          },
-          "configurations": {
-            "production": {
-              "tsConfig": "projects/cron/song-sync/tsconfig.lib.prod.json"
-            },
-            "development": {
-              "tsConfig": "projects/cron/song-sync/tsconfig.lib.json"
-            }
-          },
-          "defaultConfiguration": "production"
-        },
-        "test": {
-          "builder": "@angular-devkit/build-angular:karma",
-          "options": {
-            "main": "projects/cron/song-sync/src/test.ts",
-            "tsConfig": "projects/cron/song-sync/tsconfig.spec.json",
-            "karmaConfig": "projects/cron/song-sync/karma.conf.js"
-          }
-        }
-      }
-    },
     "@ui/song-sync-origin": {
       "projectType": "library",
       "root": "projects/ui/song-sync-origin",
