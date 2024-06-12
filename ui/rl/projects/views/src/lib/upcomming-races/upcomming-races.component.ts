@@ -6,7 +6,7 @@ import {filter, map, Observable} from "rxjs";
 @Component({
   selector: 'lib-upcomming-races',
   templateUrl: './upcomming-races.component.html',
-  styleUrls: ['./upcomming-races.component.css']
+  styleUrls: ['./upcomming-races.component.scss']
 })
 export class UpcommingRacesComponent implements OnInit {
   public upcommingRaces$: Observable<Race[]> | undefined;
@@ -19,7 +19,7 @@ export class UpcommingRacesComponent implements OnInit {
       map((shows: Show[]) => shows[0])
     ).subscribe((show:Show) => {
       if (show.id) {
-        this.upcommingRaces$ = this.raceService.getRacesForShow(show.id, false);
+        this.upcommingRaces$ = this.raceService.getAllRacesForShow(show.id, false).pipe();
       }
     });
   }
