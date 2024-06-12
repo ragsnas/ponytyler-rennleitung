@@ -2,14 +2,14 @@ import { CommonModule } from '@angular/common';
 import { HttpClientModule } from '@angular/common/http';
 import { NgModule } from '@angular/core';
 import { ReactiveFormsModule } from '@angular/forms';
-import { MatLegacyButtonModule as MatButtonModule } from '@angular/material/legacy-button';
-import { MatLegacyCheckboxModule as MatCheckboxModule } from '@angular/material/legacy-checkbox';
-import { MatLegacyFormFieldModule as MatFormFieldModule } from '@angular/material/legacy-form-field';
+import { MatButtonModule } from '@angular/material/button';
+import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
-import { MatLegacyInputModule as MatInputModule } from '@angular/material/legacy-input';
-import { MatLegacyListModule as MatListModule } from '@angular/material/legacy-list';
-import { MatLegacyProgressSpinnerModule as MatProgressSpinnerModule } from '@angular/material/legacy-progress-spinner';
-import { MatLegacyTableModule as MatTableModule } from '@angular/material/legacy-table';
+import { MatInputModule } from '@angular/material/input';
+import { MatListModule } from '@angular/material/list';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatTableModule } from '@angular/material/table';
 import { RouterModule, Routes } from '@angular/router';
 import { BackendApiModule } from 'projects/backend-api/src/public-api';
 import { ButtonListModule } from 'projects/ui/button-list/src/public-api';
@@ -20,9 +20,9 @@ import { SongSyncComponent } from './song-sync/song-sync.component';
 import { SongComponent } from './song/song.component';
 import { SongsComponent } from './songs.component';
 import {EditSongComponent} from "./song-edit/edit-song.component";
-import {MatLegacySnackBarModule as MatSnackBarModule} from "@angular/material/legacy-snack-bar";
+import {MatSnackBarModule} from "@angular/material/snack-bar";
 import {DuplicatesComponent} from "./duplicates/duplicates.component";
-import {MatLegacySelectModule as MatSelectModule} from "@angular/material/legacy-select";
+import {MatSelectModule} from "@angular/material/select";
 
 const routes: Routes = [
   { path: '', component: SongsComponent },

@@ -1,7 +1,9 @@
 <div>
   <div id="player1">
     <h2>Player 1</h2>
-    <div class="progress"><mat-progress-bar [value]="player1Progress$ | async"></mat-progress-bar></div>
+    <div class="progress">
+      <mat-progress-bar [value]="player1Progress$ | async">
+      </mat-progress-bar></div>
     <div class="average-speed"></div>
     <div class="time-elapsed"></div>
   </div>

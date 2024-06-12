@@ -1,7 +1,7 @@
 import {Component, OnInit} from '@angular/core';
 import {Show, ShowService} from 'projects/backend-api/src/lib/show.service';
 import {Observable} from 'rxjs';
-import {MatLegacySnackBar as MatSnackBar} from "@angular/material/legacy-snack-bar";
+import {MatSnackBar} from "@angular/material/snack-bar";
 
 @Component({
   selector: 'lib-shows',

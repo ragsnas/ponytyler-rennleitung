@@ -3,7 +3,7 @@ import { ActivatedRoute } from '@angular/router';
 import { Race, RaceService } from 'projects/backend-api/src/lib/race.service';
 import { Show, ShowService } from 'projects/backend-api/src/lib/show.service';
 import { BehaviorSubject } from 'rxjs';
-import {MatLegacySnackBar as MatSnackBar} from "@angular/material/legacy-snack-bar";
+import {MatSnackBar} from "@angular/material/snack-bar";
 
 @Component({
   selector: 'lib-show-director-dashboard',

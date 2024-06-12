@@ -4,7 +4,7 @@ import {ActivatedRoute, Router} from '@angular/router';
 import {Song, SongService} from 'projects/song/src/public-api';
 import {Race, RaceService, RaceState} from 'projects/backend-api/src/lib/race.service';
 import {StatisticsService} from 'projects/backend-api/src/lib/statistics.service';
-import {MatLegacySnackBar as MatSnackBar} from "@angular/material/legacy-snack-bar";
+import {MatSnackBar} from "@angular/material/snack-bar";
 import {Show, ShowService} from 'projects/backend-api/src/lib/show.service';
 import {combineLatest, filter, map, Observable} from 'rxjs';
 
