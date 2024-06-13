@@ -1,12 +1,10 @@
-import {Component, OnInit} from '@angular/core';
-import {Song, SongService} from '../../public-api';
-import {Observable, of, Subject} from 'rxjs';
-import {distance, closest} from 'fastest-levenshtein';
-import {MatSnackBar} from "@angular/material/snack-bar";
-import {ActivatedRoute, Router} from "@angular/router";
-import {FormControl} from "@angular/forms";
-import {MatSelectionListChange} from "@angular/material/list";
-import {MatSelectChange} from "@angular/material/select";
+import { Component, OnInit } from "@angular/core";
+import { Song, SongService } from "../../public-api";
+import { Subject } from "rxjs";
+import { closest, distance } from "fastest-levenshtein";
+import { MatSnackBar } from "@angular/material/snack-bar";
+import { ActivatedRoute, Router } from "@angular/router";
+import { FormControl } from "@angular/forms";
 
 export interface SongWithDuplicateMeta extends Song {
   duplicate: Song
@@ -38,6 +36,7 @@ export class DuplicatesComponent implements OnInit {
         this.levenshteinDistanceMinimum = Number(newDistance);
         this.loadSongs();
     });
+
   }
 
   loadSongs() {
@@ -64,7 +63,7 @@ export class DuplicatesComponent implements OnInit {
             } as SongWithDuplicateMeta);
           }
         });
-        this.songs$.next(songsWithDuplicateMeta);
+        this.songs$.next(songsWithDuplicateMeta.sort((song1: SongWithDuplicateMeta, song2: SongWithDuplicateMeta) => song1.distance == song2.distance ? 0 : (song1.distance > song2.distance ? 1 : -1)));
       },
       error: (error) => {
         console.log(`error:`, error);
@@ -91,5 +90,4 @@ export class DuplicatesComponent implements OnInit {
       },
     });
   }
-
 }

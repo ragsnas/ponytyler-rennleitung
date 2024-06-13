@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { HttpClientModule } from '@angular/common/http';
 import { NgModule } from '@angular/core';
-import { ReactiveFormsModule } from '@angular/forms';
+import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -23,6 +23,8 @@ import {EditSongComponent} from "./song-edit/edit-song.component";
 import {MatSnackBarModule} from "@angular/material/snack-bar";
 import {DuplicatesComponent} from "./duplicates/duplicates.component";
 import {MatSelectModule} from "@angular/material/select";
+import {MatSliderModule} from "@angular/material/slider";
+import { MatChipsModule } from "@angular/material/chips";
 
 const routes: Routes = [
   { path: '', component: SongsComponent },
@@ -44,6 +46,7 @@ const routes: Routes = [
   imports: [
     CommonModule,
     RouterModule.forChild(routes),
+    FormsModule,
     HttpClientModule,
     ReactiveFormsModule,
     MatFormFieldModule,
@@ -58,7 +61,9 @@ const routes: Routes = [
     BackendApiModule,
     ButtonListModule,
     SongSyncOriginModule,
-    MatSelectModule
+    MatSelectModule,
+    MatSliderModule,
+    MatChipsModule,
   ],
   providers: [SongService],
   exports: [SongsComponent, EditSongComponent, DuplicatesComponent],

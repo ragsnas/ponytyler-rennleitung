@@ -14,12 +14,21 @@ const race_module_1 = require("./race/race.module");
 const show_module_1 = require("./show/show.module");
 const song_module_1 = require("./song/song.module");
 const cron_module_1 = require("./cron/cron.module");
+const nextcloud_module_1 = require("./nextcloud/nextcloud.module");
+const config_1 = require("@nestjs/config");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
 exports.AppModule = AppModule = __decorate([
     (0, common_1.Module)({
-        imports: [race_module_1.RaceModule, song_module_1.SongModule, show_module_1.ShowModule, cron_module_1.CronModule],
+        imports: [
+            race_module_1.RaceModule,
+            song_module_1.SongModule,
+            show_module_1.ShowModule,
+            cron_module_1.CronModule,
+            nextcloud_module_1.NextcloudModule,
+            config_1.ConfigModule.forRoot({}),
+        ],
         controllers: [app_controller_1.AppController],
         providers: [app_service_1.AppService],
     })

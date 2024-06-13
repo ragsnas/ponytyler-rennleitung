@@ -1,10 +1,21 @@
 <h3>Find/Merge Duplicate Songs</h3>
 
-<mat-form-field style="flex-basis: auto;">
-  <mat-label>Levenshtein Distance Minimum</mat-label>
-  <input matInput
-    [formControl]="levenshteinDistanceMinimumFormControl">
-</mat-form-field>
+
+<div style="display: flex; flex-direction: row; align-items: center;margin: 15px;column-gap: 20px;">
+  <h4>Accuracy<br/><span style="color: #333333; font-style: italic; font-size: 0.8em;">(Levenshtein Distance Minimum)</span></h4>
+  <mat-slider
+    class="example-margin"
+    [max]="30"
+    [min]="1"
+    [step]="1"
+    [discrete]="false"
+    [showTickMarks]="false">
+    <input matSliderThumb matInput [formControl]="levenshteinDistanceMinimumFormControl" #slider>
+  </mat-slider>
+  <div>
+    <mat-chip>{{levenshteinDistanceMinimum}}</mat-chip>
+  </div>
+</div>
 
 
 <ng-container *ngIf="songs$ | async as songs">
