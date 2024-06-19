@@ -17,7 +17,7 @@ exports.NextcloudModule = NextcloudModule;
 exports.NextcloudModule = NextcloudModule = __decorate([
     (0, common_1.Module)({
         imports: [config_1.ConfigModule, axios_1.HttpModule],
-        controllers: [filesearch_controller_1.FilesearchController]
+        controllers: [filesearch_controller_1.FilesearchController],
     })
 ], NextcloudModule);
 //# sourceMappingURL=nextcloud.module.js.map

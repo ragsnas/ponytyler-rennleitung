@@ -1,4 +1,4 @@
-import { RaceService } from 'src/prisma-api/race.service';
+import { RaceService } from "src/prisma-api/race.service";
 import { ShowService } from "src/prisma-api/show.service";
 import { Prisma } from "@prisma/client";
 export declare enum RaceState {

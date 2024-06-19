@@ -1,33 +1,32 @@
 import { Controller, Get } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { HttpService } from "@nestjs/axios";
-import * as webdav from "webdav";
-import { map, of } from "rxjs";
+// import * as webdav from "webdav";
+// import { map, of } from "rxjs";
 
 @Controller("filesearch")
 export class FilesearchController {
   constructor(
     private configService: ConfigService,
     private readonly httpService: HttpService,
-  ) {
-  }
+  ) {}
 
   @Get("videos")
   async getVideos() {
-    const nextCloudUsername = this.configService.get<string>(
-      "NEXT_CLOUD_USERNAME",
-    );
-    const nextCloudAppPassword = this.configService.get<string>(
-      "NEXT_CLOUD_APP_PASSWORD",
-    );
-/*    const client = await webdav.createClient(
-      'https://cloud.ponytyler.de/remote.php/dav/',
-      {
-        authType: webdav.AuthType.Password,
-        password: nextCloudAppPassword,
-        username: nextCloudUsername,
-      });*/
-
+    /*
+        const nextCloudUsername = this.configService.get<string>(
+          "NEXT_CLOUD_USERNAME",
+        );
+        const nextCloudAppPassword = this.configService.get<string>(
+          "NEXT_CLOUD_APP_PASSWORD",
+        );
+            const client = await webdav.createClient(
+          'https://cloud.ponytyler.de/remote.php/dav/',
+          {
+            authType: webdav.AuthType.Password,
+            password: nextCloudAppPassword,
+            username: nextCloudUsername,
+          });*/
     /*const searchRequest = `<?xml version="1.0" encoding="UTF-8"?>
  <d:searchrequest xmlns:d="DAV:" xmlns:oc="http://owncloud.org/ns">
      <d:basicsearch>
@@ -67,5 +66,4 @@ export class FilesearchController {
         ),
     ).toPromise();*/
   }
-
 }

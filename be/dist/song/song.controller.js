@@ -30,10 +30,10 @@ let SongController = class SongController {
             },
             orderBy: [
                 {
-                    artist: 'asc',
+                    artist: "asc",
                 },
                 {
-                    name: 'asc',
+                    name: "asc",
                 },
             ],
         });
@@ -48,10 +48,10 @@ let SongController = class SongController {
             },
             orderBy: [
                 {
-                    artist: 'asc',
+                    artist: "asc",
                 },
                 {
-                    name: 'asc',
+                    name: "asc",
                 },
             ],
         });
@@ -72,8 +72,8 @@ let SongController = class SongController {
                 ],
             },
             orderBy: {
-                artist: 'asc',
-                name: 'asc',
+                artist: "asc",
+                name: "asc",
             },
         });
     }
@@ -102,48 +102,48 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], SongController.prototype, "findAll", null);
 __decorate([
-    (0, common_1.Get)('selectable'),
+    (0, common_1.Get)("selectable"),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", void 0)
 ], SongController.prototype, "findAllSelectable", null);
 __decorate([
-    (0, common_1.Get)(':id'),
-    __param(0, (0, common_1.Param)('id')),
+    (0, common_1.Get)(":id"),
+    __param(0, (0, common_1.Param)("id")),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", void 0)
 ], SongController.prototype, "findOne", null);
 __decorate([
-    (0, common_1.Get)('search/:text'),
-    __param(0, (0, common_1.Param)('text')),
+    (0, common_1.Get)("search/:text"),
+    __param(0, (0, common_1.Param)("text")),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", void 0)
 ], SongController.prototype, "search", null);
 __decorate([
-    (0, common_1.Get)('sync-with-single-source-of-truth'),
+    (0, common_1.Get)("sync-with-single-source-of-truth"),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", void 0)
 ], SongController.prototype, "syncWithSingleSourceOfTruth", null);
 __decorate([
-    (0, common_1.Patch)(':id'),
-    __param(0, (0, common_1.Param)('id')),
+    (0, common_1.Patch)(":id"),
+    __param(0, (0, common_1.Param)("id")),
     __param(1, (0, common_1.Body)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String, Object]),
     __metadata("design:returntype", void 0)
 ], SongController.prototype, "update", null);
 __decorate([
-    (0, common_1.Delete)(':id'),
-    __param(0, (0, common_1.Param)('id')),
+    (0, common_1.Delete)(":id"),
+    __param(0, (0, common_1.Param)("id")),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", void 0)
 ], SongController.prototype, "remove", null);
 exports.SongController = SongController = __decorate([
-    (0, common_1.Controller)('api/song'),
+    (0, common_1.Controller)("api/song"),
     __metadata("design:paramtypes", [song_service_1.SongService])
 ], SongController);
 //# sourceMappingURL=song.controller.js.map

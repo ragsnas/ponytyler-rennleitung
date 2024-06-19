@@ -17,14 +17,8 @@ let CronModule = class CronModule {
 exports.CronModule = CronModule;
 exports.CronModule = CronModule = __decorate([
     (0, common_1.Module)({
-        imports: [
-            schedule_1.ScheduleModule.forRoot(),
-            prisma_api_module_1.PrismaApiModule,
-            axios_1.HttpModule,
-        ],
-        providers: [
-            song_sync_service_1.SongSyncService
-        ]
+        imports: [schedule_1.ScheduleModule.forRoot(), prisma_api_module_1.PrismaApiModule, axios_1.HttpModule],
+        providers: [song_sync_service_1.SongSyncService],
     })
 ], CronModule);
 //# sourceMappingURL=cron.module.js.map

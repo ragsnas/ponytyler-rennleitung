@@ -19,8 +19,6 @@ let FilesearchController = class FilesearchController {
         this.httpService = httpService;
     }
     async getVideos() {
-        const nextCloudUsername = this.configService.get("NEXT_CLOUD_USERNAME");
-        const nextCloudAppPassword = this.configService.get("NEXT_CLOUD_APP_PASSWORD");
     }
 };
 exports.FilesearchController = FilesearchController;

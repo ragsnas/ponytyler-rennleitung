@@ -1,12 +1,12 @@
-import {Injectable} from '@nestjs/common';
-import {PrismaService} from './prisma.service';
-import {Prisma, Song} from '@prisma/client';
+import { Injectable } from "@nestjs/common";
+import { PrismaService } from "./prisma.service";
+import { Prisma, Song } from "@prisma/client";
 
 export enum Origin {
-  LEGACY = 'LEGACY',
-  FROM_DIRECT_INPUT = 'FROM_DIRECT_INPUT',
-  FROM_FILE_SYNC = 'FROM_FILE_SYNC',
-  FROM_CLOUD_SYNC = 'FROM_CLOUD_SYNC',
+  LEGACY = "LEGACY",
+  FROM_DIRECT_INPUT = "FROM_DIRECT_INPUT",
+  FROM_FILE_SYNC = "FROM_FILE_SYNC",
+  FROM_CLOUD_SYNC = "FROM_CLOUD_SYNC",
 }
 
 @Injectable()

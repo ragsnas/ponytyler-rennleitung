@@ -25,36 +25,35 @@ let SongSyncService = SongSyncService_1 = class SongSyncService {
     async handleCron() {
         let songsFromCloud = undefined;
         try {
-            songsFromCloud = await (0, rxjs_1.firstValueFrom)(this.httpService.get('https://songlist.ponytyler.de/api/index.php'));
+            songsFromCloud = await (0, rxjs_1.firstValueFrom)(this.httpService.get("https://songlist.ponytyler.de/api/index.php"));
         }
         catch (e) {
             this.logger.error(`could not receive songs from cloud: `, e);
         }
         const localSongs = await this.songService.songs({});
         if (songsFromCloud && localSongs) {
-            songsFromCloud.data.forEach(song => {
+            songsFromCloud.data.forEach((song) => {
                 const fullCloudSongName = `${song.artist} - ${song.title}`;
-                if (!localSongs.some((localSong) => this.cleanSongname(this.songToString(localSong)) === this.cleanSongname(fullCloudSongName))) {
-                    this.logger.debug('Need to create Song:' + JSON.stringify(song));
-                    this.songService.createSong({
+                if (!localSongs.some((localSong) => this.cleanSongname(this.songToString(localSong)) ===
+                    this.cleanSongname(fullCloudSongName))) {
+                    this.logger.debug("Need to create Song:" + JSON.stringify(song));
+                    this.songService
+                        .createSong({
                         name: song.title,
                         artist: song.artist,
                         selectable: true,
                         deleted: false,
-                        origin: song_service_1.Origin.FROM_CLOUD_SYNC
-                    }).then((song) => {
-                        this.logger.debug('Song Created:' + JSON.stringify(song));
+                        origin: song_service_1.Origin.FROM_CLOUD_SYNC,
+                    })
+                        .then((song) => {
+                        this.logger.debug("Song Created:" + JSON.stringify(song));
                     });
                 }
             });
         }
     }
     cleanSongname(name) {
-        return name
-            .replace('[PT]', '')
-            .replace('[PTHQ]', '')
-            .toLowerCase()
-            .trim();
+        return name.replace("[PT]", "").replace("[PTHQ]", "").toLowerCase().trim();
     }
     songToString(song) {
         return `${song.artist} - ${song.name}`;

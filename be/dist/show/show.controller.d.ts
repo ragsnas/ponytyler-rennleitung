@@ -1,5 +1,5 @@
-import { ShowService } from '../prisma-api/show.service';
-import { Show, Prisma } from '@prisma/client';
+import { ShowService } from "../prisma-api/show.service";
+import { Show, Prisma } from "@prisma/client";
 export declare class ShowController {
     private readonly showService;
     constructor(showService: ShowService);

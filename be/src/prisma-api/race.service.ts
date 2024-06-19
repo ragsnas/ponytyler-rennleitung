@@ -1,7 +1,7 @@
-import {Injectable} from '@nestjs/common';
-import {PrismaService} from './prisma.service';
-import {Prisma, Race} from "@prisma/client";
-import {RaceState} from "../race/race.controller";
+import { Injectable } from "@nestjs/common";
+import { PrismaService } from "./prisma.service";
+import { Prisma, Race } from "@prisma/client";
+import { RaceState } from "../race/race.controller";
 
 @Injectable()
 export class RaceService {
@@ -27,13 +27,16 @@ export class RaceService {
   async upcomingRaceWithSongs() {
     const show = await this.prisma.show.findFirst({
       where: { active: true },
-      orderBy: {date: 'desc'},
-      take: 1
+      orderBy: { date: "desc" },
+      take: 1,
     });
     return this.prisma.race.findFirst({
-      where: { showId: Number(show.id), raceState: {equals: RaceState.WAITING_TO_RACE} },
+      where: {
+        showId: Number(show.id),
+        raceState: { equals: RaceState.WAITING_TO_RACE },
+      },
       include: { song1: true, song2: true },
-      orderBy: {orderNumber: 'asc'}
+      orderBy: { orderNumber: "asc" },
     });
   }
 
@@ -58,7 +61,7 @@ export class RaceService {
   async createRace(data: Prisma.RaceUncheckedCreateInput): Promise<Race> {
     const highestOrderNumberRace: Race[] = await this.races({
       where: { showId: Number(data.showId) },
-      orderBy: { orderNumber: 'desc' },
+      orderBy: { orderNumber: "desc" },
     });
     return this.prisma.race.create({
       data: {
@@ -85,9 +88,13 @@ export class RaceService {
     return this.prisma.race.update({
       data: {
         person1: data.person1,
-        song1: data.song1Id ? { connect: { id: Number(data.song1Id) } } : undefined,
+        song1: data.song1Id
+          ? { connect: { id: Number(data.song1Id) } }
+          : undefined,
         person2: data.person2,
-        song2: data.song2Id ? { connect: { id: Number(data.song2Id) } } : undefined,
+        song2: data.song2Id
+          ? { connect: { id: Number(data.song2Id) } }
+          : undefined,
         createdAt: data.createdAt,
         orderNumber: data.orderNumber,
         raced: data.raced,
@@ -104,13 +111,22 @@ export class RaceService {
   }
 
   private calculateRaceState(data: Prisma.RaceUncheckedUpdateInput): RaceState {
-    if (data.raceState === RaceState.WAITING_FOR_OPPONENT && data.song1Id && data.song2Id && data.person1 && data.person2) {
-      return RaceState.WAITING_TO_RACE
-    } else if (data.raceState === RaceState.WAITING_TO_RACE && !(data.song1Id && data.song2Id && data.person1 && data.person2)) {
-      return RaceState.WAITING_FOR_OPPONENT
+    if (
+      data.raceState === RaceState.WAITING_FOR_OPPONENT &&
+      data.song1Id &&
+      data.song2Id &&
+      data.person1 &&
+      data.person2
+    ) {
+      return RaceState.WAITING_TO_RACE;
+    } else if (
+      data.raceState === RaceState.WAITING_TO_RACE &&
+      !(data.song1Id && data.song2Id && data.person1 && data.person2)
+    ) {
+      return RaceState.WAITING_FOR_OPPONENT;
     }
 
-    return data.raceState as RaceState || RaceState.WAITING_TO_RACE;
+    return (data.raceState as RaceState) || RaceState.WAITING_TO_RACE;
   }
 
   async deleteRace(where: Prisma.RaceWhereUniqueInput): Promise<Race> {

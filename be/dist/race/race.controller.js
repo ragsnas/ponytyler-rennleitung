@@ -37,17 +37,19 @@ let RaceController = class RaceController {
         return this.raceService.races({
             where: {
                 showId: Number(showId),
-                raceState: raced ? { equals: RaceState.RACED } : { not: { equals: RaceState.RACED } }
+                raceState: raced
+                    ? { equals: RaceState.RACED }
+                    : { not: { equals: RaceState.RACED } },
             },
-            orderBy: { orderNumber: raced ? 'desc' : 'asc' },
+            orderBy: { orderNumber: raced ? "desc" : "asc" },
         });
     }
     findAllRacesForShow(showId) {
         return this.raceService.races({
             where: {
-                showId: Number(showId)
+                showId: Number(showId),
             },
-            orderBy: { orderNumber: 'asc' },
+            orderBy: { orderNumber: "asc" },
         });
     }
     findRaces() {
@@ -58,20 +60,20 @@ let RaceController = class RaceController {
             this.raceService.races({
                 where: {
                     raceState: { equals: RaceState.RACED },
-                    show: { finished: { equals: true } }
+                    show: { finished: { equals: true } },
                 },
             }),
             this.showService.shows({
                 where: {
-                    finished: { equals: true }
+                    finished: { equals: true },
                 },
-            })
+            }),
         ]).pipe((0, rxjs_1.map)(([races, shows]) => {
             const numberOfRaces = races
-                .map(race => race.bikeWon === 3 ? 2 : 1)
+                .map((race) => (race.bikeWon === 3 ? 2 : 1))
                 .reduce((accumulator, currentValue) => accumulator + currentValue) || 0;
             const totalTime = shows
-                .map(show => show.duration)
+                .map((show) => show.duration)
                 .reduce((accumulator, currentValue) => accumulator + currentValue) || 0;
             return Math.round(numberOfRaces / (totalTime / 60));
         }));
@@ -101,16 +103,16 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], RaceController.prototype, "create", null);
 __decorate([
-    (0, common_1.Get)('for-show/:showId'),
-    __param(0, (0, common_1.Param)('showId')),
-    __param(1, (0, common_1.Query)('raced')),
+    (0, common_1.Get)("for-show/:showId"),
+    __param(0, (0, common_1.Param)("showId")),
+    __param(1, (0, common_1.Query)("raced")),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String, String]),
     __metadata("design:returntype", void 0)
 ], RaceController.prototype, "findRacesForShow", null);
 __decorate([
-    (0, common_1.Get)('for-show/:showId/all'),
-    __param(0, (0, common_1.Param)('showId')),
+    (0, common_1.Get)("for-show/:showId/all"),
+    __param(0, (0, common_1.Param)("showId")),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", void 0)
@@ -122,48 +124,48 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], RaceController.prototype, "findRaces", null);
 __decorate([
-    (0, common_1.Get)('average-races-per-hour'),
+    (0, common_1.Get)("average-races-per-hour"),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", void 0)
 ], RaceController.prototype, "calculateAverageRacesPerHour", null);
 __decorate([
-    (0, common_1.Get)('upcoming-with-songs'),
+    (0, common_1.Get)("upcoming-with-songs"),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", void 0)
 ], RaceController.prototype, "findUpcomingRaceWithSongs", null);
 __decorate([
-    (0, common_1.Get)(':id'),
-    __param(0, (0, common_1.Param)('id')),
+    (0, common_1.Get)(":id"),
+    __param(0, (0, common_1.Param)("id")),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", void 0)
 ], RaceController.prototype, "findOne", null);
 __decorate([
-    (0, common_1.Get)(':id/with-songs'),
-    __param(0, (0, common_1.Param)('id')),
+    (0, common_1.Get)(":id/with-songs"),
+    __param(0, (0, common_1.Param)("id")),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", void 0)
 ], RaceController.prototype, "findOneWithSongs", null);
 __decorate([
-    (0, common_1.Patch)(':id'),
-    __param(0, (0, common_1.Param)('id')),
+    (0, common_1.Patch)(":id"),
+    __param(0, (0, common_1.Param)("id")),
     __param(1, (0, common_1.Body)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String, Object]),
     __metadata("design:returntype", void 0)
 ], RaceController.prototype, "update", null);
 __decorate([
-    (0, common_1.Delete)(':id'),
-    __param(0, (0, common_1.Param)('id')),
+    (0, common_1.Delete)(":id"),
+    __param(0, (0, common_1.Param)("id")),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", void 0)
 ], RaceController.prototype, "remove", null);
 exports.RaceController = RaceController = __decorate([
-    (0, common_1.Controller)('api/race'),
+    (0, common_1.Controller)("api/race"),
     __metadata("design:paramtypes", [race_service_1.RaceService,
         show_service_1.ShowService])
 ], RaceController);

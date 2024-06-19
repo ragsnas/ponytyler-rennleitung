@@ -33,10 +33,7 @@ let ShowService = class ShowService {
     }
     async showsOrderedByActiveAndDate() {
         return this.prisma.show.findMany({
-            orderBy: [
-                { active: 'desc' },
-                { date: 'desc' }
-            ],
+            orderBy: [{ active: "desc" }, { date: "desc" }],
         });
     }
     async createShow(data) {

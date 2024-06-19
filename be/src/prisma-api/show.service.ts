@@ -1,6 +1,6 @@
-import { Injectable } from '@nestjs/common';
-import { PrismaService } from './prisma.service';
-import { Show, Prisma } from '@prisma/client';
+import { Injectable } from "@nestjs/common";
+import { PrismaService } from "./prisma.service";
+import { Show, Prisma } from "@prisma/client";
 
 @Injectable()
 export class ShowService {
@@ -33,10 +33,7 @@ export class ShowService {
 
   async showsOrderedByActiveAndDate(): Promise<Show[]> {
     return this.prisma.show.findMany({
-      orderBy: [
-        {active: 'desc'},
-        {date: 'desc'}
-      ],
+      orderBy: [{ active: "desc" }, { date: "desc" }],
     });
   }
 

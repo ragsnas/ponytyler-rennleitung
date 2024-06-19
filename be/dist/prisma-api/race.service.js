@@ -33,13 +33,16 @@ let RaceService = class RaceService {
     async upcomingRaceWithSongs() {
         const show = await this.prisma.show.findFirst({
             where: { active: true },
-            orderBy: { date: 'desc' },
-            take: 1
+            orderBy: { date: "desc" },
+            take: 1,
         });
         return this.prisma.race.findFirst({
-            where: { showId: Number(show.id), raceState: { equals: race_controller_1.RaceState.WAITING_TO_RACE } },
+            where: {
+                showId: Number(show.id),
+                raceState: { equals: race_controller_1.RaceState.WAITING_TO_RACE },
+            },
             include: { song1: true, song2: true },
-            orderBy: { orderNumber: 'asc' }
+            orderBy: { orderNumber: "asc" },
         });
     }
     async races(params) {
@@ -56,7 +59,7 @@ let RaceService = class RaceService {
     async createRace(data) {
         const highestOrderNumberRace = await this.races({
             where: { showId: Number(data.showId) },
-            orderBy: { orderNumber: 'desc' },
+            orderBy: { orderNumber: "desc" },
         });
         return this.prisma.race.create({
             data: {
@@ -78,9 +81,13 @@ let RaceService = class RaceService {
         return this.prisma.race.update({
             data: {
                 person1: data.person1,
-                song1: data.song1Id ? { connect: { id: Number(data.song1Id) } } : undefined,
+                song1: data.song1Id
+                    ? { connect: { id: Number(data.song1Id) } }
+                    : undefined,
                 person2: data.person2,
-                song2: data.song2Id ? { connect: { id: Number(data.song2Id) } } : undefined,
+                song2: data.song2Id
+                    ? { connect: { id: Number(data.song2Id) } }
+                    : undefined,
                 createdAt: data.createdAt,
                 orderNumber: data.orderNumber,
                 raced: data.raced,
@@ -96,10 +103,15 @@ let RaceService = class RaceService {
         });
     }
     calculateRaceState(data) {
-        if (data.raceState === race_controller_1.RaceState.WAITING_FOR_OPPONENT && data.song1Id && data.song2Id && data.person1 && data.person2) {
+        if (data.raceState === race_controller_1.RaceState.WAITING_FOR_OPPONENT &&
+            data.song1Id &&
+            data.song2Id &&
+            data.person1 &&
+            data.person2) {
             return race_controller_1.RaceState.WAITING_TO_RACE;
         }
-        else if (data.raceState === race_controller_1.RaceState.WAITING_TO_RACE && !(data.song1Id && data.song2Id && data.person1 && data.person2)) {
+        else if (data.raceState === race_controller_1.RaceState.WAITING_TO_RACE &&
+            !(data.song1Id && data.song2Id && data.person1 && data.person2)) {
             return race_controller_1.RaceState.WAITING_FOR_OPPONENT;
         }
         return data.raceState || race_controller_1.RaceState.WAITING_TO_RACE;
