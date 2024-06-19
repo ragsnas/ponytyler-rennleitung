@@ -67,9 +67,9 @@
     "moduleResolution": "node",
     "importHelpers": true,
     "target": "ES2022",
-    "module": "ES2022",
+    "module": "ES2020",
     "lib": [
-      "es2021.intl",
+      "ES2020",
       "dom"
     ]
   },

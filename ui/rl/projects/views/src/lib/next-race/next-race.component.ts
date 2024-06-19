@@ -9,7 +9,9 @@ import {Observable} from "rxjs";
 })
 export class NextRaceComponent {
 
-  upcommingRace$: Observable<Race> = this.raceService.getUpcommingRace();
+  upcommingRace$: Observable<Race> | undefined;
 
-  constructor(private raceService: RaceService) { }
+  constructor(private raceService: RaceService) {
+    this.upcommingRace$ = this.raceService.getUpcommingRace()
+  }
 }
