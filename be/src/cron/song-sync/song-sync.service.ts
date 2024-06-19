@@ -45,7 +45,7 @@ export class SongSyncService {
               selectable: true,
               deleted: false,
               origin: Origin.FROM_CLOUD_SYNC,
-            } as Song)
+            })
             .then((song: Song) => {
               this.logger.debug("Song Created:" + JSON.stringify(song));
             });
