@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { HttpClientModule } from '@angular/common/http';
+import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 import { NgModule } from '@angular/core';
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
@@ -34,38 +34,31 @@ const routes: Routes = [
   { path: ':songId', component: EditSongComponent },
 ];
 
-@NgModule({
-  declarations: [
-    SongsComponent,
-    SongComponent,
-    CreateSongComponent,
-    SongSyncComponent,
-    EditSongComponent,
-    DuplicatesComponent
-  ],
-  imports: [
-    CommonModule,
-    RouterModule.forChild(routes),
-    FormsModule,
-    HttpClientModule,
-    ReactiveFormsModule,
-    MatFormFieldModule,
-    MatSnackBarModule,
-    MatInputModule,
-    MatButtonModule,
-    MatTableModule,
-    MatIconModule,
-    MatCheckboxModule,
-    MatListModule,
-    MatProgressSpinnerModule,
-    BackendApiModule,
-    ButtonListModule,
-    SongSyncOriginModule,
-    MatSelectModule,
-    MatSliderModule,
-    MatChipsModule,
-  ],
-  providers: [SongService],
-  exports: [SongsComponent, EditSongComponent, DuplicatesComponent],
-})
+@NgModule({ declarations: [
+        SongsComponent,
+        SongComponent,
+        CreateSongComponent,
+        SongSyncComponent,
+        EditSongComponent,
+        DuplicatesComponent
+    ],
+    exports: [SongsComponent, EditSongComponent, DuplicatesComponent], imports: [CommonModule,
+        RouterModule.forChild(routes),
+        FormsModule,
+        ReactiveFormsModule,
+        MatFormFieldModule,
+        MatSnackBarModule,
+        MatInputModule,
+        MatButtonModule,
+        MatTableModule,
+        MatIconModule,
+        MatCheckboxModule,
+        MatListModule,
+        MatProgressSpinnerModule,
+        BackendApiModule,
+        ButtonListModule,
+        SongSyncOriginModule,
+        MatSelectModule,
+        MatSliderModule,
+        MatChipsModule], providers: [SongService, provideHttpClient(withInterceptorsFromDi())] })
 export class SongModule {}

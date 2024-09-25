@@ -1,4 +1,4 @@
-import { HttpClientModule } from '@angular/common/http';
+import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 import { NgModule } from '@angular/core';
 import { RaceService } from './race.service';
 import { ShowService } from './show.service';
@@ -7,15 +7,11 @@ import { StatisticsService } from "./statistics.service";
 
 
 
-@NgModule({
-  imports: [
-    HttpClientModule
-  ],
-  providers: [
-    SongService,
-    ShowService,
-    RaceService,
-    StatisticsService
-  ]
-})
+@NgModule({ imports: [], providers: [
+        SongService,
+        ShowService,
+        RaceService,
+        StatisticsService,
+        provideHttpClient(withInterceptorsFromDi())
+    ] })
 export class BackendApiModule { }

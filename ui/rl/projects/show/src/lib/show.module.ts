@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { HttpClientModule } from '@angular/common/http';
+import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 import { NgModule } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatBadgeModule } from '@angular/material/badge';
@@ -42,43 +42,37 @@ const routes: Routes = [
   { path: ':showId', component: ShowDashboardComponent },
 ];
 
-@NgModule({
-  declarations: [
-    ShowComponent,
-    ShowsComponent,
-    CreateShowComponent,
-    EditShowComponent,
-    ShowDashboardComponent,
-    CreateRaceComponent,
-    UpdateRaceComponent,
-    DirectorDashboardComponent,
-    DirectorDashboardRedirectComponent
-  ],
-  imports: [
-    CommonModule,
-    RouterModule.forChild(routes),
-    HttpClientModule,
-    ReactiveFormsModule,
-    FormsModule,
-    MatTableModule,
-    MatIconModule,
-    MatInputModule,
-    MatFormFieldModule,
-    MatButtonModule,
-    MatDatepickerModule,
-    MatNativeDateModule,
-    MatBadgeModule,
-    BackendApiModule,
-    SongSearchModule,
-    ButtonListModule,
-    MatSnackBarModule,
-    MatProgressSpinnerModule,
-    MatProgressBarModule,
-    MatSelectModule,
-    MatDialogModule,
-    YesNoDialogModule,
-    MessageModule
-  ],
-  exports: [ShowComponent],
-})
+@NgModule({ declarations: [
+        ShowComponent,
+        ShowsComponent,
+        CreateShowComponent,
+        EditShowComponent,
+        ShowDashboardComponent,
+        CreateRaceComponent,
+        UpdateRaceComponent,
+        DirectorDashboardComponent,
+        DirectorDashboardRedirectComponent
+    ],
+    exports: [ShowComponent], imports: [CommonModule,
+        RouterModule.forChild(routes),
+        ReactiveFormsModule,
+        FormsModule,
+        MatTableModule,
+        MatIconModule,
+        MatInputModule,
+        MatFormFieldModule,
+        MatButtonModule,
+        MatDatepickerModule,
+        MatNativeDateModule,
+        MatBadgeModule,
+        BackendApiModule,
+        SongSearchModule,
+        ButtonListModule,
+        MatSnackBarModule,
+        MatProgressSpinnerModule,
+        MatProgressBarModule,
+        MatSelectModule,
+        MatDialogModule,
+        YesNoDialogModule,
+        MessageModule], providers: [provideHttpClient(withInterceptorsFromDi())] })
 export class ShowModule {}
