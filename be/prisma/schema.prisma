@@ -14,10 +14,31 @@ model Show {
   id Int @id @default(autoincrement())
   name String @unique
   date DateTime?
+  actualStartTime DateTime?
   duration Int?
   finished Boolean @default(false)
   active Boolean @default(false)
   races Race[] @relation(name: "ShowToRace")
+  shifts Shift[] @relation(name: "ShowToShift")
+}
+
+model Shift {
+  id Int @id @default(autoincrement())
+  show Show @relation(name: "ShowToShift", fields: [showId], references: [id])
+  showId Int
+  order Int
+  duration Int?
+  shiftStarted DateTime?
+  shiftFinished DateTime?
+  shiftJobs ShiftRole[] @relation(name: "ShiftToShiftRole")
+}
+
+model ShiftRole {
+  id Int @id @default(autoincrement())
+  shift Shift @relation(name: "ShiftToShiftRole", fields: [shiftId], references: [id])
+  shiftId Int
+  roleTitle String
+  crewMember String
 }
 
 model Song {

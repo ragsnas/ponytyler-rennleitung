@@ -18,10 +18,10 @@ export declare class RaceController {
         createdAt: Date;
         raced: boolean;
         raceState: string;
-        person1: string;
-        song1Id: number;
-        person2: string;
-        song2Id: number;
+        person1: string | null;
+        song1Id: number | null;
+        person2: string | null;
+        song2Id: number | null;
         bikeWon: number;
     }>;
     findRacesForShow(showId: string, raced: string): Promise<{
@@ -31,10 +31,10 @@ export declare class RaceController {
         createdAt: Date;
         raced: boolean;
         raceState: string;
-        person1: string;
-        song1Id: number;
-        person2: string;
-        song2Id: number;
+        person1: string | null;
+        song1Id: number | null;
+        person2: string | null;
+        song2Id: number | null;
         bikeWon: number;
     }[]>;
     findAllRacesForShow(showId: string): Promise<{
@@ -44,10 +44,10 @@ export declare class RaceController {
         createdAt: Date;
         raced: boolean;
         raceState: string;
-        person1: string;
-        song1Id: number;
-        person2: string;
-        song2Id: number;
+        person1: string | null;
+        song1Id: number | null;
+        person2: string | null;
+        song2Id: number | null;
         bikeWon: number;
     }[]>;
     findRaces(): Promise<{
@@ -57,10 +57,10 @@ export declare class RaceController {
         createdAt: Date;
         raced: boolean;
         raceState: string;
-        person1: string;
-        song1Id: number;
-        person2: string;
-        song2Id: number;
+        person1: string | null;
+        song1Id: number | null;
+        person2: string | null;
+        song2Id: number | null;
         bikeWon: number;
     }[]>;
     calculateAverageRacesPerHour(): import("rxjs").Observable<number>;
@@ -88,10 +88,10 @@ export declare class RaceController {
         createdAt: Date;
         raced: boolean;
         raceState: string;
-        person1: string;
-        song1Id: number;
-        person2: string;
-        song2Id: number;
+        person1: string | null;
+        song1Id: number | null;
+        person2: string | null;
+        song2Id: number | null;
         bikeWon: number;
     }>;
     findOne(id: string): Promise<{
@@ -101,10 +101,10 @@ export declare class RaceController {
         createdAt: Date;
         raced: boolean;
         raceState: string;
-        person1: string;
-        song1Id: number;
-        person2: string;
-        song2Id: number;
+        person1: string | null;
+        song1Id: number | null;
+        person2: string | null;
+        song2Id: number | null;
         bikeWon: number;
     }>;
     findOneWithSongs(id: string): Promise<{
@@ -114,10 +114,10 @@ export declare class RaceController {
         createdAt: Date;
         raced: boolean;
         raceState: string;
-        person1: string;
-        song1Id: number;
-        person2: string;
-        song2Id: number;
+        person1: string | null;
+        song1Id: number | null;
+        person2: string | null;
+        song2Id: number | null;
         bikeWon: number;
     }>;
     update(id: string, data: Prisma.RaceUncheckedUpdateInput): Promise<{
@@ -127,10 +127,10 @@ export declare class RaceController {
         createdAt: Date;
         raced: boolean;
         raceState: string;
-        person1: string;
-        song1Id: number;
-        person2: string;
-        song2Id: number;
+        person1: string | null;
+        song1Id: number | null;
+        person2: string | null;
+        song2Id: number | null;
         bikeWon: number;
     }>;
     remove(id: string): Promise<{
@@ -140,10 +140,10 @@ export declare class RaceController {
         createdAt: Date;
         raced: boolean;
         raceState: string;
-        person1: string;
-        song1Id: number;
-        person2: string;
-        song2Id: number;
+        person1: string | null;
+        song1Id: number | null;
+        person2: string | null;
+        song2Id: number | null;
         bikeWon: number;
     }>;
 }

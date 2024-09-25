@@ -21,8 +21,9 @@ export declare class ShowService {
     deleteShowWithRaces(id: string): Promise<[Prisma.BatchPayload, {
         id: number;
         name: string;
-        date: Date;
-        duration: number;
+        date: Date | null;
+        actualStartTime: Date | null;
+        duration: number | null;
         finished: boolean;
         active: boolean;
     }]>;

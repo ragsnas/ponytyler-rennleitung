@@ -37,5 +37,27 @@
     </ui-button-list>
   </div>
 
+  <div>
+    <h2>Shifts</h2>
+    <ng-container formArrayName="shifts">
+      <ng-container *ngFor="let shiftForm of shifts.controls; let shiftsIndex = index">
+        <div class="lesson-form-row" [formGroup]="shiftForm">
+          <h3>
+            Shift #{{shiftsIndex + 1}}
+          </h3>
+          <mat-form-field appearance="outline">
+            <mat-label>Role</mat-label>
+            <input matInput formControlName="roleTitle" [id]="'roleTitle_' + shiftsIndex"  placeholder="i.e. Moderation" type="text">
+          </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>Crew Member</mat-label>
+            <input matInput formControlName="crewMember"  [id]="'crewMember_' + shiftsIndex" placeholder="i.e. Amy Angeldust" type="text">
+          </mat-form-field>
+      </div>
+        </ng-container>
+    </ng-container>
+    <button mat-flat-button color="primary" (click)="addShift()"><mat-icon>add</mat-icon> Shift</button>
+  </div>
+
   <button mat-flat-button color="primary" [disabled]="!form.valid" (click)="createShow()">Speichern</button>
 </div>

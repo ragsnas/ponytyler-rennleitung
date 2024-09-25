@@ -1,8 +1,9 @@
 import {Component} from '@angular/core';
-import {FormControl, FormGroup, Validators} from '@angular/forms';
+import { FormArray, FormControl, FormGroup, Validators } from "@angular/forms";
 import {ActivatedRoute, Router} from '@angular/router';
-import {ShowService} from 'projects/backend-api/src/lib/show.service';
+import { ShowService } from "projects/backend-api/src/lib/show.service";
 import {MatSnackBar} from "@angular/material/snack-bar";
+import { Shift } from "projects/backend-api/src/lib/shift.service";
 
 @Component({
   selector: 'lib-create-show',
@@ -14,7 +15,8 @@ export class CreateShowComponent {
     name: new FormControl('', {validators: [Validators.required]}),
     date: new FormControl(new Date()),
     time: new FormControl('20:00', {validators: [Validators.required]}),
-    duration: new FormControl('120', {validators: [Validators.required]})
+    duration: new FormControl('120', {validators: [Validators.required]}),
+    shifts: new FormArray([])
   });
 
   constructor(
@@ -63,5 +65,18 @@ export class CreateShowComponent {
 
   setDuration(duration: number): void {
     this.form.controls['duration'].patchValue(duration.toString());
+  }
+
+  getShiftsAsFormGroups(): FormGroup[] {
+    return (this.form.controls['shifts'] as FormArray).controls as FormGroup[];
+  }
+
+  addShift() {
+    (this.form.controls['shifts'] as FormArray).push(new FormControl(new FormGroup({
+      roleTitle: new FormControl(''),
+      crewMember: new FormControl(''),
+    })));
+    console.log('Added Shift:', this.form.get('shifts'));
+    console.log('Shifts is now:', this.getShiftsAsFormGroups());
   }
 }
