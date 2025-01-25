@@ -1,0 +1,13 @@
+<div [formGroup]="form">
+  <div>
+    @for (shiftJob of getShiftControlsAsFormGroups(); track shiftJob; let jobIndex = $index) {
+      <div class="form-row">
+        <shift-role-from [shiftJob]="shiftJob" [index]="index" [jobIndex]="jobIndex"></shift-role-from>
+      </div>
+    }
+
+    <input formControlName="roleTitle">
+    <input formControlName="crewMember">
+  </div>
+  @if (!isValid) {<div class="errorMessage">Can not be empty</div>}
+</div>
