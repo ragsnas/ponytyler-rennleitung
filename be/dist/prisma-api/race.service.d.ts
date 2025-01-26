@@ -29,10 +29,10 @@ export declare class RaceService {
         createdAt: Date;
         raced: boolean;
         raceState: string;
-        person1: string;
-        song1Id: number;
-        person2: string;
-        song2Id: number;
+        person1: string | null;
+        song1Id: number | null;
+        person2: string | null;
+        song2Id: number | null;
         bikeWon: number;
     }>;
     races(params: {
