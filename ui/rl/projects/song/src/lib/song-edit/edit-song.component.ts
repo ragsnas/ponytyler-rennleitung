@@ -42,7 +42,7 @@ export class EditSongComponent {
       } as Song
     ).subscribe({
       next: (result) => {
-        this.snackBar.open(`Successfully Updated Song`, 'OK', {panelClass: 'success'})
+        this.snackBar.open(`Successfully Updated Song`, 'OK', {duration: 200, panelClass: 'success'})
           .afterDismissed()
           .subscribe(() => {
             this.router.navigate(['..'], {relativeTo: this.route});

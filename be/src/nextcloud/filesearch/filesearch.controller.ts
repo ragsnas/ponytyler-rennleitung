@@ -1,8 +1,6 @@
 import { Controller, Get } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { HttpService } from "@nestjs/axios";
-// import * as webdav from "webdav";
-// import { map, of } from "rxjs";
 
 @Controller("filesearch")
 export class FilesearchController {

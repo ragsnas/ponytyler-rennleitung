@@ -47,7 +47,7 @@ export class CreateShowComponent {
       finished: false
     }).subscribe({
       next: (result) => {
-        this.snackBar.open(`Successfully Created Show ${name}`, 'OK', {panelClass: 'success'})
+        this.snackBar.open(`Successfully Created Show ${name}`, 'OK', {duration: 200, panelClass: 'success'})
           .afterDismissed()
           .subscribe(() => {
             this.router.navigate(['..', result.id], {relativeTo: this.route});

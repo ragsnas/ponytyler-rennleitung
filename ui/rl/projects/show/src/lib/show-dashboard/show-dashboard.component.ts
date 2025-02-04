@@ -195,7 +195,7 @@ export class ShowDashboardComponent implements OnInit, OnDestroy {
       } as Race)
       .subscribe({
         next: (result) => {
-          this.snackBar.open(`Marked Race as "Both Won"`, 'OK', {panelClass: 'success', duration: 500});
+          this.snackBar.open(`Marked Race as "Both Won"`, 'OK', {panelClass: 'success', duration: 200});
           this.loadRaces();
         },
         error: (error) => {
@@ -215,7 +215,7 @@ export class ShowDashboardComponent implements OnInit, OnDestroy {
       } as Race)
       .subscribe({
         next: (result) => {
-          this.snackBar.open(`Marked Race as over`, 'OK', {panelClass: 'success', duration: 500});
+          this.snackBar.open(`Marked Race as over`, 'OK', {panelClass: 'success', duration: 200});
           this.loadRaces();
         },
         error: (error) => {
@@ -231,7 +231,7 @@ export class ShowDashboardComponent implements OnInit, OnDestroy {
       .updateRace({...race, raced: false, bikeWon: 0, raceState: RaceState.WAITING_TO_RACE} as Race)
       .subscribe({
         next: (result) => {
-          this.snackBar.open(`Marked Race as NOT over`, 'OK', {panelClass: 'success', duration: 500});
+          this.snackBar.open(`Marked Race as NOT over`, 'OK', {panelClass: 'success', duration: 200});
           this.loadRaces();
         },
         error: (error) => {
@@ -309,7 +309,7 @@ export class ShowDashboardComponent implements OnInit, OnDestroy {
       if(result) {
         this.showService.deleteShow(this.show?.id as string).subscribe({
           next: (result) => {
-            this.snackBar.open(`Show was deleted`, 'OK', {panelClass: 'success', duration: 500});
+            this.snackBar.open(`Show was deleted`, 'OK', {panelClass: 'success', duration: 200});
             this.router.navigate(['../']);
           },
           error: (error) => {
@@ -347,7 +347,7 @@ export class ShowDashboardComponent implements OnInit, OnDestroy {
         })
       ]).subscribe({
         next: () => {
-          this.snackBar.open(`Races where merged successfully`, 'OK', {panelClass: 'success', duration: 500});
+          this.snackBar.open(`Races where merged successfully`, 'OK', {panelClass: 'success', duration: 200});
           this.loadRaces();
         },
         error: (error) => {
