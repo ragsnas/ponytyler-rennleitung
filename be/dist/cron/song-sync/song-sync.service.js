@@ -37,7 +37,7 @@ let SongSyncService = SongSyncService_1 = class SongSyncService {
                 const fullCloudSongName = `${song.artist} - ${song.title}`;
                 if (!localSongs.some((localSong) => this.cleanSongname(this.songToString(localSong)) ===
                     this.cleanSongname(fullCloudSongName))) {
-                    this.logger.debug("Need to create Song:" + JSON.stringify(song));
+                    this.logger.log("Need to create Song:" + JSON.stringify(song));
                     this.songService
                         .createSong({
                         name: song.title,
@@ -47,7 +47,7 @@ let SongSyncService = SongSyncService_1 = class SongSyncService {
                         origin: song_service_1.Origin.FROM_CLOUD_SYNC,
                     })
                         .then((song) => {
-                        this.logger.debug("Song Created:" + JSON.stringify(song));
+                        this.logger.log("Song Created:" + JSON.stringify(song));
                     });
                 }
             });
