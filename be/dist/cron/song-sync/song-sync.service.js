@@ -23,6 +23,7 @@ let SongSyncService = SongSyncService_1 = class SongSyncService {
         this.logger = new common_1.Logger(SongSyncService_1.name);
     }
     async handleCron() {
+        this.logger.log("Running Song Sync Cron-Job.");
         let songsFromCloud = undefined;
         try {
             songsFromCloud = await (0, rxjs_1.firstValueFrom)(this.httpService.get("https://songlist.ponytyler.de/api/index.php"));
@@ -61,7 +62,7 @@ let SongSyncService = SongSyncService_1 = class SongSyncService {
 };
 exports.SongSyncService = SongSyncService;
 __decorate([
-    (0, schedule_1.Cron)(schedule_1.CronExpression.EVERY_10_MINUTES),
+    (0, schedule_1.Cron)(schedule_1.CronExpression.EVERY_MINUTE),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", Promise)

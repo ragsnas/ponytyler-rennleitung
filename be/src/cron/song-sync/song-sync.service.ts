@@ -14,8 +14,9 @@ export class SongSyncService {
     private readonly songService: SongService,
   ) {}
 
-  @Cron(CronExpression.EVERY_10_MINUTES)
+  @Cron(CronExpression.EVERY_MINUTE)
   async handleCron() {
+    this.logger.log("Running Song Sync Cron-Job.");
     let songsFromCloud = undefined;
     try {
       songsFromCloud = await firstValueFrom(
