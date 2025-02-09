@@ -1,8 +1,8 @@
-import {Component, OnDestroy, OnInit} from '@angular/core';
-import {ActivatedRoute, ParamMap, Router} from '@angular/router';
-import {Race, RaceService, RaceState} from 'projects/backend-api/src/lib/race.service';
-import {StatisticsService} from 'projects/backend-api/src/lib/statistics.service';
-import {Show, ShowService} from 'projects/backend-api/src/lib/show.service';
+import { Component, OnDestroy, OnInit } from "@angular/core";
+import { ActivatedRoute, ParamMap, Router } from "@angular/router";
+import { Race, RaceService, RaceState } from "projects/backend-api/src/lib/race.service";
+import { StatisticsService } from "projects/backend-api/src/lib/statistics.service";
+import { Show, ShowService } from "projects/backend-api/src/lib/show.service";
 import {
   BehaviorSubject,
   combineLatest,
@@ -18,13 +18,13 @@ import {
   takeUntil,
   takeWhile,
   tap,
-  timer
-} from 'rxjs';
-import {MatSnackBar} from "@angular/material/snack-bar";
-import {FormControl} from "@angular/forms";
-import {MatSelectChange} from '@angular/material/select';
-import {MatDialog} from "@angular/material/dialog";
-import {YesNoDialogComponent} from "projects/ui/yes-no-dialog/src/lib/yes-no-dialog.component"
+  timer,
+} from "rxjs";
+import { MatSnackBar } from "@angular/material/snack-bar";
+import { FormControl } from "@angular/forms";
+import { MatSelectChange } from "@angular/material/select";
+import { MatDialog } from "@angular/material/dialog";
+import { YesNoDialogComponent } from "projects/ui/yes-no-dialog/src/lib/yes-no-dialog.component";
 
 export interface RaceWithSongPlayedInfo extends Race {
   song1AlreadyPlayed: boolean;
@@ -84,6 +84,8 @@ export class ShowDashboardComponent implements OnInit, OnDestroy {
   show: Show | undefined;
   races$: BehaviorSubject<RaceWithSongPlayedInfo[]> = new BehaviorSubject<RaceWithSongPlayedInfo[]>([]);
   finishedRaces$: BehaviorSubject<Race[]> = new BehaviorSubject<Race[]>([]);
+  firstRaceWaitingToRaceId: string | undefined;
+  lastRaceWaitingToRaceId: string | undefined;
   refreshing: boolean = false;
   refreshIntervalFormControl: FormControl<string> = new FormControl<string>(localStorage.getItem(PONTY_TYPER_REFRESH_TIMER_INTERVAL) || '5000', {nonNullable: true});
   refresh$: Subject<void> = new Subject<void>();
@@ -137,6 +139,10 @@ export class ShowDashboardComponent implements OnInit, OnDestroy {
       next: ([show, races]) => {
         this.show = show;
         const finishedRaces = races.filter(race => race.raceState === RaceState.RACED);
+        const racesWaitingToRace = races.filter(race => race.raceState === RaceState.WAITING_TO_RACE);
+        console.log(`this.lastRaceWaitingToRaceId is set to: `, this.lastRaceWaitingToRaceId);
+        this.lastRaceWaitingToRaceId = racesWaitingToRace[racesWaitingToRace.length-1].id;
+        this.firstRaceWaitingToRaceId = racesWaitingToRace[0].id;
         this.finishedRaces$.next(finishedRaces);
         this.races$.next(this.addAlreadyPlayedInfoToRacesFromFinishedRaces(
           races.sort(sortRacesForList()),
@@ -171,7 +177,7 @@ export class ShowDashboardComponent implements OnInit, OnDestroy {
           next: (result) => {
             this.snackBar.open(`Marked Race as "Bike ${bike} won!" Congrats ${bike === 1 ? race.person1 : race.person2}`, 'OK', {
               panelClass: 'success',
-              duration: 500
+              duration: 250
             });
             this.loadRaces();
           },
@@ -195,7 +201,7 @@ export class ShowDashboardComponent implements OnInit, OnDestroy {
       } as Race)
       .subscribe({
         next: (result) => {
-          this.snackBar.open(`Marked Race as "Both Won"`, 'OK', {panelClass: 'success', duration: 500});
+          this.snackBar.open(`Marked Race as "Both Won"`, 'OK', {panelClass: 'success', duration: 250});
           this.loadRaces();
         },
         error: (error) => {
@@ -215,7 +221,7 @@ export class ShowDashboardComponent implements OnInit, OnDestroy {
       } as Race)
       .subscribe({
         next: (result) => {
-          this.snackBar.open(`Marked Race as over`, 'OK', {panelClass: 'success', duration: 500});
+          this.snackBar.open(`Marked Race as over`, 'OK', {panelClass: 'success', duration: 250});
           this.loadRaces();
         },
         error: (error) => {
@@ -231,7 +237,7 @@ export class ShowDashboardComponent implements OnInit, OnDestroy {
       .updateRace({...race, raced: false, bikeWon: 0, raceState: RaceState.WAITING_TO_RACE} as Race)
       .subscribe({
         next: (result) => {
-          this.snackBar.open(`Marked Race as NOT over`, 'OK', {panelClass: 'success', duration: 500});
+          this.snackBar.open(`Marked Race as NOT over`, 'OK', {panelClass: 'success', duration: 250});
           this.loadRaces();
         },
         error: (error) => {
@@ -309,7 +315,7 @@ export class ShowDashboardComponent implements OnInit, OnDestroy {
       if(result) {
         this.showService.deleteShow(this.show?.id as string).subscribe({
           next: (result) => {
-            this.snackBar.open(`Show was deleted`, 'OK', {panelClass: 'success', duration: 500});
+            this.snackBar.open(`Show was deleted`, 'OK', {panelClass: 'success', duration: 250});
             this.router.navigate(['../']);
           },
           error: (error) => {
@@ -347,7 +353,7 @@ export class ShowDashboardComponent implements OnInit, OnDestroy {
         })
       ]).subscribe({
         next: () => {
-          this.snackBar.open(`Races where merged successfully`, 'OK', {panelClass: 'success', duration: 500});
+          this.snackBar.open(`Races where merged successfully`, 'OK', {panelClass: 'success', duration: 250});
           this.loadRaces();
         },
         error: (error) => {
@@ -357,5 +363,43 @@ export class ShowDashboardComponent implements OnInit, OnDestroy {
         },
       });
     }
+  }
+
+  moveRaceUp(race: Race, upOrDown: string): void {
+    this.raceService
+      .moveRaceUpOrDown({...race} as Race, upOrDown)
+      .subscribe({
+        next: (result) => {
+          this.snackBar.open(`Moved Race "${upOrDown}"`, 'OK', {panelClass: 'success', duration: 250});
+          this.loadRaces();
+        },
+        error: (error) => {
+          this.snackBar.open(`Error Moving Race "${upOrDown}": ${JSON.stringify(error)}`, 'OK', {
+            duration: 10000, panelClass: 'error'
+          });
+        },
+      });
+  }
+
+  isRaceLastWaitingToRace(race: Race): boolean {
+    return (this.lastRaceWaitingToRaceId === race.id)
+  }
+
+  isRaceFirstWaitingToRace(race: Race) {
+    return (this.firstRaceWaitingToRaceId === race.id)
+  }
+
+  repairOrder() {
+    this.raceService.repairOrder(this.show?.id || '').subscribe({
+      next: (result) => {
+        this.snackBar.open(`Race Order Repaired"`, 'OK', {panelClass: 'success', duration: 250});
+        this.loadRaces();
+      },
+      error: (error) => {
+        this.snackBar.open(`Race Order could not be repaired: ${JSON.stringify(error)}`, 'OK', {
+          duration: 10000, panelClass: 'error'
+        });
+      },
+    });
   }
 }

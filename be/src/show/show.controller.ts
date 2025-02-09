@@ -10,10 +10,14 @@ import {
 } from "@nestjs/common";
 import { ShowService } from "../prisma-api/show.service";
 import { Show, Prisma } from "@prisma/client";
+import { RaceService } from "../prisma-api/race.service";
 
 @Controller("api/show")
 export class ShowController {
-  constructor(private readonly showService: ShowService) {}
+  constructor(
+    private readonly showService: ShowService,
+    private readonly raceService: RaceService
+  ) {}
 
   @Get("")
   async getShows(): Promise<Show[]> {
@@ -69,6 +73,13 @@ export class ShowController {
     });
   }
 
+  @Patch("repair-races-for/:id")
+  repairRacesFor(
+    @Param("id") id: string
+  ) {
+    return this.raceService.repairOrder(id);
+  }
+
   @Patch(":id")
   async updateShow(
     @Param("id") id: string,
@@ -82,6 +93,6 @@ export class ShowController {
 
   @Delete(":id")
   async deleteShowById(@Param("id") id: string): Promise<any> {
-    return this.showService.deleteShowWithRaces(id);
+    return this.showService.deleteShowWithRacesAndShifts(id);
   }
 }

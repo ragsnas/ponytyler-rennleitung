@@ -120,6 +120,31 @@ export declare class RaceController {
         song2Id: number | null;
         bikeWon: number;
     }>;
+    moveRaceUpOrDown(id: string, upOrDown: string): Promise<[{
+        id: number;
+        showId: number;
+        orderNumber: number;
+        createdAt: Date;
+        raced: boolean;
+        raceState: string;
+        person1: string | null;
+        song1Id: number | null;
+        person2: string | null;
+        song2Id: number | null;
+        bikeWon: number;
+    }, {
+        id: number;
+        showId: number;
+        orderNumber: number;
+        createdAt: Date;
+        raced: boolean;
+        raceState: string;
+        person1: string | null;
+        song1Id: number | null;
+        person2: string | null;
+        song2Id: number | null;
+        bikeWon: number;
+    }]>;
     update(id: string, data: Prisma.RaceUncheckedUpdateInput): Promise<{
         id: number;
         showId: number;

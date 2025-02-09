@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { PrismaService } from "./prisma.service";
-import { Show, Prisma } from "@prisma/client";
+import { Show, Prisma, Shift } from "@prisma/client";
 
 @Injectable()
 export class ShowService {
@@ -54,16 +54,32 @@ export class ShowService {
     });
   }
 
-  async deleteShow(where: Prisma.ShowWhereUniqueInput): Promise<Show> {
-    return this.prisma.show.delete({
-      where,
-    });
-  }
-
-  deleteShowWithRaces(id: string) {
+  async deleteShowWithRacesAndShifts(id: string) {
     const deleteRaces = this.prisma.race.deleteMany({
       where: {
         showId: Number(id),
+      },
+    });
+
+    const relatedShifts: Shift[] = await this.prisma.shift.findMany({
+      where: {
+        showId: Number(id)
+      }
+    });
+
+    const deleteShiftsRoles = this.prisma.shiftRole.deleteMany({
+      where: {
+        shiftId: {
+          in: relatedShifts.map(shift => shift.id)
+        },
+      },
+    });
+
+    const deleteShifts = this.prisma.shift.deleteMany({
+      where: {
+        id: {
+          in: relatedShifts.map(shift => shift.id)
+        },
       },
     });
 
@@ -73,6 +89,6 @@ export class ShowService {
       },
     });
 
-    return this.prisma.$transaction([deleteRaces, deleteShow]);
+    return this.prisma.$transaction([deleteRaces, deleteShifts, deleteShiftsRoles, deleteShow]);
   }
 }

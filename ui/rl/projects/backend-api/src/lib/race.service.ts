@@ -62,6 +62,16 @@ export class RaceService {
     });
   }
 
+  repairOrder(showId: string) {
+    return this.http.patch(`${environment.apiUrl}api/show/repair-races-for/${showId}`, {});
+  }
+
+  moveRaceUpOrDown(race: Race, upOrDown: string) {
+    return this.http.patch(`${environment.apiUrl}api/race/${race.id}/${upOrDown}`, {
+      ...race,
+    });
+  }
+
   getRace(raceId: string | undefined): Observable<Race> {
     return this.http.get<Race>(
       environment.apiUrl + `api/race/${raceId}/with-songs`
