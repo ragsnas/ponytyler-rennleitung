@@ -1,5 +1,8 @@
 import { Injectable } from "@angular/core";
 import { Show } from "./show.service";
+import { Observable } from "rxjs";
+import { environment } from "../../../../src/environments/environment";
+import { HttpClient } from "@angular/common/http";
 
 export interface Shift {
   id: number | undefined;
@@ -24,5 +27,9 @@ export interface ShiftRole {
   providedIn: 'root'
 })
 export class ShiftService {
+  constructor(private http: HttpClient) {}
 
+  getAllShiftsForShow(showId: string): Observable<Shift[]> {
+    return this.http.get<Shift[]>(environment.apiUrl + 'api/shifts/for-show/' + showId);
+  }
 }

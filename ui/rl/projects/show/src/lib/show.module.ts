@@ -34,6 +34,9 @@ import { EditShowComponent } from "./edit-show/edit-show.component";
 import { MessageModule } from "projects/ui/message/src/public-api";
 import { ShiftFormComponent } from "./shift/shift-form.component";
 import { ShiftRoleFormComponent } from "./shift/shift-role-form.component";
+import { ShiftsDashboardComponent } from "./shifts/dashboard/shifts-dashboard.component";
+import { ChooseUsersComponent } from "./shifts/wizzard/steps/choose-users/choose-users.component";
+import { WizzardComponent } from "./shifts/wizzard/wizzard.component";
 
 const routes: Routes = [
   { path: "", component: ShowsComponent },
@@ -42,9 +45,18 @@ const routes: Routes = [
   { path: ":showId/edit", component: EditShowComponent },
   { path: ":showId/create-race", component: CreateRaceComponent },
   { path: ":showId/race/:raceId", component: UpdateRaceComponent },
-  { path: ":showId/director-dashboard", component: DirectorDashboardComponent },
+  { path: ":showId/shifts", component: ShiftsDashboardComponent },
+  {
+    path: ":showId/shifts/wizzard",
+    component: WizzardComponent,
+    children: [
+      { path: "", redirectTo: "users", pathMatch: "full" },
+      { path: "users", component: ChooseUsersComponent },
+      { path: "shifts", component: ChooseUsersComponent },
+      { path: "roles", component: ChooseUsersComponent },
+    ]
+  },
   { path: ":showId", component: ShowDashboardComponent },
-  // { path: ":showId/shifts", component: ShiftsComponent },
 ];
 
 @NgModule({
@@ -59,9 +71,10 @@ const routes: Routes = [
     DirectorDashboardComponent,
     DirectorDashboardRedirectComponent,
     ShiftFormComponent,
-    ShiftRoleFormComponent
+    ShiftRoleFormComponent,
+    ShiftsDashboardComponent
   ],
-  exports: [ShowComponent], imports: [CommonModule,
+  imports: [CommonModule,
     RouterModule.forChild(routes),
     ReactiveFormsModule,
     FormsModule,
@@ -83,7 +96,9 @@ const routes: Routes = [
     MatDialogModule,
     YesNoDialogModule,
     MessageModule
-  ], providers: [provideHttpClient(withInterceptorsFromDi())],
+  ],
+  exports: [ShowComponent],
+  providers: [provideHttpClient(withInterceptorsFromDi())],
 })
 export class ShowModule {
 }

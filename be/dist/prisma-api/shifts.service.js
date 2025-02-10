@@ -48,6 +48,9 @@ let ShiftsService = class ShiftsService {
             where,
         });
     }
+    shiftsForShow(showId) {
+        return this.shifts({ where: { showId: Number(showId) } });
+    }
 };
 exports.ShiftsService = ShiftsService;
 exports.ShiftsService = ShiftsService = __decorate([

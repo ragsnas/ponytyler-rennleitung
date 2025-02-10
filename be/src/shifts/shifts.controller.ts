@@ -18,18 +18,11 @@ export class ShiftsController {
     private readonly shiftsService: ShiftsService
   ) {}
 
-  @Get("")
-  async getShows(): Promise<Shift[]> {
-    return this.shiftsService.shifts({
-      orderBy: { order: 'desc' },
-    });
-  }
-
   @Get("for-show/:showId")
   findShiftsForShow(
     @Param("showId") showId: string
   ) {
-    return this.findShiftsForShow(showId);
+    return this.shiftsService.shiftsForShow(showId);
   }
 
   @Post()

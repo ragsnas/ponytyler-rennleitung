@@ -20,25 +20,14 @@ let ShiftsController = class ShiftsController {
     constructor(shiftsService) {
         this.shiftsService = shiftsService;
     }
-    async getShows() {
-        return this.shiftsService.shifts({
-            orderBy: { order: 'desc' },
-        });
-    }
     findShiftsForShow(showId) {
-        return this.findShiftsForShow(showId);
+        return this.shiftsService.shiftsForShow(showId);
     }
     create(data) {
         return this.shiftsService.createShift(data);
     }
 };
 exports.ShiftsController = ShiftsController;
-__decorate([
-    (0, common_1.Get)(""),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", []),
-    __metadata("design:returntype", Promise)
-], ShiftsController.prototype, "getShows", null);
 __decorate([
     (0, common_1.Get)("for-show/:showId"),
     __param(0, (0, common_1.Param)("showId")),

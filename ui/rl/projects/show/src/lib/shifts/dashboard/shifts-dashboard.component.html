@@ -1,0 +1,26 @@
+<h2>{{ show?.name }} / Shifts</h2>
+
+<ng-container *ngIf="shifts$ | async as shifts">
+
+  <div>
+    <ui-button-list>
+      <button mat-flat-button color="accent" [routerLink]="'../'">
+        <mat-icon>arrow_back</mat-icon>
+      </button>
+      <button mat-flat-button color="accent" [routerLink]="'wizzard'">
+        <mat-icon>auto_fix_high</mat-icon>
+        create {{shifts.length > 0 ? 'new ' : ''}}shifts
+      </button>
+    </ui-button-list>
+  </div>
+
+  <ng-container *ngIf="shifts && shifts.length > 0">
+  </ng-container>
+
+  <ng-container *ngIf="shifts && shifts.length <= 0">
+    <lib-message [type]="'info'">
+      No Shifts yet.
+      Use The Wizzard to create Shifts.
+    </lib-message>
+  </ng-container>
+</ng-container>

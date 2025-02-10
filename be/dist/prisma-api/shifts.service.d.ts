@@ -17,4 +17,12 @@ export declare class ShiftsService {
         data: Prisma.ShiftUpdateInput;
     }): Promise<Shift>;
     deleteShift(where: Prisma.ShiftWhereUniqueInput): Promise<Shift>;
+    shiftsForShow(showId: string): Promise<{
+        id: number;
+        showId: number;
+        order: number;
+        duration: number | null;
+        shiftStarted: Date | null;
+        shiftFinished: Date | null;
+    }[]>;
 }

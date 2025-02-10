@@ -1,24 +1,24 @@
 import { Component, OnInit } from "@angular/core";
-import { ActivatedRoute, Router, RouterOutlet } from "@angular/router";
-import { Show, ShowService } from "projects/backend-api/src/lib/show.service";
-import { Shift, ShiftService } from "projects/backend-api/src/lib/shift.service";
-import { MatSnackBar } from "@angular/material/snack-bar";
+import { DatePipe } from "@angular/common";
 import { Observable } from "rxjs";
+import { Show, ShowService } from "projects/backend-api/src/lib/show.service";
+import { ActivatedRoute, Router } from "@angular/router";
+import { MatSnackBar } from "@angular/material/snack-bar";
+import { Shift, ShiftService } from "projects/backend-api/src/lib/shift.service";
+import { info } from "ng-packagr/lib/utils/log";
 
 @Component({
-  selector: 'lib-wizzard',
-  standalone: true,
-  imports: [
-    RouterOutlet,
-  ],
-  templateUrl: './wizzard.component.html',
-  styleUrl: './wizzard.component.css'
+  selector: "lib-dashboard",
+  templateUrl: "./shifts-dashboard.component.html",
+  styleUrl: "./shifts-dashboard.component.scss",
 })
-export class WizzardComponent implements OnInit {
+export class ShiftsDashboardComponent implements OnInit {
+
   showId: string | undefined;
   show$: Observable<Show> | undefined;
-  show: Show | undefined;
   shifts$: Observable<Shift[]> | undefined;
+  shifts: Shift[] | undefined;
+  show: Show | undefined;
 
   constructor(
     private showService: ShowService,
