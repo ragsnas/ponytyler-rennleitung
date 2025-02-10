@@ -1,34 +1,41 @@
 /* You can add global styles to this file, and also import other style files */
 @import 'material-icons/iconfont/material-icons.css';
 
-html, body { height: 100%; }
-body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+html, body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: Roboto, "Helvetica Neue", sans-serif;
+}
 
 
 hr {
-    margin: 0 30px !important;
-    color :#999;
-    border-style: none;
-    border-top-style:dotted;
-  }
+  margin: 0 30px !important;
+  color: #999;
+  border-style: none;
+  border-top-style: dotted;
+}
 
-  .mat-mdc-table {
-    width: 100%;
-  }
+.mat-mdc-table {
+  width: 100%;
+}
 
-  h2 {
-    padding: 0.5em !important;
-    margin: 1em 0em 0.5em !important;
-  }
+h2 {
+  padding: 0.5em !important;
+  margin: 0.25em 0em 0.25em !important;
+}
 
-  h3 {
-    padding: 0.5em !important;
-    margin: 3em 0em 1em !important;
-  }
+h3 {
+  padding: 0.5em !important;
+  margin: 2em 0em 1em !important;
+}
 
 .mat-mdc-snack-bar-container.success {
   background-color: #056905;
 }
+
 .mat-mdc-snack-bar-container.success .mat-mdc-snack-bar-action {
   color: #fff;
   background-color: #053d05;
@@ -37,6 +44,7 @@ hr {
 .mat-mdc-snack-bar-container.error {
   background-color: #a00000;
 }
+
 .mat-mdc-snack-bar-container.error .mat-mdc-snack-bar-action {
   color: #fff;
   background-color: #4f0606;

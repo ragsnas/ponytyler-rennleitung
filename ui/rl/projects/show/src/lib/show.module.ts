@@ -44,6 +44,7 @@ const routes: Routes = [
   { path: ":showId/race/:raceId", component: UpdateRaceComponent },
   { path: ":showId/director-dashboard", component: DirectorDashboardComponent },
   { path: ":showId", component: ShowDashboardComponent },
+  // { path: ":showId/shifts", component: ShiftsComponent },
 ];
 
 @NgModule({

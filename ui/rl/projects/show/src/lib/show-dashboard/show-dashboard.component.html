@@ -9,30 +9,35 @@
 
 <ng-container *ngIf="races$ | async as races">
   <div class="refresh-bar"
-    style="display: flex;flex-direction: row;justify-content: space-between;align-items:center;gap: 15px;">
-    <ui-button-list style="flex-basis: auto;">
+    style="display: flex;flex-direction: row;justify-content: space-between;align-items:flex-start;align-self:flex-start;gap: 15px;">
+    <ui-button-list style="flex-basis: auto;margin-top: 0;" id="show-dashboard-button-list-top">
       <button mat-flat-button color="accent" [routerLink]="'../'">
         <mat-icon>arrow_back</mat-icon>
+      </button>
+      <button mat-flat-button color="accent" [routerLink]="'/shifts'">
+        <mat-icon>groups</mat-icon>
       </button>
       <button mat-flat-button color="accent" (click)="repairOrder()">
         <mat-icon>construction</mat-icon> Repair Order
       </button>
       <button mat-flat-button color="primary" [routerLink]="'create-race'">Add Race for this Show</button>
     </ui-button-list>
-    <mat-form-field style="flex-basis: auto;">
-      <mat-label>Refresh Interval</mat-label>
-      <mat-select [formControl]="refreshIntervalFormControl" (selectionChange)="refreshIntervalChange($event)">
-        <mat-option value="5000">5 Sekunden</mat-option>
-        <mat-option value="8000">8 Sekunden</mat-option>
-        <mat-option value="10000">10 Sekunden</mat-option>
-        <mat-option value="15000">15 Sekunden</mat-option>
-        <mat-option value="30000">30 Sekunden</mat-option>
-        <mat-option value="stop">Stopp</mat-option>
-      </mat-select>
-    </mat-form-field>
-    <p *ngIf="!refreshing" style="flex-grow: 2;">Next Refresh in {{ secondsRemaining$ | async | date:'mm:ss' }}</p>
-    <mat-spinner *ngIf="refreshing" mode="indeterminate" style="flex-grow: 2;margin:0 auto;"
-      [diameter]="25"></mat-spinner>
+    <div style="flex-basis: auto; min-height: 90px;flex-grow: 2;">
+      <mat-form-field style="margin-bottom: 2px;" id="show-dashboard-refresh-setting-dropdown" subscriptSizing="dynamic">
+        <mat-label>Refresh Interval</mat-label>
+        <mat-select [formControl]="refreshIntervalFormControl" (selectionChange)="refreshIntervalChange($event)">
+          <mat-option value="5000">5 Sekunden</mat-option>
+          <mat-option value="8000">8 Sekunden</mat-option>
+          <mat-option value="10000">10 Sekunden</mat-option>
+          <mat-option value="15000">15 Sekunden</mat-option>
+          <mat-option value="30000">30 Sekunden</mat-option>
+          <mat-option value="stop">Stopp</mat-option>
+        </mat-select>
+      </mat-form-field>
+      <p *ngIf="!refreshing" style="margin:0 auto;">Next Refresh in {{ secondsRemaining$ | async | date:'mm:ss' }}</p>
+      <mat-spinner *ngIf="refreshing" mode="indeterminate" style="margin:0 auto;"
+        [diameter]="25"></mat-spinner>
+    </div>
   </div>
 
   <ng-container *ngIf="races.length <= 0">
