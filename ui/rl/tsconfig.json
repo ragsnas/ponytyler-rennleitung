@@ -45,6 +45,9 @@
       "song-search": [
         "dist/song-search"
       ],
+      "users": [
+        "./dist/users"
+      ],
       "video-player": [
         "dist/video-player"
       ],
