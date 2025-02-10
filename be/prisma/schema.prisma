@@ -38,7 +38,8 @@ model ShiftRole {
   shift      Shift  @relation(name: "ShiftToShiftRole", fields: [shiftId], references: [id])
   shiftId    Int
   roleTitle  String
-  crewMember String
+  user       User   @relation(name: "ShiftRoleToUser", fields: [userId], references: [id])
+  userId     Int
 }
 
 model Song {
@@ -70,23 +71,8 @@ model Race {
 }
 
 model User {
-  id          Int                 @id @default(autoincrement())
-  name        String              @unique
-  password    String
-  permissions PermissionsToUser[]
-}
-
-model Permission {
-  id    Int                 @id @default(autoincrement())
-  name  String
-  posts PermissionsToUser[]
-}
-
-model PermissionsToUser {
-  permission   Permission @relation(fields: [permissionId], references: [id])
-  permissionId Int
-  user         User       @relation(fields: [userId], references: [id])
-  userId       Int
-
-  @@id([permissionId, userId])
+  id          Int         @id @default(autoincrement())
+  name        String      @unique
+  shiftRoles  ShiftRole[] @relation(name: "ShiftRoleToUser")
+  password    String?
 }
