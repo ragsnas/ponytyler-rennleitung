@@ -33,7 +33,7 @@ export class CreateSongComponent {
       error: (error) => {
         console.error(`Oh No! It didn't work!:`, error);
       }
-    });;
+    });
   }
 
 

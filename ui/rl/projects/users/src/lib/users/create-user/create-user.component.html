@@ -1,1 +1,7 @@
-<p>create-user works!</p>
+<h2>Create New User</h2>
+
+<div *ngIf="form" [formGroup]="form">
+  <user-form formControlName="user"></user-form>
+
+  <button mat-flat-button color="primary" (click)="createUser()">Speichern</button>
+</div>

@@ -21,7 +21,7 @@ let UserController = class UserController {
         this.userService = userService;
     }
     async getUsers() {
-        return this.userService.users({ orderBy: { name: "desc" } });
+        return this.userService.users({ orderBy: { name: "asc" } });
     }
     async getPostById(id) {
         return this.userService.user({ id: Number(id) });

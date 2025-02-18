@@ -8,6 +8,7 @@ import { CronModule } from "./cron/cron.module";
 import { NextcloudModule } from "./nextcloud/nextcloud.module";
 import { ConfigModule } from "@nestjs/config";
 import { ShiftsModule } from "./shifts/shifts.module";
+import { UserModule } from "./user/user.module";
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { ShiftsModule } from "./shifts/shifts.module";
     SongModule,
     ShowModule,
     ShiftsModule,
+    UserModule,
     CronModule,
     NextcloudModule,
     ConfigModule.forRoot({}),

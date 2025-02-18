@@ -1,1 +1,11 @@
-<p>choose-users works!</p>
+<h2>Choose Users</h2>
+<div *ngIf="form" [formGroup]="form">
+
+  <ul *ngIf="users">
+    <li *ngFor="let userCheckbox of users">
+      <mat-checkbox formControlName="user_{{ userCheckbox.id }}">{{ userCheckbox.name }}</mat-checkbox>
+    </li>
+  </ul>
+
+  <button mat-flat-button color="primary" (click)="nextStep()">Next</button>
+</div>

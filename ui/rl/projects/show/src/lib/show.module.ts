@@ -37,6 +37,9 @@ import { ShiftRoleFormComponent } from "./shift/shift-role-form.component";
 import { ShiftsDashboardComponent } from "./shifts/dashboard/shifts-dashboard.component";
 import { ChooseUsersComponent } from "./shifts/wizzard/steps/choose-users/choose-users.component";
 import { WizzardComponent } from "./shifts/wizzard/wizzard.component";
+import { MatCheckboxModule } from "@angular/material/checkbox";
+import { ChooseShiftsComponent } from "./shifts/wizzard/steps/choose-shifts/choose-shifts.component";
+import { ChooseRolesComponent } from "./shifts/wizzard/steps/choose-roles/choose-roles.component";
 
 const routes: Routes = [
   { path: "", component: ShowsComponent },
@@ -52,7 +55,7 @@ const routes: Routes = [
     children: [
       { path: "", redirectTo: "users", pathMatch: "full" },
       { path: "users", component: ChooseUsersComponent },
-      { path: "shifts", component: ChooseUsersComponent },
+      { path: "shifts", component: ChooseShiftsComponent },
       { path: "roles", component: ChooseUsersComponent },
     ]
   },
@@ -72,7 +75,10 @@ const routes: Routes = [
     DirectorDashboardRedirectComponent,
     ShiftFormComponent,
     ShiftRoleFormComponent,
-    ShiftsDashboardComponent
+    ShiftsDashboardComponent,
+    ChooseUsersComponent,
+    ChooseShiftsComponent,
+    ChooseRolesComponent
   ],
   imports: [CommonModule,
     RouterModule.forChild(routes),
@@ -83,6 +89,7 @@ const routes: Routes = [
     MatInputModule,
     MatFormFieldModule,
     MatButtonModule,
+    MatCheckboxModule,
     MatDatepickerModule,
     MatNativeDateModule,
     MatBadgeModule,

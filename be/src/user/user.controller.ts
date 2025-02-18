@@ -10,7 +10,7 @@ export class UserController {
 
   @Get("")
   async getUsers(): Promise<User[]> {
-    return this.userService.users({orderBy: {name: "desc"}});
+    return this.userService.users({orderBy: {name: "asc"}});
   }
 
   @Get(":id")

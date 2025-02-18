@@ -17,6 +17,7 @@ const cron_module_1 = require("./cron/cron.module");
 const nextcloud_module_1 = require("./nextcloud/nextcloud.module");
 const config_1 = require("@nestjs/config");
 const shifts_module_1 = require("./shifts/shifts.module");
+const user_module_1 = require("./user/user.module");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
@@ -27,6 +28,7 @@ exports.AppModule = AppModule = __decorate([
             song_module_1.SongModule,
             show_module_1.ShowModule,
             shifts_module_1.ShiftsModule,
+            user_module_1.UserModule,
             cron_module_1.CronModule,
             nextcloud_module_1.NextcloudModule,
             config_1.ConfigModule.forRoot({}),
