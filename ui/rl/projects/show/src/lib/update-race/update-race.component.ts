@@ -63,7 +63,7 @@ export class UpdateRaceComponent implements OnInit {
       ...this.form.getRawValue()
     }).subscribe({
       next: (result) => {
-        this.snackBar.open(`Successfully Updated the Race`, 'OK', {panelClass: 'success'})
+        this.snackBar.open(`Successfully Updated the Race`, 'OK', {duration: 200, panelClass: 'success'})
           .afterDismissed()
           .subscribe(() => {
           this.router.navigate(['../..'], {relativeTo: this.route});

@@ -14,8 +14,9 @@ export class SongSyncService {
     private readonly songService: SongService,
   ) {}
 
-  @Cron(CronExpression.EVERY_HOUR)
+  @Cron(CronExpression.EVERY_30_MINUTES)
   async handleCron() {
+    this.logger.log("Running Song Sync Cron-Job.");
     let songsFromCloud = undefined;
     try {
       songsFromCloud = await firstValueFrom(
@@ -37,7 +38,7 @@ export class SongSyncService {
               this.cleanSongname(fullCloudSongName),
           )
         ) {
-          this.logger.debug("Need to create Song:" + JSON.stringify(song));
+          this.logger.log("Need to create Song:" + JSON.stringify(song));
           this.songService
             .createSong({
               name: song.title,
@@ -47,7 +48,7 @@ export class SongSyncService {
               origin: Origin.FROM_CLOUD_SYNC,
             })
             .then((song: Song) => {
-              this.logger.debug("Song Created:" + JSON.stringify(song));
+              this.logger.log("Song Created:" + JSON.stringify(song));
             });
         }
       });

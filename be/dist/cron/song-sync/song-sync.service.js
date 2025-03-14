@@ -23,6 +23,7 @@ let SongSyncService = SongSyncService_1 = class SongSyncService {
         this.logger = new common_1.Logger(SongSyncService_1.name);
     }
     async handleCron() {
+        this.logger.log("Running Song Sync Cron-Job.");
         let songsFromCloud = undefined;
         try {
             songsFromCloud = await (0, rxjs_1.firstValueFrom)(this.httpService.get("https://songlist.ponytyler.de/api/index.php"));
@@ -36,7 +37,7 @@ let SongSyncService = SongSyncService_1 = class SongSyncService {
                 const fullCloudSongName = `${song.artist} - ${song.title}`;
                 if (!localSongs.some((localSong) => this.cleanSongname(this.songToString(localSong)) ===
                     this.cleanSongname(fullCloudSongName))) {
-                    this.logger.debug("Need to create Song:" + JSON.stringify(song));
+                    this.logger.log("Need to create Song:" + JSON.stringify(song));
                     this.songService
                         .createSong({
                         name: song.title,
@@ -46,7 +47,7 @@ let SongSyncService = SongSyncService_1 = class SongSyncService {
                         origin: song_service_1.Origin.FROM_CLOUD_SYNC,
                     })
                         .then((song) => {
-                        this.logger.debug("Song Created:" + JSON.stringify(song));
+                        this.logger.log("Song Created:" + JSON.stringify(song));
                     });
                 }
             });
@@ -61,7 +62,7 @@ let SongSyncService = SongSyncService_1 = class SongSyncService {
 };
 exports.SongSyncService = SongSyncService;
 __decorate([
-    (0, schedule_1.Cron)(schedule_1.CronExpression.EVERY_HOUR),
+    (0, schedule_1.Cron)(schedule_1.CronExpression.EVERY_30_MINUTES),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", Promise)

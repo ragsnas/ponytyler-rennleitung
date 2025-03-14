@@ -65,7 +65,7 @@ export class EditShowComponent implements OnInit {
       finished: this.show?.finished || false,
     }).subscribe({
       next: (result) => {
-        this.snackBar.open(`Successfully Updated Show ${name}`, 'OK', {panelClass: 'success'})
+        this.snackBar.open(`Successfully Updated Show ${name}`, 'OK', {duration: 200, panelClass: 'success'})
           .afterDismissed()
           .subscribe(() => {
             this.router.navigate(['..'], {relativeTo: this.route});
