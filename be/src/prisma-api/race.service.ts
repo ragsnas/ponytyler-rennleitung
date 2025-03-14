@@ -111,11 +111,14 @@ export class RaceService {
 
   async repairOrder(showId: string) {
     console.log(`Repairing Order`);
-    const allRaces: Race[] = await this.races({ where: { showId: Number(showId) }, orderBy: { orderNumber: "desc" } });
+    const allRaces: Race[] = await this.races({
+      where: { showId: Number(showId) },
+      orderBy: { orderNumber: "asc" },
+    });
     console.log(`Found ${allRaces.length} races`);
     const transactions = [];
     for (const [indexCounter, race] of allRaces.entries()) {
-      console.log(`preparing update for ${race.id}`);
+      console.log(`> [${indexCounter}] Preparing update for order nr ${race.orderNumber} (race id: ${race.id})`);
       transactions.push(
         this.prisma.race.update({
           data: {
