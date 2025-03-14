@@ -1,5 +1,11 @@
-.refresh-bar {
-  min-height: 50px;
+.refresh-bar mat-form-field#show-dashboard-refresh-setting-dropdown .mat-mdc-form-field-subscript-wrapper {
+  height: 0 !important;
+  display: none !important;
+  visibility: hidden !important;
+}
+
+.refresh-bar ui-button-list#show-dashboard-button-list-top .button-list-wrapper {
+  margin-top: 0 !important;
 }
 
 table td {

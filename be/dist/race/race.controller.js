@@ -87,6 +87,9 @@ let RaceController = class RaceController {
     findOneWithSongs(id) {
         return this.raceService.raceWithSongs(id);
     }
+    async moveRaceUpOrDown(id, upOrDown) {
+        return this.raceService.moveRacePosition({ raceToMoveId: id, upOrDown });
+    }
     update(id, data) {
         return this.raceService.updateRace({ where: { id: Number(id) }, data });
     }
@@ -149,6 +152,14 @@ __decorate([
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", void 0)
 ], RaceController.prototype, "findOneWithSongs", null);
+__decorate([
+    (0, common_1.Patch)(":id/:upOrDown"),
+    __param(0, (0, common_1.Param)("id")),
+    __param(1, (0, common_1.Param)("upOrDown")),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, String]),
+    __metadata("design:returntype", Promise)
+], RaceController.prototype, "moveRaceUpOrDown", null);
 __decorate([
     (0, common_1.Patch)(":id"),
     __param(0, (0, common_1.Param)("id")),

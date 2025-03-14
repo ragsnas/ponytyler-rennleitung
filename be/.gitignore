@@ -39,3 +39,5 @@ lerna-debug.log*
 
 # BE
 prisma/rl.db
+/prisma/backups/*.db
+/prisma/backups/*.sql

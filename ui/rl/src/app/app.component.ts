@@ -1,5 +1,5 @@
 import {Component, OnInit} from '@angular/core';
-import {Show, ShowService} from "../../projects/backend-api/src/lib/show.service";
+import {Show, ShowService} from "projects/backend-api/src/lib/show.service";
 import {filter, map, Observable} from "rxjs";
 
 @Component({

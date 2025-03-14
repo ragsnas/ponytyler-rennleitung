@@ -12,14 +12,15 @@ const show_service_1 = require("./show.service");
 const race_service_1 = require("./race.service");
 const song_service_1 = require("./song.service");
 const prisma_service_1 = require("./prisma.service");
+const shifts_service_1 = require("./shifts.service");
 let PrismaApiModule = class PrismaApiModule {
 };
 exports.PrismaApiModule = PrismaApiModule;
 exports.PrismaApiModule = PrismaApiModule = __decorate([
     (0, common_1.Module)({
         imports: [],
-        providers: [prisma_service_1.PrismaService, race_service_1.RaceService, show_service_1.ShowService, song_service_1.SongService],
-        exports: [prisma_service_1.PrismaService, race_service_1.RaceService, show_service_1.ShowService, song_service_1.SongService],
+        providers: [prisma_service_1.PrismaService, race_service_1.RaceService, show_service_1.ShowService, shifts_service_1.ShiftsService, song_service_1.SongService],
+        exports: [prisma_service_1.PrismaService, race_service_1.RaceService, show_service_1.ShowService, shifts_service_1.ShiftsService, song_service_1.SongService],
     })
 ], PrismaApiModule);
 //# sourceMappingURL=prisma-api.module.js.map

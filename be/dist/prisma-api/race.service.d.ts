@@ -47,6 +47,35 @@ export declare class RaceService {
         where: Prisma.RaceWhereUniqueInput;
         data: Prisma.RaceUncheckedUpdateInput;
     }): Promise<Race>;
+    repairOrder(showId: string): Promise<any[]>;
+    moveRacePosition(params: {
+        raceToMoveId: string;
+        upOrDown: string;
+    }): Promise<[{
+        id: number;
+        showId: number;
+        orderNumber: number;
+        createdAt: Date;
+        raced: boolean;
+        raceState: string;
+        person1: string | null;
+        song1Id: number | null;
+        person2: string | null;
+        song2Id: number | null;
+        bikeWon: number;
+    }, {
+        id: number;
+        showId: number;
+        orderNumber: number;
+        createdAt: Date;
+        raced: boolean;
+        raceState: string;
+        person1: string | null;
+        song1Id: number | null;
+        person2: string | null;
+        song2Id: number | null;
+        bikeWon: number;
+    }]>;
     private calculateRaceState;
     deleteRace(where: Prisma.RaceWhereUniqueInput): Promise<Race>;
 }

@@ -1,0 +1,16 @@
+INSERT INTO Race (id, showId, orderNumber, createdAt, raced, raceState, person1, song1Id, person2, song2Id, bikeWon) VALUES (131, 32, 0, '1738268374428', 1, 'CANCELED', 'fiete', 93, 'ansgar', 92, 0);
+INSERT INTO Race (id, showId, orderNumber, createdAt, raced, raceState, person1, song1Id, person2, song2Id, bikeWon) VALUES (134, 32, 1, '1738292268948', 1, 'RACED', 'Marcela', 47, 'Nieky ', 19, 2);
+INSERT INTO Race (id, showId, orderNumber, createdAt, raced, raceState, person1, song1Id, person2, song2Id, bikeWon) VALUES (135, 32, 2, '1738292395084', 1, 'RACED', 'Flomo', 122, 'Lukas', 136, 2);
+INSERT INTO Race (id, showId, orderNumber, createdAt, raced, raceState, person1, song1Id, person2, song2Id, bikeWon) VALUES (136, 32, 3, '1738292752148', 1, 'RACED', 'Daniel', 17, 'Luka Toni', 78, 2);
+INSERT INTO Race (id, showId, orderNumber, createdAt, raced, raceState, person1, song1Id, person2, song2Id, bikeWon) VALUES (137, 32, 4, '1738292786675', 1, 'RACED', 'Jazz', 46, 'Dustin', 163, 2);
+INSERT INTO Race (id, showId, orderNumber, createdAt, raced, raceState, person1, song1Id, person2, song2Id, bikeWon) VALUES (138, 32, 5, '1738293122396', 1, 'RACED', 'ayana', 201, 'lisa', 32, 2);
+INSERT INTO Race (id, showId, orderNumber, createdAt, raced, raceState, person1, song1Id, person2, song2Id, bikeWon) VALUES (139, 32, 6, '1738293171283', 1, 'RACED', 'emma', 117, 'nele', 40, 2);
+INSERT INTO Race (id, showId, orderNumber, createdAt, raced, raceState, person1, song1Id, person2, song2Id, bikeWon) VALUES (140, 32, 7, '1738293246497', 1, 'RACED', 'Laura ', 65, 'Sandra ', 59, 2);
+INSERT INTO Race (id, showId, orderNumber, createdAt, raced, raceState, person1, song1Id, person2, song2Id, bikeWon) VALUES (141, 32, 8, '1738293315295', 1, 'RACED', 'Lukas ', 34, 'luca', 93, 1);
+INSERT INTO Race (id, showId, orderNumber, createdAt, raced, raceState, person1, song1Id, person2, song2Id, bikeWon) VALUES (142, 32, 9, '1738293339158', 1, 'RACED', 'Gianluca ', 118, 'Marcel', 173, 2);
+INSERT INTO Race (id, showId, orderNumber, createdAt, raced, raceState, person1, song1Id, person2, song2Id, bikeWon) VALUES (143, 32, 10, '1738293534138', 1, 'RACED', 'jule', 44, 'laurin', 54, 1);
+INSERT INTO Race (id, showId, orderNumber, createdAt, raced, raceState, person1, song1Id, person2, song2Id, bikeWon) VALUES (144, 32, 11, '1738293548516', 1, 'RACED', 'Carla', 40, 'Melina', 54, 2);
+INSERT INTO Race (id, showId, orderNumber, createdAt, raced, raceState, person1, song1Id, person2, song2Id, bikeWon) VALUES (145, 32, 12, '1738293686116', 1, 'RACED', 'lennard', 22, 'jan', 8, 2);
+INSERT INTO Race (id, showId, orderNumber, createdAt, raced, raceState, person1, song1Id, person2, song2Id, bikeWon) VALUES (146, 32, 13, '1738293766031', 1, 'RACED', 'Josha', 61, 'Roxy', 203, 3);
+INSERT INTO Race (id, showId, orderNumber, createdAt, raced, raceState, person1, song1Id, person2, song2Id, bikeWon) VALUES (147, 32, 14, '1738293847471', 1, 'RACED', 'benji', 134, 'steffi', 204, 1);
+INSERT INTO Race (id, showId, orderNumber, createdAt, raced, raceState, person1, song1Id, person2, song2Id, bikeWon) VALUES (148, 32, 15, '1738294250198', 0, 'WAITING_TO_RACE', 'Rachel', 201, 'Liesbeth', 54, 0);

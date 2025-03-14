@@ -16,9 +16,11 @@ exports.ShowController = void 0;
 const common_1 = require("@nestjs/common");
 const show_service_1 = require("../prisma-api/show.service");
 const client_1 = require("@prisma/client");
+const race_service_1 = require("../prisma-api/race.service");
 let ShowController = class ShowController {
-    constructor(showService) {
+    constructor(showService, raceService) {
         this.showService = showService;
+        this.raceService = raceService;
     }
     async getShows() {
         return this.showService.shows({
@@ -61,6 +63,9 @@ let ShowController = class ShowController {
             date: showData.date || new Date(),
         });
     }
+    repairRacesFor(id) {
+        return this.raceService.repairOrder(id);
+    }
     async updateShow(id, showData) {
         return this.showService.updateShow({
             data: showData,
@@ -68,7 +73,7 @@ let ShowController = class ShowController {
         });
     }
     async deleteShowById(id) {
-        return this.showService.deleteShowWithRaces(id);
+        return this.showService.deleteShowWithRacesAndShifts(id);
     }
 };
 exports.ShowController = ShowController;
@@ -117,6 +122,13 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], ShowController.prototype, "createShow", null);
 __decorate([
+    (0, common_1.Patch)("repair-races-for/:id"),
+    __param(0, (0, common_1.Param)("id")),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", void 0)
+], ShowController.prototype, "repairRacesFor", null);
+__decorate([
     (0, common_1.Patch)(":id"),
     __param(0, (0, common_1.Param)("id")),
     __param(1, (0, common_1.Body)()),
@@ -133,6 +145,7 @@ __decorate([
 ], ShowController.prototype, "deleteShowById", null);
 exports.ShowController = ShowController = __decorate([
     (0, common_1.Controller)("api/show"),
-    __metadata("design:paramtypes", [show_service_1.ShowService])
+    __metadata("design:paramtypes", [show_service_1.ShowService,
+        race_service_1.RaceService])
 ], ShowController);
 //# sourceMappingURL=show.controller.js.map

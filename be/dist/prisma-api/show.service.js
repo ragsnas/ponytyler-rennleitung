@@ -48,15 +48,29 @@ let ShowService = class ShowService {
             where,
         });
     }
-    async deleteShow(where) {
-        return this.prisma.show.delete({
-            where,
-        });
-    }
-    deleteShowWithRaces(id) {
+    async deleteShowWithRacesAndShifts(id) {
         const deleteRaces = this.prisma.race.deleteMany({
             where: {
                 showId: Number(id),
+            },
+        });
+        const relatedShifts = await this.prisma.shift.findMany({
+            where: {
+                showId: Number(id)
+            }
+        });
+        const deleteShiftsRoles = this.prisma.shiftRole.deleteMany({
+            where: {
+                shiftId: {
+                    in: relatedShifts.map(shift => shift.id)
+                },
+            },
+        });
+        const deleteShifts = this.prisma.shift.deleteMany({
+            where: {
+                id: {
+                    in: relatedShifts.map(shift => shift.id)
+                },
             },
         });
         const deleteShow = this.prisma.show.delete({
@@ -64,7 +78,7 @@ let ShowService = class ShowService {
                 id: Number(id),
             },
         });
-        return this.prisma.$transaction([deleteRaces, deleteShow]);
+        return this.prisma.$transaction([deleteRaces, deleteShifts, deleteShiftsRoles, deleteShow]);
     }
 };
 exports.ShowService = ShowService;

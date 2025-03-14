@@ -17,11 +17,11 @@ export declare class ShowService {
         where: Prisma.ShowWhereUniqueInput;
         data: Prisma.ShowUpdateInput;
     }): Promise<Show>;
-    deleteShow(where: Prisma.ShowWhereUniqueInput): Promise<Show>;
-    deleteShowWithRaces(id: string): Promise<[Prisma.BatchPayload, {
+    deleteShowWithRacesAndShifts(id: string): Promise<[Prisma.BatchPayload, Prisma.BatchPayload, Prisma.BatchPayload, {
         id: number;
         name: string;
         date: Date | null;
+        actualStartTime: Date | null;
         duration: number | null;
         finished: boolean;
         active: boolean;

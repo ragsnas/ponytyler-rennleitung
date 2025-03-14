@@ -37,5 +37,16 @@
     </ui-button-list>
   </div>
 
+  <div>
+    <h2>Shifts ({{shiftsFormArray.controls.length}})</h2>
+    @for (shift of shiftFormControlsAsArray(); track shift; let index = $index) {
+      <div class="form-row">
+        <h3>Shift #{{ index }}</h3>
+        <shift-from [shift]="shift" [index]="index" [form]="form"></shift-from>
+      </div>
+    }
+    <button mat-flat-button color="primary" (click)="addShift()"><mat-icon>add</mat-icon> Add Shift</button>
+  </div>
+
   <button mat-flat-button color="primary" [disabled]="!form.valid" (click)="createShow()">Speichern</button>
 </div>

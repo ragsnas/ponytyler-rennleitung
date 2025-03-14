@@ -5,19 +5,18 @@ import { RaceState } from "../race/race.controller";
 
 @Injectable()
 export class RaceService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService) {
+  }
 
   async race(
     raceWhereUniqueInput: Prisma.RaceWhereUniqueInput,
   ): Promise<Race | null> {
-    console.log(`\nrace called with `, raceWhereUniqueInput);
     return this.prisma.race.findUnique({
       where: raceWhereUniqueInput,
     });
   }
 
   async raceWithSongs(raceId: string): Promise<Race | null> {
-    console.log(`\nraceWithSongs called with `, raceId);
     return this.prisma.race.findUnique({
       where: { id: Number(raceId) },
       include: { song1: true, song2: true },
@@ -108,6 +107,67 @@ export class RaceService {
       },
       where,
     });
+  }
+
+  async repairOrder(showId: string) {
+    console.log(`Repairing Order`);
+    const allRaces: Race[] = await this.races({
+      where: { showId: Number(showId) },
+      orderBy: { orderNumber: "asc" },
+    });
+    console.log(`Found ${allRaces.length} races`);
+    const transactions = [];
+    for (const [indexCounter, race] of allRaces.entries()) {
+      console.log(`> [${indexCounter}] Preparing update for order nr ${race.orderNumber} (race id: ${race.id})`);
+      transactions.push(
+        this.prisma.race.update({
+          data: {
+            orderNumber: indexCounter,
+          },
+          where: { id: race.id },
+        }),
+      );
+    }
+
+    return this.prisma.$transaction(transactions);
+  }
+
+  async moveRacePosition(params: { raceToMoveId: string, upOrDown: string }) {
+    const raceToMove: Race = await this.race({ id: Number(params.raceToMoveId) });
+    const orderNumberEqClause = params.upOrDown === "up" ? { lt: raceToMove.orderNumber } : { gt: raceToMove.orderNumber };
+    const raceToSwitchWithResults: Race[] = await this.races({
+      where: {
+        showId: Number(raceToMove.showId),
+        raceState: RaceState.WAITING_TO_RACE,
+        orderNumber: orderNumberEqClause,
+      },
+      orderBy: { orderNumber: params.upOrDown === "up" ? "desc" : "asc" },
+      take: 1,
+    });
+    const raceToSwitchWith: Race = raceToSwitchWithResults[0];
+    if (raceToSwitchWith) {
+      console.log(`>>>>>\nraceToMove #${raceToMove.id}: ${raceToMove.orderNumber}`
+        + `\nwill switch with:`
+        + `\nraceToSwitchWith #${raceToSwitchWith.id}: ${raceToSwitchWith.orderNumber}`
+        + `\n to move "${params.upOrDown}"`);
+
+      console.log(`raceToMove:`, raceToMove);
+      console.log(`raceToSwitchWith:`, raceToSwitchWith);
+      const updateRaceToMove = this.prisma.race.update({
+        data: {
+          orderNumber: raceToSwitchWith.orderNumber,
+        },
+        where: { id: raceToMove.id },
+      });
+      const updateRaceToSwitchWith = this.prisma.race.update({
+        data: {
+          orderNumber: raceToMove.orderNumber,
+        },
+        where: { id: raceToSwitchWith.id },
+      });
+
+      return this.prisma.$transaction([updateRaceToSwitchWith, updateRaceToMove]);
+    }
   }
 
   private calculateRaceState(data: Prisma.RaceUncheckedUpdateInput): RaceState {

@@ -10,7 +10,7 @@ import {
 } from "@nestjs/common";
 import { RaceService } from "src/prisma-api/race.service";
 import { ShowService } from "src/prisma-api/show.service";
-import { Prisma } from "@prisma/client";
+import { Prisma, Race } from "@prisma/client";
 import { combineLatest, map } from "rxjs";
 
 export enum RaceState {
@@ -25,7 +25,8 @@ export class RaceController {
   constructor(
     private readonly raceService: RaceService,
     private readonly showService: ShowService,
-  ) {}
+  ) {
+  }
 
   @Post()
   create(@Body() data: Prisma.RaceUncheckedCreateInput) {
@@ -113,6 +114,11 @@ export class RaceController {
   @Get(":id/with-songs")
   findOneWithSongs(@Param("id") id: string) {
     return this.raceService.raceWithSongs(id);
+  }
+
+  @Patch(":id/:upOrDown")
+  async moveRaceUpOrDown(@Param("id") id: string, @Param("upOrDown") upOrDown: string) {
+    return this.raceService.moveRacePosition({ raceToMoveId: id, upOrDown });
   }
 
   @Patch(":id")
