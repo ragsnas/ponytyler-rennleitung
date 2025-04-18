@@ -1,6 +1,8 @@
 <h2>Choose Users</h2>
 <div *ngIf="form" [formGroup]="form">
 
+  <button mat-flat-button color="primary" (click)="nextStep()">Next</button>
+
   <ul *ngIf="users">
     <li *ngFor="let userCheckbox of users">
       <mat-checkbox formControlName="user_{{ userCheckbox.id }}">{{ userCheckbox.name }}</mat-checkbox>

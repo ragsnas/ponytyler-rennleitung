@@ -1,1 +1,19 @@
-<p>choose-shifts works!</p>
+<h2>Assign Shifts</h2>
+<div *ngIf="form" [formGroup]="form">
+
+  <ui-button-list>
+    <button mat-flat-button color="primary" (click)="nextStep()">Next</button>
+    <button mat-flat-button color="primary" (click)="setShiftCountTo(1)">One Shift</button>
+    <button mat-flat-button color="primary" (click)="setShiftCountTo(2)">2 Shifts</button>
+    <button mat-flat-button color="primary" (click)="setShiftCountTo(3)">3 Shifts</button>
+    <button mat-flat-button color="primary" (click)="setShiftCountTo(4)">4 Shifts</button>
+  </ui-button-list>
+
+  <div *ngIf="shifts">
+    <div *ngFor="let shift of shifts" class="shift">
+      <h3 id="shift_title_{{ shift.order }}">{{ shift.order }}</h3>
+    </div>
+  </div>
+
+  <button mat-flat-button color="primary" (click)="nextStep()">Next</button>
+</div>

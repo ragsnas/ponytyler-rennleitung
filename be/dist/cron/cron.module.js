@@ -12,6 +12,7 @@ const schedule_1 = require("@nestjs/schedule");
 const axios_1 = require("@nestjs/axios");
 const prisma_api_module_1 = require("../prisma-api/prisma-api.module");
 const song_sync_service_1 = require("./song-sync/song-sync.service");
+const db_backup_service_1 = require("./db-backup/db-backup.service");
 let CronModule = class CronModule {
 };
 exports.CronModule = CronModule;
@@ -22,7 +23,7 @@ exports.CronModule = CronModule = __decorate([
             prisma_api_module_1.PrismaApiModule,
             axios_1.HttpModule,
         ],
-        providers: [song_sync_service_1.SongSyncService],
+        providers: [song_sync_service_1.SongSyncService, db_backup_service_1.DbBackupService],
     })
 ], CronModule);
 //# sourceMappingURL=cron.module.js.map

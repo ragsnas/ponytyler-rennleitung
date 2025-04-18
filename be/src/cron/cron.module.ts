@@ -3,6 +3,7 @@ import { ScheduleModule } from "@nestjs/schedule";
 import { HttpModule } from "@nestjs/axios";
 import { PrismaApiModule } from "../prisma-api/prisma-api.module";
 import { SongSyncService } from "./song-sync/song-sync.service";
+import { DbBackupService } from "./db-backup/db-backup.service";
 
 @Module({
   imports: [
@@ -10,7 +11,7 @@ import { SongSyncService } from "./song-sync/song-sync.service";
     PrismaApiModule,
     HttpModule,
   ],
-  providers: [SongSyncService],
+  providers: [SongSyncService, DbBackupService],
 })
 export class CronModule {
 }
