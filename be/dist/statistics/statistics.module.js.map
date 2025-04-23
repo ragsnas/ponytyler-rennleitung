@@ -1,0 +1,1 @@
+{"version":3,"file":"statistics.module.js","sourceRoot":"","sources":["../../src/statistics/statistics.module.ts"],"names":[],"mappings":";;;;;;;;;AAAA,2CAAwC;AACxC,uEAAmE;AACnE,mEAA+D;AAMxD,IAAM,gBAAgB,GAAtB,MAAM,gBAAgB;CAAG,CAAA;AAAnB,4CAAgB;2BAAhB,gBAAgB;IAJ5B,IAAA,eAAM,EAAC;QACN,OAAO,EAAE,CAAC,mCAAe,CAAC;QAC1B,WAAW,EAAE,CAAC,4CAAoB,CAAC;KACpC,CAAC;GACW,gBAAgB,CAAG"}

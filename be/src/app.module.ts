@@ -9,6 +9,7 @@ import { NextcloudModule } from "./nextcloud/nextcloud.module";
 import { ConfigModule } from "@nestjs/config";
 import { ShiftsModule } from "./shifts/shifts.module";
 import { UserModule } from "./user/user.module";
+import { StatisticsController } from './statistics/statistics.controller';
 
 @Module({
   imports: [
@@ -21,7 +22,7 @@ import { UserModule } from "./user/user.module";
     NextcloudModule,
     ConfigModule.forRoot({}),
   ],
-  controllers: [AppController],
+  controllers: [AppController, StatisticsController],
   providers: [AppService],
 })
 export class AppModule {}
