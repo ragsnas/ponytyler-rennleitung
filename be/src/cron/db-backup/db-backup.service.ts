@@ -13,7 +13,7 @@ export class DbBackupService {
 
   constructor() {}
 
-  @Cron(CronExpression.EVERY_5_MINUTES)
+  @Cron(CronExpression.EVERY_10_SECONDS)
   async hourly() {
     this.logger.log("Running DB Backup Cron-Job.");
     if(!this.isBackupNecessary()) {

@@ -18,7 +18,12 @@ export class WizzardService {
     this.selectedShiftsForUsers = 0;
   }
 
+  setShiftCount(count: number) {
+    this.selectedShiftCount = count;
+  }
+
   selectUsers(selectedUsers: User[]) {
     this.selectedUsers = selectedUsers;
+    console.log(`this.selectedUsers set to:`, this.selectedUsers);
   }
 }

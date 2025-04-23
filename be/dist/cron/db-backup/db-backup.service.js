@@ -106,7 +106,7 @@ let DbBackupService = DbBackupService_1 = class DbBackupService {
 };
 exports.DbBackupService = DbBackupService;
 __decorate([
-    (0, schedule_1.Cron)(schedule_1.CronExpression.EVERY_5_MINUTES),
+    (0, schedule_1.Cron)(schedule_1.CronExpression.EVERY_10_SECONDS),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", Promise)

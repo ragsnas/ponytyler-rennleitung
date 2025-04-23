@@ -1,6 +1,7 @@
 import { Component } from "@angular/core";
 import { Shift, ShiftRole } from "../../../../../../../backend-api/src/lib/shift.service";
 import { FormBuilder, FormControl, FormGroup } from "@angular/forms";
+import { WizzardService } from "../../wizzard.service";
 
 @Component({
   selector: "lib-choose-shifts",
@@ -9,12 +10,14 @@ import { FormBuilder, FormControl, FormGroup } from "@angular/forms";
 })
 export class ChooseShiftsComponent {
   shifts: Shift[] = [];
-  shiftsRoles: ShiftRole[] = [];
 
   formBuilder: FormBuilder;
   form: FormGroup;
 
-  constructor(formBuilder: FormBuilder) {
+  constructor(
+    formBuilder: FormBuilder,
+    private wizzardService: WizzardService
+    ) {
     this.formBuilder = formBuilder;
     this.form = this.formBuilder.group({
       shifts: new FormControl(1),
@@ -28,9 +31,23 @@ export class ChooseShiftsComponent {
   }
 
   setShiftCountTo(numberOfShifts: number) {
-    if (this.form.controls["shiftRoles"]) {
-      this.form.removeControl("shiftRoles");
+    this.wizzardService.setShiftCount(numberOfShifts);
+    if (this.shifts.length < numberOfShifts) {
+      for(let i = 0; i < numberOfShifts;i++) {
+        this.shifts.push({} as Shift);
+      }
     }
+    else {
+      this.shifts = this.shifts.splice(numberOfShifts);
+    }
+
+    if (this.form.controls["shiftRoles"]) {
+      console.log(`shiftRoles exists:`, this.form.controls["shiftRoles"]);
+      this.form.removeControl("shiftRoles");
+    } else {
+      console.log(`shiftRoles does not exist at all:`, this.form.controls["shiftRoles"]);
+    }
+
     this.form.addControl("shiftRoles", this.createShiftRoles(numberOfShifts));
   }
 
