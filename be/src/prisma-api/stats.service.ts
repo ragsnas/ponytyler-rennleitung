@@ -1,5 +1,5 @@
 import { Injectable, Logger } from "@nestjs/common";
-import { mostPlayedSongs } from "@prisma/client/sql";
+import { mostPlayedSongs, mostWishedSongs, neverWishedSongs } from "@prisma/client/sql";
 import { PrismaService } from "./prisma.service";
 
 @Injectable()
@@ -8,10 +8,15 @@ export class StatsService {
 
   private readonly logger = new Logger(StatsService.name);
 
-  async mostPlayedSongs() {
-    const mostPlayedSongsList = await this.prisma.$queryRawTyped(mostPlayedSongs());
-    this.logger.log(`mostPlayedSongsList:`, mostPlayedSongsList);
+  mostPlayedSongs() {
+    return this.prisma.$queryRawTyped(mostPlayedSongs());
+  }
 
-    return mostPlayedSongsList;
+  mostWishedSongs() {
+    return this.prisma.$queryRawTyped(mostWishedSongs());
+  }
+
+  neverWishedSongs() {
+    return this.prisma.$queryRawTyped(neverWishedSongs());
   }
 }

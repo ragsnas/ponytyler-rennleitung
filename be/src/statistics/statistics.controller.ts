@@ -9,4 +9,14 @@ export class StatisticsController {
   async mostPlayedSongs() {
     return await this.statsService.mostPlayedSongs()
   }
+
+  @Get("most-wished-songs")
+  async mostWishedSongs() {
+    return await this.statsService.mostWishedSongs()
+  }
+
+  @Get("never-wished-songs")
+  async neverWishedSongs() {
+    return await this.statsService.neverWishedSongs()
+  }
 }

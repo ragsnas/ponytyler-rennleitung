@@ -19,10 +19,14 @@ let StatsService = StatsService_1 = class StatsService {
         this.prisma = prisma;
         this.logger = new common_1.Logger(StatsService_1.name);
     }
-    async mostPlayedSongs() {
-        const mostPlayedSongsList = await this.prisma.$queryRawTyped((0, sql_1.mostPlayedSongs)());
-        this.logger.log(`mostPlayedSongsList:`, mostPlayedSongsList);
-        return mostPlayedSongsList;
+    mostPlayedSongs() {
+        return this.prisma.$queryRawTyped((0, sql_1.mostPlayedSongs)());
+    }
+    mostWishedSongs() {
+        return this.prisma.$queryRawTyped((0, sql_1.mostWishedSongs)());
+    }
+    neverWishedSongs() {
+        return this.prisma.$queryRawTyped((0, sql_1.neverWishedSongs)());
     }
 };
 exports.StatsService = StatsService;
