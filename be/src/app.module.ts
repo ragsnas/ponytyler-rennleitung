@@ -9,7 +9,7 @@ import { NextcloudModule } from "./nextcloud/nextcloud.module";
 import { ConfigModule } from "@nestjs/config";
 import { ShiftsModule } from "./shifts/shifts.module";
 import { UserModule } from "./user/user.module";
-import { StatisticsController } from './statistics/statistics.controller';
+import { StatisticsModule } from "./statistics/statistics.module";
 
 @Module({
   imports: [
@@ -17,12 +17,14 @@ import { StatisticsController } from './statistics/statistics.controller';
     SongModule,
     ShowModule,
     ShiftsModule,
+    StatisticsModule,
     UserModule,
     CronModule,
     NextcloudModule,
     ConfigModule.forRoot({}),
   ],
-  controllers: [AppController, StatisticsController],
+  controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule {}
+export class AppModule {
+}

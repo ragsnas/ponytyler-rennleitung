@@ -1,12 +1,12 @@
 import { Controller, Get } from "@nestjs/common";
+import { StatsService } from "../prisma-api/stats.service";
 
-@Controller('statistics')
+@Controller('api/statistics')
 export class StatisticsController {
-  constructor() {}
+  constructor(private readonly statsService: StatsService) {}
 
   @Get("most-played-songs")
-  mostPlayedSongs() {
-    return ''
+  async mostPlayedSongs() {
+    return await this.statsService.mostPlayedSongs()
   }
-
 }

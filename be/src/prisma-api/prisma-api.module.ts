@@ -4,10 +4,24 @@ import { RaceService } from "./race.service";
 import { SongService } from "./song.service";
 import { PrismaService } from "./prisma.service";
 import { ShiftsService } from "./shifts.service";
+import { StatsService } from "./stats.service";
 
 @Module({
   imports: [],
-  providers: [PrismaService, RaceService, ShowService, ShiftsService, SongService],
-  exports: [PrismaService, RaceService, ShowService, ShiftsService, SongService],
+  providers: [
+    PrismaService,
+    RaceService,
+    ShowService,
+    ShiftsService,
+    SongService,
+    StatsService],
+  exports: [
+    PrismaService,
+    RaceService,
+    ShowService,
+    ShiftsService,
+    SongService,
+    StatsService],
 })
-export class PrismaApiModule {}
+export class PrismaApiModule {
+}

@@ -20,8 +20,8 @@ export declare class ShiftsService {
     shiftsForShow(showId: string): Promise<{
         id: number;
         showId: number;
-        order: number;
         duration: number | null;
+        order: number;
         shiftStarted: Date | null;
         shiftFinished: Date | null;
     }[]>;

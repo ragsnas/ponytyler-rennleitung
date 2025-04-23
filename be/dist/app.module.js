@@ -18,7 +18,7 @@ const nextcloud_module_1 = require("./nextcloud/nextcloud.module");
 const config_1 = require("@nestjs/config");
 const shifts_module_1 = require("./shifts/shifts.module");
 const user_module_1 = require("./user/user.module");
-const statistics_controller_1 = require("./statistics/statistics.controller");
+const statistics_module_1 = require("./statistics/statistics.module");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
@@ -29,12 +29,13 @@ exports.AppModule = AppModule = __decorate([
             song_module_1.SongModule,
             show_module_1.ShowModule,
             shifts_module_1.ShiftsModule,
+            statistics_module_1.StatisticsModule,
             user_module_1.UserModule,
             cron_module_1.CronModule,
             nextcloud_module_1.NextcloudModule,
             config_1.ConfigModule.forRoot({}),
         ],
-        controllers: [app_controller_1.AppController, statistics_controller_1.StatisticsController],
+        controllers: [app_controller_1.AppController],
         providers: [app_service_1.AppService],
     })
 ], AppModule);

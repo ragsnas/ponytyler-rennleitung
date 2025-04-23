@@ -6,16 +6,16 @@ export declare class ShiftsController {
     findShiftsForShow(showId: string): Promise<{
         id: number;
         showId: number;
-        order: number;
         duration: number | null;
+        order: number;
         shiftStarted: Date | null;
         shiftFinished: Date | null;
     }[]>;
     create(data: Prisma.ShiftUncheckedCreateInput): Promise<{
         id: number;
         showId: number;
-        order: number;
         duration: number | null;
+        order: number;
         shiftStarted: Date | null;
         shiftFinished: Date | null;
     }>;

@@ -8,27 +8,26 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
+var StatsService_1;
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.StatisticsController = void 0;
+exports.StatsService = void 0;
 const common_1 = require("@nestjs/common");
-const stats_service_1 = require("../prisma-api/stats.service");
-let StatisticsController = class StatisticsController {
-    constructor(statsService) {
-        this.statsService = statsService;
+const sql_1 = require("@prisma/client/sql");
+const prisma_service_1 = require("./prisma.service");
+let StatsService = StatsService_1 = class StatsService {
+    constructor(prisma) {
+        this.prisma = prisma;
+        this.logger = new common_1.Logger(StatsService_1.name);
     }
     async mostPlayedSongs() {
-        return await this.statsService.mostPlayedSongs();
+        const mostPlayedSongsList = await this.prisma.$queryRawTyped((0, sql_1.mostPlayedSongs)());
+        this.logger.log(`mostPlayedSongsList:`, mostPlayedSongsList);
+        return mostPlayedSongsList;
     }
 };
-exports.StatisticsController = StatisticsController;
-__decorate([
-    (0, common_1.Get)("most-played-songs"),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", []),
-    __metadata("design:returntype", Promise)
-], StatisticsController.prototype, "mostPlayedSongs", null);
-exports.StatisticsController = StatisticsController = __decorate([
-    (0, common_1.Controller)('api/statistics'),
-    __metadata("design:paramtypes", [stats_service_1.StatsService])
-], StatisticsController);
-//# sourceMappingURL=statistics.controller.js.map
+exports.StatsService = StatsService;
+exports.StatsService = StatsService = StatsService_1 = __decorate([
+    (0, common_1.Injectable)(),
+    __metadata("design:paramtypes", [prisma_service_1.PrismaService])
+], StatsService);
+//# sourceMappingURL=stats.service.js.map
