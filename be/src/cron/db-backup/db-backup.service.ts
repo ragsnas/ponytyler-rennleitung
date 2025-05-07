@@ -78,6 +78,7 @@ export class DbBackupService {
     const backupDirectoryContent = readdirSync(directory)
       .sort()
       .reverse()
+      .filter(name => !!name)
       .filter(name => isNumber(Number(name)))
       .filter(name => isDir(`${directory}/${name}`));
 
