@@ -34,9 +34,7 @@
           <mat-option value="stop">Stopp</mat-option>
         </mat-select>
       </mat-form-field>
-      <p *ngIf="!refreshing" style="margin:0 auto;">Next Refresh in {{ secondsRemaining$ | async | date:'mm:ss' }}</p>
-      <mat-spinner *ngIf="refreshing" mode="indeterminate" style="margin:0 auto;"
-        [diameter]="25"></mat-spinner>
+      <mat-progress-bar mode="determinate" value="{{secondsRemainingPercentage$ | async}}"></mat-progress-bar>
     </div>
   </div>
 

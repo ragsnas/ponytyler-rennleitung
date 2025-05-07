@@ -33,7 +33,7 @@ export interface RaceWithSongPlayedInfo extends Race {
   song2AlreadyWished: boolean;
 }
 
-const PONTY_TYPER_REFRESH_TIMER_INTERVAL = 'pontyTyperRefreshTimerInterval';
+const PONTY_TYPER_REFRESH_TIMER_INTERVAL = "pontyTyperRefreshTimerInterval";
 
 function compareRaceState(race1: Race, race2: Race) {
   const order = {
@@ -41,7 +41,7 @@ function compareRaceState(race1: Race, race2: Race) {
     [RaceState.WAITING_FOR_OPPONENT]: 2,
     [RaceState.RACED]: 3,
     [RaceState.CANCELED]: 4,
-  }
+  };
   if (order[race1.raceState as RaceState] > order[race2.raceState as RaceState]) {
     return 1;
   }
@@ -51,12 +51,12 @@ function compareRaceState(race1: Race, race2: Race) {
   return 0;
 }
 
-function compareRacesByOrderNumber(race1: Race, race2: Race, direction: 'asc' | 'desc') {
+function compareRacesByOrderNumber(race1: Race, race2: Race, direction: "asc" | "desc") {
   if (race1.orderNumber > race2.orderNumber) {
-    return 1 * (direction === 'asc' ? 1 : -1);
+    return 1 * (direction === "asc" ? 1 : -1);
   }
   if (race1.orderNumber < race2.orderNumber) {
-    return -1 * (direction === 'asc' ? 1 : -1);
+    return -1 * (direction === "asc" ? 1 : -1);
   }
   return 0;
 }
@@ -67,18 +67,18 @@ function sortRacesForList() {
     if (raceStateSortResult !== 0) {
       return raceStateSortResult;
     } else if (race1.raceState === RaceState.WAITING_TO_RACE || race1.raceState === RaceState.WAITING_FOR_OPPONENT) {
-      return compareRacesByOrderNumber(race1, race2, 'asc');
+      return compareRacesByOrderNumber(race1, race2, "asc");
     } else if (race1.raceState === RaceState.RACED || race1.raceState === RaceState.CANCELED) {
-      return compareRacesByOrderNumber(race1, race2, 'desc');
+      return compareRacesByOrderNumber(race1, race2, "desc");
     }
     return 0;
   };
 }
 
 @Component({
-  selector: 'lib-show-dashboard',
-  templateUrl: './show-dashboard.component.html',
-  styleUrls: ['./show-dashboard.component.scss'],
+  selector: "lib-show-dashboard",
+  templateUrl: "./show-dashboard.component.html",
+  styleUrls: ["./show-dashboard.component.scss"],
 })
 export class ShowDashboardComponent implements OnInit, OnDestroy {
   show: Show | undefined;
@@ -87,12 +87,12 @@ export class ShowDashboardComponent implements OnInit, OnDestroy {
   firstRaceWaitingToRaceId: string | undefined;
   lastRaceWaitingToRaceId: string | undefined;
   refreshing: boolean = false;
-  refreshIntervalFormControl: FormControl<string> = new FormControl<string>(localStorage.getItem(PONTY_TYPER_REFRESH_TIMER_INTERVAL) || '5000', {nonNullable: true});
+  refreshIntervalFormControl: FormControl<string> = new FormControl<string>(localStorage.getItem(PONTY_TYPER_REFRESH_TIMER_INTERVAL) || "5000", { nonNullable: true });
   refresh$: Subject<void> = new Subject<void>();
   unsubscribe$: Subject<void> = new Subject<void>();
   timerSubscription: Subscription = new Subscription();
   loadRacesSubscription: Subscription = new Subscription();
-  secondsRemaining$: Observable<number> = of(0);
+  secondsRemainingPercentage$: Observable<string> = of("");
   isListFull: boolean = false;
   moreThanOnePersonWaitingForOpponent: boolean = false;
 
@@ -103,7 +103,7 @@ export class ShowDashboardComponent implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private router: Router,
     private snackBar: MatSnackBar,
-    private dialog: MatDialog
+    private dialog: MatDialog,
   ) {
   }
 
@@ -114,7 +114,7 @@ export class ShowDashboardComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.statisticsService.isListFull(
-      this.route.snapshot.paramMap.get('showId')!
+      this.route.snapshot.paramMap.get("showId")!,
     ).subscribe(isListFull =>
       this.isListFull = isListFull);
     this.setTimer(Number(this.refreshIntervalFormControl.getRawValue()));
@@ -126,7 +126,7 @@ export class ShowDashboardComponent implements OnInit, OnDestroy {
     this.loadRacesSubscription = this.route.paramMap.pipe(
       takeUntil(this.unsubscribe$),
       switchMap((params: ParamMap) => {
-        const showId = params.get('showId') as string;
+        const showId = params.get("showId") as string;
         return this.refresh$.pipe(
           takeUntil(this.unsubscribe$),
           startWith(0),
@@ -134,37 +134,37 @@ export class ShowDashboardComponent implements OnInit, OnDestroy {
             this.showService.getShow(showId),
             this.raceService.getAllRacesForShow(showId),
           ])));
-      })
+      }),
     ).subscribe({
       next: ([show, races]) => {
         this.show = show;
         const finishedRaces = races.filter(race => race.raceState === RaceState.RACED);
         const racesWaitingToRace = races.filter(race => race.raceState === RaceState.WAITING_TO_RACE);
         console.log(`this.lastRaceWaitingToRaceId is set to: `, this.lastRaceWaitingToRaceId);
-        this.lastRaceWaitingToRaceId = racesWaitingToRace[racesWaitingToRace.length-1].id;
+        this.lastRaceWaitingToRaceId = racesWaitingToRace[racesWaitingToRace.length - 1].id;
         this.firstRaceWaitingToRaceId = racesWaitingToRace[0].id;
         this.finishedRaces$.next(finishedRaces);
         this.races$.next(this.addAlreadyPlayedInfoToRacesFromFinishedRaces(
           races.sort(sortRacesForList()),
-          finishedRaces
+          finishedRaces,
         ));
         this.moreThanOnePersonWaitingForOpponent = races.filter((race: Race) => race.raceState === RaceState.WAITING_FOR_OPPONENT).length > 1;
         this.refreshing = false;
       },
       error: (error) => {
-        this.snackBar.open(`Error during loading of Data: ${JSON.stringify(error)}`, 'OK', {
-          duration: 10000, announcementMessage: `Error`, panelClass: 'error'
+        this.snackBar.open(`Error during loading of Data: ${JSON.stringify(error)}`, "OK", {
+          duration: 10000, announcementMessage: `Error`, panelClass: "error",
         });
-      }
+      },
     });
 
   }
 
   bikeWon(bike: number, race: Race) {
-    if(race.raceState !== RaceState.WAITING_TO_RACE) {
-      this.snackBar.open(`Can't mark Winning Bike if Race is not Waiting to be Raced`, 'OK', {
-        duration: 5000, announcementMessage: `Error`, panelClass: 'error'
-      })
+    if (race.raceState !== RaceState.WAITING_TO_RACE) {
+      this.snackBar.open(`Can't mark Winning Bike if Race is not Waiting to be Raced`, "OK", {
+        duration: 5000, announcementMessage: `Error`, panelClass: "error",
+      });
     } else {
       this.raceService
         .updateRace({
@@ -175,15 +175,15 @@ export class ShowDashboardComponent implements OnInit, OnDestroy {
         } as Race)
         .subscribe({
           next: (result) => {
-            this.snackBar.open(`Marked Race as "Bike ${bike} won!" Congrats ${bike === 1 ? race.person1 : race.person2}`, 'OK', {
-              panelClass: 'success',
-              duration: 250
+            this.snackBar.open(`Marked Race as "Bike ${bike} won!" Congrats ${bike === 1 ? race.person1 : race.person2}`, "OK", {
+              panelClass: "success",
+              duration: 250,
             });
             this.loadRaces();
           },
           error: (error) => {
-            this.snackBar.open(`Error during marking of the Race: ${JSON.stringify(error)}`, 'OK', {
-              duration: 10000, announcementMessage: `Error`, panelClass: 'error'
+            this.snackBar.open(`Error during marking of the Race: ${JSON.stringify(error)}`, "OK", {
+              duration: 10000, announcementMessage: `Error`, panelClass: "error",
             });
           },
         });
@@ -197,16 +197,16 @@ export class ShowDashboardComponent implements OnInit, OnDestroy {
         ...race,
         raced: true,
         raceState: RaceState.RACED,
-        bikeWon: 3
+        bikeWon: 3,
       } as Race)
       .subscribe({
         next: (result) => {
-          this.snackBar.open(`Marked Race as "Both Won"`, 'OK', {panelClass: 'success', duration: 250});
+          this.snackBar.open(`Marked Race as "Both Won"`, "OK", { panelClass: "success", duration: 250 });
           this.loadRaces();
         },
         error: (error) => {
-          this.snackBar.open(`Error during Marking of the Race: ${JSON.stringify(error)}`, 'OK', {
-            duration: 10000, panelClass: 'error'
+          this.snackBar.open(`Error during Marking of the Race: ${JSON.stringify(error)}`, "OK", {
+            duration: 10000, panelClass: "error",
           });
         },
       });
@@ -217,16 +217,16 @@ export class ShowDashboardComponent implements OnInit, OnDestroy {
       .updateRace({
         ...race,
         raced: true,
-        raceState: RaceState.CANCELED
+        raceState: RaceState.CANCELED,
       } as Race)
       .subscribe({
         next: (result) => {
-          this.snackBar.open(`Marked Race as over`, 'OK', {panelClass: 'success', duration: 250});
+          this.snackBar.open(`Marked Race as over`, "OK", { panelClass: "success", duration: 250 });
           this.loadRaces();
         },
         error: (error) => {
-          this.snackBar.open(`Error during Marking of the Race: ${JSON.stringify(error)}`, 'OK', {
-            duration: 10000, panelClass: 'error'
+          this.snackBar.open(`Error during Marking of the Race: ${JSON.stringify(error)}`, "OK", {
+            duration: 10000, panelClass: "error",
           });
         },
       });
@@ -234,15 +234,15 @@ export class ShowDashboardComponent implements OnInit, OnDestroy {
 
   markRaceAsNotRaced(race: Race): void {
     this.raceService
-      .updateRace({...race, raced: false, bikeWon: 0, raceState: RaceState.WAITING_TO_RACE} as Race)
+      .updateRace({ ...race, raced: false, bikeWon: 0, raceState: RaceState.WAITING_TO_RACE } as Race)
       .subscribe({
         next: (result) => {
-          this.snackBar.open(`Marked Race as NOT over`, 'OK', {panelClass: 'success', duration: 250});
+          this.snackBar.open(`Marked Race as NOT over`, "OK", { panelClass: "success", duration: 250 });
           this.loadRaces();
         },
         error: (error) => {
-          this.snackBar.open(`Error during Marking of the Race: ${JSON.stringify(error)}`, 'OK', {
-            duration: 10000, panelClass: 'error'
+          this.snackBar.open(`Error during Marking of the Race: ${JSON.stringify(error)}`, "OK", {
+            duration: 10000, panelClass: "error",
           });
         },
       });
@@ -250,7 +250,7 @@ export class ShowDashboardComponent implements OnInit, OnDestroy {
 
   refreshIntervalChange($event: MatSelectChange) {
     localStorage.setItem(PONTY_TYPER_REFRESH_TIMER_INTERVAL, $event.value);
-    if ($event.value === 'stop') {
+    if ($event.value === "stop") {
       this.stopTimer();
     } else {
       this.setTimer($event.value);
@@ -272,21 +272,18 @@ export class ShowDashboardComponent implements OnInit, OnDestroy {
     return races.some((race: Race) =>
       (race.song1Id && race.song1Id === songId && (race.bikeWon === 1 || race.bikeWon === 3))
       ||
-      (race.song2Id && race.song2Id === songId && (race.bikeWon === 2 || race.bikeWon === 3))
+      (race.song2Id && race.song2Id === songId && (race.bikeWon === 2 || race.bikeWon === 3)),
     );
   }
 
   private getSongAlreadyWished(races: Race[], raceId: string | undefined, songId: string | undefined) {
     return races.some((race: Race) =>
-      ((race.song1Id && race.song1Id === songId) || (race.song2Id && race.song2Id === songId)) && race.id !== raceId
+      ((race.song1Id && race.song1Id === songId) || (race.song2Id && race.song2Id === songId)) && race.id !== raceId,
     );
   }
 
   private setTimer(timerInterval: number): void {
-    this.secondsRemaining$ = timer(0, 1000).pipe(
-      map(n => timerInterval - n*1000),
-      takeWhile(n => n >= 0),
-    );
+    this.secondsRemainingPercentage$ = this.resetSecondsRemainingPercentage(timerInterval);
     this.timerSubscription.unsubscribe();
     this.timerSubscription = interval(timerInterval).pipe(
       takeUntil(this.unsubscribe$),
@@ -294,11 +291,20 @@ export class ShowDashboardComponent implements OnInit, OnDestroy {
       delay(600),
     ).subscribe(() => {
       this.refresh$.next();
+      this.secondsRemainingPercentage$ = this.resetSecondsRemainingPercentage(timerInterval);
     });
   }
 
+  private resetSecondsRemainingPercentage(timerInterval: number) {
+    const milisecondsInterval = 250;
+    return timer(0, milisecondsInterval).pipe(
+      takeWhile(n => (n * milisecondsInterval) < timerInterval),
+      map(timerValue => ((timerValue * milisecondsInterval / timerInterval) * 100).toString()),
+    );
+  }
+
   private stopTimer(): void {
-    this.secondsRemaining$ = of(0);
+    this.secondsRemainingPercentage$ = of("");
     this.timerSubscription.unsubscribe();
   }
 
@@ -307,20 +313,20 @@ export class ShowDashboardComponent implements OnInit, OnDestroy {
       data: {
         title: `Do you want to delete the Show "${this.show?.name}"?`,
         text: `This will delete the Show and all the related Races.`,
-        optionYes: 'Yes, Delete',
-        optionNo: 'No, Cancel'
-      }
+        optionYes: "Yes, Delete",
+        optionNo: "No, Cancel",
+      },
     });
     dialog.afterClosed().subscribe(result => {
-      if(result) {
+      if (result) {
         this.showService.deleteShow(this.show?.id as string).subscribe({
           next: (result) => {
-            this.snackBar.open(`Show was deleted`, 'OK', {panelClass: 'success', duration: 250});
-            this.router.navigate(['../']);
+            this.snackBar.open(`Show was deleted`, "OK", { panelClass: "success", duration: 250 });
+            this.router.navigate(["../"]);
           },
           error: (error) => {
-            this.snackBar.open(`Show could not be deleted: ${JSON.stringify(error)}`, 'OK', {
-              duration: 10000, panelClass: 'error'
+            this.snackBar.open(`Show could not be deleted: ${JSON.stringify(error)}`, "OK", {
+              duration: 10000, panelClass: "error",
             });
           },
         });
@@ -331,7 +337,7 @@ export class ShowDashboardComponent implements OnInit, OnDestroy {
   mergeTopWaitingForOpponentRaces(race: Race) {
     const race1: Race = race;
     const otherRaceWaitingForOpponent: Race | undefined = this.races$.value.find((otherRace: Race) => race.id !== otherRace.id && otherRace.raceState === RaceState.WAITING_FOR_OPPONENT);
-    if(race && otherRaceWaitingForOpponent) {
+    if (race && otherRaceWaitingForOpponent) {
       const person1 = race.person1 || race.person2;
       const song1Id = race.song1Id || race.song2Id;
       const person2 = otherRaceWaitingForOpponent.person1 || otherRaceWaitingForOpponent.person2;
@@ -343,22 +349,22 @@ export class ShowDashboardComponent implements OnInit, OnDestroy {
           song1Id,
           person2,
           song2Id,
-          raceState: RaceState.WAITING_TO_RACE
+          raceState: RaceState.WAITING_TO_RACE,
         }),
         this.raceService.updateRace({
           ...otherRaceWaitingForOpponent,
           raceState: RaceState.CANCELED,
           raced: false,
-          bikeWon: 0
-        })
+          bikeWon: 0,
+        }),
       ]).subscribe({
         next: () => {
-          this.snackBar.open(`Races where merged successfully`, 'OK', {panelClass: 'success', duration: 250});
+          this.snackBar.open(`Races where merged successfully`, "OK", { panelClass: "success", duration: 250 });
           this.loadRaces();
         },
         error: (error) => {
-          this.snackBar.open(`Races could not be merged: ${JSON.stringify(error)}`, 'OK', {
-            duration: 10000, panelClass: 'error'
+          this.snackBar.open(`Races could not be merged: ${JSON.stringify(error)}`, "OK", {
+            duration: 10000, panelClass: "error",
           });
         },
       });
@@ -367,37 +373,37 @@ export class ShowDashboardComponent implements OnInit, OnDestroy {
 
   moveRaceUp(race: Race, upOrDown: string): void {
     this.raceService
-      .moveRaceUpOrDown({...race} as Race, upOrDown)
+      .moveRaceUpOrDown({ ...race } as Race, upOrDown)
       .subscribe({
         next: (result) => {
-          this.snackBar.open(`Moved Race "${upOrDown}"`, 'OK', {panelClass: 'success', duration: 250});
+          this.snackBar.open(`Moved Race "${upOrDown}"`, "OK", { panelClass: "success", duration: 250 });
           this.loadRaces();
         },
         error: (error) => {
-          this.snackBar.open(`Error Moving Race "${upOrDown}": ${JSON.stringify(error)}`, 'OK', {
-            duration: 10000, panelClass: 'error'
+          this.snackBar.open(`Error Moving Race "${upOrDown}": ${JSON.stringify(error)}`, "OK", {
+            duration: 10000, panelClass: "error",
           });
         },
       });
   }
 
   isRaceLastWaitingToRace(race: Race): boolean {
-    return (this.lastRaceWaitingToRaceId === race.id)
+    return (this.lastRaceWaitingToRaceId === race.id);
   }
 
   isRaceFirstWaitingToRace(race: Race) {
-    return (this.firstRaceWaitingToRaceId === race.id)
+    return (this.firstRaceWaitingToRaceId === race.id);
   }
 
   repairOrder() {
-    this.raceService.repairOrder(this.show?.id || '').subscribe({
+    this.raceService.repairOrder(this.show?.id || "").subscribe({
       next: (result) => {
-        this.snackBar.open(`Race Order Repaired"`, 'OK', {panelClass: 'success', duration: 250});
+        this.snackBar.open(`Race Order Repaired"`, "OK", { panelClass: "success", duration: 250 });
         this.loadRaces();
       },
       error: (error) => {
-        this.snackBar.open(`Race Order could not be repaired: ${JSON.stringify(error)}`, 'OK', {
-          duration: 10000, panelClass: 'error'
+        this.snackBar.open(`Race Order could not be repaired: ${JSON.stringify(error)}`, "OK", {
+          duration: 10000, panelClass: "error",
         });
       },
     });
