@@ -1,28 +1,28 @@
-echo "----- STARTING PONY TYLER RENNLEITUNG UPDATE --------"
+echo "\n\n----- STARTING PONY TYLER RENNLEITUNG UPDATE --------\n"
 cd ~/ponytyler-rennleitung
-echo "-- BACKUP DATABASE ----------------------------------"
+echo "\n-- BACKUP DATABASE ----------------------------------\n"
 sudo cp ~/ponytyler-rennleitung/be/prisma/*.db ~/rl.db
 sudo cp ~/ponytyler-rennleitung/be/prisma/*.db ~/rl_db_backup_$EPOCHSECONDS.db
-echo "-- PULL FROM REPOSITORY -----------------------------"
+echo "\n-- PULL FROM REPOSITORY -----------------------------\n"
 git reset --hard
 git pull
-echo "-- COPY UI TO NGINX HTML FOLDER ---------------------"
+echo "\n-- COPY UI TO NGINX HTML FOLDER ---------------------\n"
 sudo cp ~/ponytyler-rennleitung/ui/rl/dist/rl/browser/*.* /var/www/html/
 sudo chmod a+r /var/www/html/*.*
-echo "-- OVERWRITE NGINX CONFIG ---------------------------"
+echo "\n-- OVERWRITE NGINX CONFIG ---------------------------\n"
 sudo cp ~/ponytyler-rennleitung/ui/rl/nginx_config /etc/nginx/sites-enabled/default
-echo "-- RESTORE DATABASE BACKUP --------------------------"
+echo "\n-- RESTORE DATABASE BACKUP --------------------------\n"
 sudo cp ~/rl.db ~/ponytyler-rennleitung/be/prisma/rl.db
-echo "-- RESTART NGINX ------------------------------------"
+echo "\n-- RESTART NGINX ------------------------------------\n"
 sudo systemctl start nginx
 sudo systemctl restart nginx
-echo "-- BUILD BACKEND ------------------------------------"
+echo "\n-- BUILD BACKEND ------------------------------------\n"
 cd ~/ponytyler-rennleitung/be
 npm i
 npx prisma generate
 npx prisma generate --sql
 npx prisma migrate deploy
 npm run build
-echo "-- RESTART BACKEND SERVICE --------------------------"
+echo "\n-- RESTART BACKEND SERVICE --------------------------\n"
 pm2 restart all
-echo "----- PONY TYLER RENNLEITUNG UPDATE FINISHED --------"
+echo "\n----- PONY TYLER RENNLEITUNG UPDATE FINISHED --------\n\n"
