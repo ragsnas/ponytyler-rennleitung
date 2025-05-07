@@ -45,6 +45,9 @@
       "song-search": [
         "dist/song-search"
       ],
+      "stats": [
+        "./dist/stats"
+      ],
       "users": [
         "./dist/users"
       ],
