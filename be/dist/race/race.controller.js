@@ -81,6 +81,9 @@ let RaceController = class RaceController {
     findUpcomingRaceWithSongs() {
         return this.raceService.upcomingRaceWithSongs();
     }
+    findUpcomingRacesWithSongs() {
+        return this.raceService.upcomingRacesWithSongs();
+    }
     findOne(id) {
         return this.raceService.race({ id: Number(id) });
     }
@@ -133,11 +136,17 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], RaceController.prototype, "calculateAverageRacesPerHour", null);
 __decorate([
-    (0, common_1.Get)("upcoming-with-songs"),
+    (0, common_1.Get)("upcoming-race-with-songs"),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", void 0)
 ], RaceController.prototype, "findUpcomingRaceWithSongs", null);
+__decorate([
+    (0, common_1.Get)("upcoming-races-with-songs"),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", void 0)
+], RaceController.prototype, "findUpcomingRacesWithSongs", null);
 __decorate([
     (0, common_1.Get)(":id"),
     __param(0, (0, common_1.Param)("id")),

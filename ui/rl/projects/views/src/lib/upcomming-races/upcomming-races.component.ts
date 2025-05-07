@@ -1,7 +1,7 @@
-import { Component, OnInit } from '@angular/core';
-import {Race, RaceService} from 'projects/backend-api/src/lib/race.service';
-import {Show, ShowService} from 'projects/backend-api/src/lib/show.service';
-import {filter, map, Observable} from "rxjs";
+import { Component, OnInit } from "@angular/core";
+import { Race, RaceService } from "projects/backend-api/src/lib/race.service";
+import { Show, ShowService } from "projects/backend-api/src/lib/show.service";
+import { filter, map, Observable } from "rxjs";
 
 @Component({
   selector: 'lib-upcomming-races',
@@ -19,7 +19,7 @@ export class UpcommingRacesComponent implements OnInit {
       map((shows: Show[]) => shows[0])
     ).subscribe((show:Show) => {
       if (show.id) {
-        this.upcommingRaces$ = this.raceService.getAllRacesForShow(show.id, false).pipe();
+        this.upcommingRaces$ = this.raceService.getUpcommingRaces().pipe();
       }
     });
   }

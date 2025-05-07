@@ -101,9 +101,14 @@ export class RaceController {
     );
   }
 
-  @Get("upcoming-with-songs")
+  @Get("upcoming-race-with-songs")
   findUpcomingRaceWithSongs() {
     return this.raceService.upcomingRaceWithSongs();
+  }
+
+  @Get("upcoming-races-with-songs")
+  findUpcomingRacesWithSongs() {
+    return this.raceService.upcomingRacesWithSongs();
   }
 
   @Get(":id")

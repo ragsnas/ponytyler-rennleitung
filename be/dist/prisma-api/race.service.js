@@ -43,6 +43,21 @@ let RaceService = class RaceService {
             orderBy: { orderNumber: "asc" },
         });
     }
+    async upcomingRacesWithSongs() {
+        const show = await this.prisma.show.findFirst({
+            where: { active: true },
+            orderBy: { date: "desc" },
+            take: 1,
+        });
+        return this.prisma.race.findMany({
+            where: {
+                showId: Number(show.id),
+                raceState: { equals: race_controller_1.RaceState.WAITING_TO_RACE },
+            },
+            include: { song1: true, song2: true },
+            orderBy: { orderNumber: "asc" },
+        });
+    }
     async races(params) {
         const { skip, take, cursor, where, orderBy } = params;
         return this.prisma.race.findMany({

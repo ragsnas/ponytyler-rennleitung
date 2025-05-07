@@ -80,7 +80,13 @@ export class RaceService {
 
   getUpcommingRace() {
     return this.http.get<Race>(
-      environment.apiUrl + `api/race/upcoming-with-songs`
+      environment.apiUrl + `api/race/upcoming-race-with-songs`
+    );
+  }
+
+  getUpcommingRaces() {
+    return this.http.get<Race[]>(
+      environment.apiUrl + `api/race/upcoming-races-with-songs`
     );
   }
 

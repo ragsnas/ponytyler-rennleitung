@@ -7,16 +7,16 @@ export declare class RaceService {
     raceWithSongs(raceId: string): Promise<Race | null>;
     upcomingRaceWithSongs(): Promise<{
         song1: {
-            id: number;
             name: string;
+            id: number;
             artist: string;
             selectable: boolean;
             deleted: boolean;
             origin: string;
         };
         song2: {
-            id: number;
             name: string;
+            id: number;
             artist: string;
             selectable: boolean;
             deleted: boolean;
@@ -35,6 +35,36 @@ export declare class RaceService {
         song2Id: number | null;
         bikeWon: number;
     }>;
+    upcomingRacesWithSongs(): Promise<({
+        song1: {
+            name: string;
+            id: number;
+            artist: string;
+            selectable: boolean;
+            deleted: boolean;
+            origin: string;
+        };
+        song2: {
+            name: string;
+            id: number;
+            artist: string;
+            selectable: boolean;
+            deleted: boolean;
+            origin: string;
+        };
+    } & {
+        id: number;
+        showId: number;
+        orderNumber: number;
+        createdAt: Date;
+        raced: boolean;
+        raceState: string;
+        person1: string | null;
+        song1Id: number | null;
+        person2: string | null;
+        song2Id: number | null;
+        bikeWon: number;
+    })[]>;
     races(params: {
         skip?: number;
         take?: number;
