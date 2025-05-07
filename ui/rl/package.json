@@ -7,7 +7,7 @@
     "start:dev": "ng serve --watch",
     "lint:fix": "ng lint --fix",
     "build": "ng build",
-    "build:raspberry": "ng build --deploy-url /rl",
+    "build:raspberry": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "lint": "ng lint"

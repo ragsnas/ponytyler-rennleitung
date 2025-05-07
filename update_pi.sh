@@ -19,9 +19,11 @@ sudo systemctl restart nginx
 printf "\n- BUILD BACKEND -----------------------------------\n"
 cd ~/ponytyler-rennleitung/be
 npm i
+printf "\n- BUILD/MIGRATE DATABASE --------------------------\n"
 npx prisma generate
 npx prisma generate --sql
 npx prisma migrate deploy
+printf "\n- BUILD ACTUAL BACKEND ----------------------------\n"
 npm run build
 printf "\n- RESTART BACKEND SERVICE --------------------------\n"
 pm2 restart all
