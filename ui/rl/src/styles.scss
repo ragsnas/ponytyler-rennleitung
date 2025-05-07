@@ -8,7 +8,9 @@
 
 html {
   // Apply the light theme by default
+  @include mat.core-base(m3-theme.$light-theme);
   @include mat.core-theme(m3-theme.$light-theme);
+  @include mat.core-color(m3-theme.$light-theme);
   @include mat.button-theme(m3-theme.$light-theme);
 }
 
