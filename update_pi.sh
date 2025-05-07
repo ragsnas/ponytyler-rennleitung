@@ -3,6 +3,7 @@ cd ~/ponytyler-rennleitung
 echo "-- BACKUP DATABASE ----------------------------------"
 sudo cp ~/ponytyler-rennleitung/be/prisma/*.db ~/rl_db_backup_$EPOCHSECONDS.db
 echo "-- PULL FROM REPOSITORY -----------------------------"
+git reset --hard
 git pull
 echo "-- COPY UI TO NGINX HTML FOLDER ---------------------"
 sudo cp ~/ponytyler-rennleitung/ui/rl/dist/rl/*.* /var/www/html/

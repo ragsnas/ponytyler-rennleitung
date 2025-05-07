@@ -9,14 +9,16 @@ import { isNumber } from "@nestjs/common/utils/shared.utils";
 @Injectable()
 export class DbBackupService {
   private readonly logger = new Logger(DbBackupService.name);
-  private baseFolder = "";
+  private prismaFolder = "prisma";
+  private backupFolder = "prisma/backups";
 
   constructor() {}
 
   @Cron(CronExpression.EVERY_10_SECONDS)
   async hourly() {
     if(!isDir(`prisma/backups`) && isDir(`/home/ponytyler/ponytyler-rennleitung/be/prisma/backups`)) {
-      this.baseFolder = `/home/ponytyler/ponytyler-rennleitung/be`
+      this.prismaFolder = `/home/ponytyler/ponytyler-rennleitung/be/prisma`
+      this.backupFolder = `/home/ponytyler/rl-db-backups`
     }
     this.logger.log("Running DB Backup Cron-Job.");
     if(!this.isBackupNecessary()) {
@@ -33,12 +35,12 @@ export class DbBackupService {
 
     // make actual backup
     this.logger.log(`Copying prisma/rl.db to ${destinationPath}/${backupFileName}`);
-    copyFileSync(`${this.baseFolder}/prisma/rl.db`, `${destinationPath}/${backupFileName}`);
-    copyFileSync(`${this.baseFolder}/prisma/rl.db`, `prisma/backups/most_recent_backup.db`);
+    copyFileSync(`${this.prismaFolder}/rl.db`, `${destinationPath}/${backupFileName}`);
+    copyFileSync(`${this.prismaFolder}/rl.db`, `${this.prismaFolder}/backups/most_recent_backup.db`);
   }
 
   private getDestinationPath(backupDate: Date) {
-    const backupFilePathYear = `${this.baseFolder}/prisma/backups/${pad(backupDate.getFullYear())}`;
+    const backupFilePathYear = `${this.prismaFolder}/backups/${pad(backupDate.getFullYear())}`;
     this.createDirIfNotExists(backupFilePathYear);
     const backupFilePathMonth = `${backupFilePathYear}/${pad(backupDate.getMonth())}`;
     this.createDirIfNotExists(backupFilePathMonth);
@@ -59,7 +61,7 @@ export class DbBackupService {
     const lastBackupFileFilename = this.getLastBackupFileFilename();
 
     if(lastBackupFileFilename) {
-      const currentDbFileHash = Md5.hashStr(readFileSync(`${this.baseFolder}/prisma/rl.db`).toString());
+      const currentDbFileHash = Md5.hashStr(readFileSync(`${this.prismaFolder}/rl.db`).toString());
       const lastBackupFileFilenameHash = Md5.hashStr(readFileSync(lastBackupFileFilename).toString());
       if(currentDbFileHash === lastBackupFileFilenameHash) {
         return false;
@@ -72,7 +74,7 @@ export class DbBackupService {
 
 
   private getLastBackupFileFilename() {
-    const directory = `${this.baseFolder}/prisma/backups`;
+    const directory = `${this.prismaFolder}/backups`;
     const backupDirectoryContent = readdirSync(directory)
       .sort()
       .reverse()
