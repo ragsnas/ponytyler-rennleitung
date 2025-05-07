@@ -82,7 +82,7 @@ export class DbBackupService {
       .filter(name => isNumber(Number(name)))
       .filter(name => isDir(`${directory}/${name}`));
 
-    if(backupDirectoryContent) {
+    if(backupDirectoryContent && backupDirectoryContent.length > 0) {
       const yearFolder = backupDirectoryContent[0];
       const backupDirectoryYearContent = readdirSync(`${directory}/${yearFolder}`)
         .sort()
