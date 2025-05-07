@@ -1,7 +1,13 @@
 <h2>Shows</h2>
 
 <ui-button-list>
-  <button mat-flat-button color="primary" [routerLink]="'create'">Add Show</button>
+  <button mat-flat-button color="primary" [routerLink]="'create'">
+    <mat-icon>add</mat-icon> Add Show
+  </button>
+  <button mat-flat-button color="secondary" (click)="downloadDatabaseBackup()">
+    <mat-icon>download</mat-icon>
+    Download Database Backup
+  </button>
 </ui-button-list>
 
 <ng-container *ngIf="shows$ | async as currentShows">

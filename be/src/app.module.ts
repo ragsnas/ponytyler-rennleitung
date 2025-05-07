@@ -10,9 +10,11 @@ import { ConfigModule } from "@nestjs/config";
 import { ShiftsModule } from "./shifts/shifts.module";
 import { UserModule } from "./user/user.module";
 import { StatisticsModule } from "./statistics/statistics.module";
+import { BackupModule } from "./backup/backup.module";
 
 @Module({
   imports: [
+    BackupModule,
     RaceModule,
     SongModule,
     ShowModule,

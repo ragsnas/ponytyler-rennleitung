@@ -19,12 +19,14 @@ const config_1 = require("@nestjs/config");
 const shifts_module_1 = require("./shifts/shifts.module");
 const user_module_1 = require("./user/user.module");
 const statistics_module_1 = require("./statistics/statistics.module");
+const backup_module_1 = require("./backup/backup.module");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
 exports.AppModule = AppModule = __decorate([
     (0, common_1.Module)({
         imports: [
+            backup_module_1.BackupModule,
             race_module_1.RaceModule,
             song_module_1.SongModule,
             show_module_1.ShowModule,

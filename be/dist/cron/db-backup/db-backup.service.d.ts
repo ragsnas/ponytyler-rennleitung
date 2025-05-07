@@ -1,6 +1,7 @@
 export declare class DbBackupService {
     private readonly logger;
-    private baseFolder;
+    private prismaFolder;
+    private backupFolder;
     constructor();
     hourly(): Promise<void>;
     private createBackup;

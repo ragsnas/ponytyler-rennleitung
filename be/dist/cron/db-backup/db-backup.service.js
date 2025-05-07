@@ -21,11 +21,13 @@ const shared_utils_1 = require("@nestjs/common/utils/shared.utils");
 let DbBackupService = DbBackupService_1 = class DbBackupService {
     constructor() {
         this.logger = new common_1.Logger(DbBackupService_1.name);
-        this.baseFolder = "";
+        this.prismaFolder = "prisma";
+        this.backupFolder = "prisma/backups";
     }
     async hourly() {
         if (!(0, isDir_1.isDir)(`prisma/backups`) && (0, isDir_1.isDir)(`/home/ponytyler/ponytyler-rennleitung/be/prisma/backups`)) {
-            this.baseFolder = `/home/ponytyler/ponytyler-rennleitung/be`;
+            this.prismaFolder = `/home/ponytyler/ponytyler-rennleitung/be/prisma`;
+            this.backupFolder = `/home/ponytyler/rl-db-backups`;
         }
         this.logger.log("Running DB Backup Cron-Job.");
         if (!this.isBackupNecessary()) {
@@ -40,11 +42,11 @@ let DbBackupService = DbBackupService_1 = class DbBackupService {
         const backupFileName = `${(0, pad_1.pad)(backupDate.getHours())}-${(0, pad_1.pad)(Math.round(backupDate.getMinutes() / 15) * 15)}.db`;
         const destinationPath = this.getDestinationPath(backupDate);
         this.logger.log(`Copying prisma/rl.db to ${destinationPath}/${backupFileName}`);
-        (0, fs_1.copyFileSync)(`${this.baseFolder}/prisma/rl.db`, `${destinationPath}/${backupFileName}`);
-        (0, fs_1.copyFileSync)(`${this.baseFolder}/prisma/rl.db`, `prisma/backups/most_recent_backup.db`);
+        (0, fs_1.copyFileSync)(`${this.prismaFolder}/rl.db`, `${destinationPath}/${backupFileName}`);
+        (0, fs_1.copyFileSync)(`${this.prismaFolder}/rl.db`, `${this.backupFolder}/most_recent_backup.db`);
     }
     getDestinationPath(backupDate) {
-        const backupFilePathYear = `${this.baseFolder}/prisma/backups/${(0, pad_1.pad)(backupDate.getFullYear())}`;
+        const backupFilePathYear = `${this.backupFolder}/${(0, pad_1.pad)(backupDate.getFullYear())}`;
         this.createDirIfNotExists(backupFilePathYear);
         const backupFilePathMonth = `${backupFilePathYear}/${(0, pad_1.pad)(backupDate.getMonth())}`;
         this.createDirIfNotExists(backupFilePathMonth);
@@ -62,7 +64,7 @@ let DbBackupService = DbBackupService_1 = class DbBackupService {
     isBackupNecessary() {
         const lastBackupFileFilename = this.getLastBackupFileFilename();
         if (lastBackupFileFilename) {
-            const currentDbFileHash = ts_md5_1.Md5.hashStr((0, fs_1.readFileSync)(`${this.baseFolder}/prisma/rl.db`).toString());
+            const currentDbFileHash = ts_md5_1.Md5.hashStr((0, fs_1.readFileSync)(`${this.prismaFolder}/rl.db`).toString());
             const lastBackupFileFilenameHash = ts_md5_1.Md5.hashStr((0, fs_1.readFileSync)(lastBackupFileFilename).toString());
             if (currentDbFileHash === lastBackupFileFilenameHash) {
                 return false;
@@ -71,13 +73,14 @@ let DbBackupService = DbBackupService_1 = class DbBackupService {
         return true;
     }
     getLastBackupFileFilename() {
-        const directory = `${this.baseFolder}/prisma/backups`;
+        const directory = `${this.backupFolder}`;
         const backupDirectoryContent = (0, fs_1.readdirSync)(directory)
             .sort()
             .reverse()
+            .filter(name => !!name)
             .filter(name => (0, shared_utils_1.isNumber)(Number(name)))
             .filter(name => (0, isDir_1.isDir)(`${directory}/${name}`));
-        if (backupDirectoryContent) {
+        if (backupDirectoryContent && backupDirectoryContent.length > 0) {
             const yearFolder = backupDirectoryContent[0];
             const backupDirectoryYearContent = (0, fs_1.readdirSync)(`${directory}/${yearFolder}`)
                 .sort()
