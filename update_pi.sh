@@ -7,7 +7,7 @@ echo "-- PULL FROM REPOSITORY -----------------------------"
 git reset --hard
 git pull
 echo "-- COPY UI TO NGINX HTML FOLDER ---------------------"
-sudo cp ~/ponytyler-rennleitung/ui/rl/dist/rl/*.* /var/www/html/
+sudo cp ~/ponytyler-rennleitung/ui/rl/dist/rl/browser/*.* /var/www/html/
 sudo chmod a+r /var/www/html/*.*
 echo "-- OVERWRITE NGINX CONFIG ---------------------------"
 sudo cp ~/ponytyler-rennleitung/ui/rl/nginx_config /etc/nginx/sites-enabled/default
