@@ -48,7 +48,7 @@ let DbBackupService = DbBackupService_1 = class DbBackupService {
     getDestinationPath(backupDate) {
         const backupFilePathYear = `${this.backupFolder}/${(0, pad_1.pad)(backupDate.getFullYear())}`;
         this.createDirIfNotExists(backupFilePathYear);
-        const backupFilePathMonth = `${backupFilePathYear}/${(0, pad_1.pad)(backupDate.getMonth())}`;
+        const backupFilePathMonth = `${backupFilePathYear}/${(0, pad_1.pad)(backupDate.getMonth() + 1)}`;
         this.createDirIfNotExists(backupFilePathMonth);
         const backupFilePathDay = `${backupFilePathMonth}/${(0, pad_1.pad)(backupDate.getDate())}`;
         this.createDirIfNotExists(backupFilePathDay);

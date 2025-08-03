@@ -28,6 +28,9 @@ let StatsService = StatsService_1 = class StatsService {
     neverWishedSongs() {
         return this.prisma.$queryRawTyped((0, sql_1.neverWishedSongs)());
     }
+    whichBikeWonMost() {
+        return this.prisma.$queryRawTyped((0, sql_1.whichBikeWonMost)());
+    }
 };
 exports.StatsService = StatsService;
 exports.StatsService = StatsService = StatsService_1 = __decorate([

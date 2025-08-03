@@ -16,6 +16,7 @@ import {
 } from "@angular/material/table";
 import { MatProgressSpinner } from "@angular/material/progress-spinner";
 import { MatList, MatListItem } from "@angular/material/list";
+import { WhichBikeWonMostComponent } from "./stats/races/which-bike-won-most.component";
 
 const routes: Routes = [
   {
@@ -23,12 +24,13 @@ const routes: Routes = [
     component: StatsComponent,
     children: [
       { path: "songs/:songStatType", component: SongsComponent },
+      { path: "races/which-bike-won-most", component: WhichBikeWonMostComponent },
     ],
   },
 ];
 
 @NgModule({
-  declarations: [StatsComponent, SongsComponent],
+  declarations: [StatsComponent, SongsComponent, WhichBikeWonMostComponent],
   imports: [
     MatList,
     MatListItem,

@@ -9,12 +9,14 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.BackupModule = void 0;
 const common_1 = require("@nestjs/common");
 const backup_controller_1 = require("./backup.controller");
+const cron_module_1 = require("../cron/cron.module");
 let BackupModule = class BackupModule {
 };
 exports.BackupModule = BackupModule;
 exports.BackupModule = BackupModule = __decorate([
     (0, common_1.Module)({
         controllers: [backup_controller_1.BackupController],
+        imports: [cron_module_1.CronModule],
     })
 ], BackupModule);
 //# sourceMappingURL=backup.module.js.map

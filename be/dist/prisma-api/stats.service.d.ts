@@ -1,4 +1,4 @@
-import { mostPlayedSongs, mostWishedSongs, neverWishedSongs } from "@prisma/client/sql";
+import { mostPlayedSongs, mostWishedSongs, neverWishedSongs, whichBikeWonMost } from "@prisma/client/sql";
 import { PrismaService } from "./prisma.service";
 export declare class StatsService {
     private prisma;
@@ -7,4 +7,5 @@ export declare class StatsService {
     mostPlayedSongs(): import(".prisma/client").Prisma.PrismaPromise<mostPlayedSongs.Result[]>;
     mostWishedSongs(): import(".prisma/client").Prisma.PrismaPromise<mostWishedSongs.Result[]>;
     neverWishedSongs(): import(".prisma/client").Prisma.PrismaPromise<neverWishedSongs.Result[]>;
+    whichBikeWonMost(): import(".prisma/client").Prisma.PrismaPromise<whichBikeWonMost.Result[]>;
 }

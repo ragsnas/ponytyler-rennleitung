@@ -4,10 +4,14 @@
   <button mat-flat-button color="primary" [routerLink]="'create'">
     <mat-icon>add</mat-icon> Add Show
   </button>
-  <button mat-flat-button color="secondary" (click)="downloadDatabaseBackup()">
+  <button [disabled]="!(downloadBackupPossible$ | async)" mat-flat-button color="secondary" (click)="downloadDatabaseBackup()">
     <mat-icon>download</mat-icon>
     Download Database Backup
   </button>
+  <div (click)="uploadFile.click()">
+    <button mat-flat-button color="secondary"><mat-icon>upload</mat-icon> Upload Database Backup</button>
+    <input #uploadFile [multiple]="true" (change)="uploadDatabaseBackup($event)" type='file' style="display:none"/>
+  </div>
 </ui-button-list>
 
 <ng-container *ngIf="shows$ | async as currentShows">

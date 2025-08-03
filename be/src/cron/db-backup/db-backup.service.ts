@@ -39,10 +39,10 @@ export class DbBackupService {
     copyFileSync(`${this.prismaFolder}/rl.db`, `${this.backupFolder}/most_recent_backup.db`);
   }
 
-  private getDestinationPath(backupDate: Date) {
+  getDestinationPath(backupDate: Date) {
     const backupFilePathYear = `${this.backupFolder}/${pad(backupDate.getFullYear())}`;
     this.createDirIfNotExists(backupFilePathYear);
-    const backupFilePathMonth = `${backupFilePathYear}/${pad(backupDate.getMonth())}`;
+    const backupFilePathMonth = `${backupFilePathYear}/${pad(backupDate.getMonth()+1)}`;
     this.createDirIfNotExists(backupFilePathMonth);
     const backupFilePathDay = `${backupFilePathMonth}/${pad(backupDate.getDate())}`;
     this.createDirIfNotExists(backupFilePathDay);

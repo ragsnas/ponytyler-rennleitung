@@ -140,9 +140,8 @@ export class ShowDashboardComponent implements OnInit, OnDestroy {
         this.show = show;
         const finishedRaces = races.filter(race => race.raceState === RaceState.RACED);
         const racesWaitingToRace = races.filter(race => race.raceState === RaceState.WAITING_TO_RACE);
-        console.log(`this.lastRaceWaitingToRaceId is set to: `, this.lastRaceWaitingToRaceId);
-        this.lastRaceWaitingToRaceId = racesWaitingToRace[racesWaitingToRace.length - 1].id;
-        this.firstRaceWaitingToRaceId = racesWaitingToRace[0].id;
+        this.lastRaceWaitingToRaceId = racesWaitingToRace[racesWaitingToRace.length - 1]?.id;
+        this.firstRaceWaitingToRaceId = racesWaitingToRace[0]?.id;
         this.finishedRaces$.next(finishedRaces);
         this.races$.next(this.addAlreadyPlayedInfoToRacesFromFinishedRaces(
           races.sort(sortRacesForList()),

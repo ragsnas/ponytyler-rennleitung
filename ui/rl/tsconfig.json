@@ -30,6 +30,9 @@
       "backend-api": [
         "dist/backend-api"
       ],
+      "backup": [
+        "./dist/backup"
+      ],
       "race-admin": [
         "dist/race-admin"
       ],

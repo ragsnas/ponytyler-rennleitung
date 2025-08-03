@@ -1,0 +1,18 @@
+<h2>Which Bike Won Most</h2>
+<div *ngIf="whichBikeWonMostComponent$ | async as whichBikeWonMostComponent">
+    <table mat-table [dataSource]="whichBikeWonMostComponent"
+      class="mat-elevation-z8">
+      <ng-container matColumnDef="bikeWon">
+        <th mat-header-cell *matHeaderCellDef>Bike</th>
+        <td mat-cell *matCellDef="let element"> {{element.bikeWon}} </td>
+      </ng-container>
+
+      <ng-container matColumnDef="timesWon">
+        <th mat-header-cell *matHeaderCellDef>Count</th>
+        <td mat-cell *matCellDef="let element"> {{element.timesWon}} </td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="['bikeWon', 'timesWon']"></tr>
+      <tr mat-row *matRowDef="let row; columns: ['bikeWon', 'timesWon'];"></tr>
+    </table>
+</div>

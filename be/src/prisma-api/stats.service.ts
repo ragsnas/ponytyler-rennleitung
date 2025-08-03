@@ -1,5 +1,5 @@
 import { Injectable, Logger } from "@nestjs/common";
-import { mostPlayedSongs, mostWishedSongs, neverWishedSongs } from "@prisma/client/sql";
+import { mostPlayedSongs, mostWishedSongs, neverWishedSongs, whichBikeWonMost } from "@prisma/client/sql";
 import { PrismaService } from "./prisma.service";
 
 @Injectable()
@@ -18,5 +18,9 @@ export class StatsService {
 
   neverWishedSongs() {
     return this.prisma.$queryRawTyped(neverWishedSongs());
+  }
+
+  whichBikeWonMost() {
+    return this.prisma.$queryRawTyped(whichBikeWonMost());
   }
 }

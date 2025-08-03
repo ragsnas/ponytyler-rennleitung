@@ -2,7 +2,6 @@ import { Component, OnInit } from "@angular/core";
 import { ActivatedRoute } from "@angular/router";
 import { StatisticsService, StatSong } from "../../../../../backend-api/src/lib/statistics.service";
 import { Observable } from "rxjs";
-import { log } from "@angular-devkit/build-angular/src/builders/ssr-dev-server";
 
 
 export enum SongStatType {

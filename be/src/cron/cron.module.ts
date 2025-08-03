@@ -12,6 +12,7 @@ import { DbBackupService } from "./db-backup/db-backup.service";
     HttpModule,
   ],
   providers: [SongSyncService, DbBackupService],
+  exports: [DbBackupService]
 })
 export class CronModule {
 }

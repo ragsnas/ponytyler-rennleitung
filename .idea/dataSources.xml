@@ -71,5 +71,15 @@
         </library>
       </libraries>
     </data-source>
+    <data-source source="LOCAL" name="rl-backup_download_2025-08-03_21-59-54-070.db" uuid="c4b6f1e3-42ca-41da-b8ce-880f955cf4e5">
+      <driver-ref>sqlite.xerial</driver-ref>
+      <synchronize>true</synchronize>
+      <jdbc-driver>org.sqlite.JDBC</jdbc-driver>
+      <jdbc-url>jdbc:sqlite:$USER_HOME$/Downloads/rl-backup_download_2025-08-03_21-59-54-070.db</jdbc-url>
+      <jdbc-additional-properties>
+        <property name="com.intellij.clouds.kubernetes.db.enabled" value="false" />
+      </jdbc-additional-properties>
+      <working-dir>$ProjectFileDir$</working-dir>
+    </data-source>
   </component>
 </project>

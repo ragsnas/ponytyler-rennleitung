@@ -5,4 +5,5 @@ export declare class StatisticsController {
     mostPlayedSongs(): Promise<import(".prisma/client/sql").mostPlayedSongs.Result[]>;
     mostWishedSongs(): Promise<import(".prisma/client/sql").mostWishedSongs.Result[]>;
     neverWishedSongs(): Promise<import(".prisma/client/sql").neverWishedSongs.Result[]>;
+    whichBikeWonMost(): Promise<import(".prisma/client/sql").whichBikeWonMost.Result[]>;
 }

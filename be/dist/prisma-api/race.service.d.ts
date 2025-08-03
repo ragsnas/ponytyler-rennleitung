@@ -7,16 +7,16 @@ export declare class RaceService {
     raceWithSongs(raceId: string): Promise<Race | null>;
     upcomingRaceWithSongs(): Promise<{
         song1: {
-            name: string;
             id: number;
+            name: string;
             artist: string;
             selectable: boolean;
             deleted: boolean;
             origin: string;
         };
         song2: {
-            name: string;
             id: number;
+            name: string;
             artist: string;
             selectable: boolean;
             deleted: boolean;
@@ -37,16 +37,16 @@ export declare class RaceService {
     }>;
     upcomingRacesWithSongs(): Promise<({
         song1: {
-            name: string;
             id: number;
+            name: string;
             artist: string;
             selectable: boolean;
             deleted: boolean;
             origin: string;
         };
         song2: {
-            name: string;
             id: number;
+            name: string;
             artist: string;
             selectable: boolean;
             deleted: boolean;

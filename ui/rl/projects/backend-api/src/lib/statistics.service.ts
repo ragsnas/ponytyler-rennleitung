@@ -11,6 +11,11 @@ export interface StatSong {
   totalCount?: number;
 }
 
+export interface WhichBikeWonMost {
+  timesWon: number;
+  bikeWon: number;
+}
+
 @Injectable({
   providedIn: "root",
 })
@@ -31,7 +36,7 @@ export class StatisticsService {
       this.showService.getShow(showId),
     ]).pipe(
       map(([averageRacesPerHour, races, show]: [number, Race[], Show]) => {
-        return races.length > Math.round((show.duration / 60) * averageRacesPerHour);
+        return (races.length - 2) > Math.round((show.duration / 60) * averageRacesPerHour);
       }),
     );
   }
@@ -54,6 +59,12 @@ export class StatisticsService {
     return this.http.get<StatSong[]>(`${environment.apiUrl}api/statistics/never-wished-songs`).pipe(result => {
       return result;
 
+    });
+  }
+
+  whichBikeWonMost(): Observable<WhichBikeWonMost[]> {
+    return this.http.get<WhichBikeWonMost[]>(`${environment.apiUrl}api/statistics/which-bike-won-most`).pipe(result => {
+      return result;
     });
   }
 }

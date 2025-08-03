@@ -5,6 +5,7 @@ import { ShowService } from "./show.service";
 import { SongService } from "./song.service";
 import { StatisticsService } from "./statistics.service";
 import { UserService } from "./user.service";
+import { BackupService } from "./backup.service";
 
 
 @NgModule({
@@ -14,6 +15,7 @@ import { UserService } from "./user.service";
     RaceService,
     UserService,
     StatisticsService,
+    BackupService,
     provideHttpClient(withInterceptorsFromDi()),
   ],
 })

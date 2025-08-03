@@ -24,6 +24,8 @@
     "@angular/platform-browser": "^18.2.6",
     "@angular/platform-browser-dynamic": "^18.2.6",
     "@angular/router": "^18.2.6",
+    "@ngx-dropzone/cdk": "^18.1.2",
+    "@ngx-dropzone/material": "^18.1.2",
     "fastest-levenshtein": "^1.0.16",
     "material-icons": "*",
     "rxjs": "^7.8.1",

@@ -5,7 +5,7 @@ export declare class DbBackupService {
     constructor();
     hourly(): Promise<void>;
     private createBackup;
-    private getDestinationPath;
+    getDestinationPath(backupDate: Date): string;
     private createDirIfNotExists;
     private isBackupNecessary;
     private getLastBackupFileFilename;

@@ -24,6 +24,7 @@ exports.CronModule = CronModule = __decorate([
             axios_1.HttpModule,
         ],
         providers: [song_sync_service_1.SongSyncService, db_backup_service_1.DbBackupService],
+        exports: [db_backup_service_1.DbBackupService]
     })
 ], CronModule);
 //# sourceMappingURL=cron.module.js.map

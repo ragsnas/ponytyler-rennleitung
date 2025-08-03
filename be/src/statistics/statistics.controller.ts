@@ -19,4 +19,8 @@ export class StatisticsController {
   async neverWishedSongs() {
     return await this.statsService.neverWishedSongs()
   }
+  @Get("which-bike-won-most")
+  async whichBikeWonMost() {
+    return await this.statsService.whichBikeWonMost()
+  }
 }

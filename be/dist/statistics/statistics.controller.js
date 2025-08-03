@@ -25,6 +25,9 @@ let StatisticsController = class StatisticsController {
     async neverWishedSongs() {
         return await this.statsService.neverWishedSongs();
     }
+    async whichBikeWonMost() {
+        return await this.statsService.whichBikeWonMost();
+    }
 };
 exports.StatisticsController = StatisticsController;
 __decorate([
@@ -45,6 +48,12 @@ __decorate([
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", Promise)
 ], StatisticsController.prototype, "neverWishedSongs", null);
+__decorate([
+    (0, common_1.Get)("which-bike-won-most"),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", Promise)
+], StatisticsController.prototype, "whichBikeWonMost", null);
 exports.StatisticsController = StatisticsController = __decorate([
     (0, common_1.Controller)('api/statistics'),
     __metadata("design:paramtypes", [stats_service_1.StatsService])

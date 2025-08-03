@@ -66,16 +66,16 @@ export declare class RaceController {
     calculateAverageRacesPerHour(): import("rxjs").Observable<number>;
     findUpcomingRaceWithSongs(): Promise<{
         song1: {
-            name: string;
             id: number;
+            name: string;
             artist: string;
             selectable: boolean;
             deleted: boolean;
             origin: string;
         };
         song2: {
-            name: string;
             id: number;
+            name: string;
             artist: string;
             selectable: boolean;
             deleted: boolean;
@@ -96,16 +96,16 @@ export declare class RaceController {
     }>;
     findUpcomingRacesWithSongs(): Promise<({
         song1: {
-            name: string;
             id: number;
+            name: string;
             artist: string;
             selectable: boolean;
             deleted: boolean;
             origin: string;
         };
         song2: {
-            name: string;
             id: number;
+            name: string;
             artist: string;
             selectable: boolean;
             deleted: boolean;

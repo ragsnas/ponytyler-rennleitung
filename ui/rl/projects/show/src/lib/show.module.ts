@@ -32,6 +32,7 @@ import { MatSelectModule } from "@angular/material/select";
 import { MatDialogModule } from "@angular/material/dialog";
 import { EditShowComponent } from "./edit-show/edit-show.component";
 import { MessageModule } from "projects/ui/message/src/public-api";
+import { BackupModule } from "projects/backup/src/public-api";
 import { ShiftFormComponent } from "./shift/shift-form.component";
 import { ShiftRoleFormComponent } from "./shift/shift-role-form.component";
 import { ShiftsDashboardComponent } from "./shifts/dashboard/shifts-dashboard.component";
@@ -102,7 +103,8 @@ const routes: Routes = [
     MatSelectModule,
     MatDialogModule,
     YesNoDialogModule,
-    MessageModule
+    MessageModule,
+    BackupModule
   ],
   exports: [ShowComponent],
   providers: [provideHttpClient(withInterceptorsFromDi())],
