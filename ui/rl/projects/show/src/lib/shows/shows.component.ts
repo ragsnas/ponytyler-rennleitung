@@ -69,7 +69,7 @@ export class ShowsComponent implements OnInit {
     const link = this.renderer.createElement("a");
     link.setAttribute("target", "_blank");
 
-    link.setAttribute("href", `${environment.apiUrl}/api/backup/download`);
+    link.setAttribute("href", `${environment.apiUrl}api/backup/download`);
     link.setAttribute(
       "download",
       `rl-backup_download_${formatDate(new Date(), "YYYY-MM-dd_HH-mm-ss-SSS", this.locale)}.db`,
