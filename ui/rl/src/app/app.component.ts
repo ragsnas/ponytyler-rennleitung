@@ -18,6 +18,7 @@ export class AppComponent implements OnInit {
       filter((shows: Show[]) => shows.some((show: Show) => show.active)),
       map((shows: Show[]) => shows[0])
     );
+    console.info("Welcome to RL Version 1.0.0");
   }
 
 }
