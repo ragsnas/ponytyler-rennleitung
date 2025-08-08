@@ -1,7 +1,5 @@
 import { Injectable } from "@angular/core";
-import { Show, ShowService } from "./show.service";
-import { Race, RaceService, RaceState } from "./race.service";
-import { combineLatest, map, Observable, of, Subject } from "rxjs";
+import { Observable, Subject } from "rxjs";
 import { environment } from "../../../../src/environments/environment";
 import { HttpClient } from "@angular/common/http";
 

@@ -4,7 +4,8 @@ import { Observable, of, Subject } from "rxjs";
 import { MatSnackBar } from "@angular/material/snack-bar";
 import { formatDate } from "@angular/common";
 import { MatDialog } from "@angular/material/dialog";
-import { BackupService } from "projects/backend-api/src/public-api";
+import { BackendApiModule, BackupService } from "projects/backend-api/src/public-api";
+import { environment } from "../../../../../src/environments/environment";
 
 @Component({
   selector: "lib-shows",
@@ -20,7 +21,7 @@ export class ShowsComponent implements OnInit {
     private snackBar: MatSnackBar,
     private renderer: Renderer2,
     private backupService: BackupService,
-    private dialog: MatDialog,
+
     @Inject(LOCALE_ID) public locale: string,
   ) {
   }
@@ -67,7 +68,8 @@ export class ShowsComponent implements OnInit {
   downloadDatabaseBackup() {
     const link = this.renderer.createElement("a");
     link.setAttribute("target", "_blank");
-    link.setAttribute("href", "/api/backup/download");
+
+    link.setAttribute("href", `${environment.apiUrl}/api/backup/download`);
     link.setAttribute(
       "download",
       `rl-backup_download_${formatDate(new Date(), "YYYY-MM-dd_HH-mm-ss-SSS", this.locale)}.db`,
