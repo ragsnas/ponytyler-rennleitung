@@ -1,16 +1,92 @@
 <div>
-  <div id="player1">
-    <h2>Player 1</h2>
-    <div class="progress">
-      <mat-progress-bar [value]="player1Progress$ | async">
-      </mat-progress-bar></div>
-    <div class="average-speed"></div>
-    <div class="time-elapsed"></div>
-  </div>
-  <div id="player2">
-    <h2>Player 2</h2>
-    <div class="progress"><mat-progress-bar [value]="player2Progress$ | async"></mat-progress-bar></div>
-    <div class="average-speed"></div>
-    <div class="time-elapsed"></div>
-  </div>
+  <svg xmlns="http://www.w3.org/2000/svg" version="1.0" viewBox="0 0 1500 750">
+    <defs>
+      <clipPath id="a">
+        <path
+          d="M1185.531 0C1359.207 0 1500 167.895 1500 375s-140.793 375-314.469 375H314.47C140.793 750 0 582.105 0 375S140.793 0 314.469 0Zm0 0" />
+      </clipPath>
+      <clipPath id="c">
+        <path d="M0 0h1500v750H0Zm0 0" />
+      </clipPath>
+      <clipPath id="d">
+        <path
+          d="M1185.531 0C1359.207 0 1500 167.895 1500 375s-140.793 375-314.469 375H314.47C140.793 750 0 582.105 0 375S140.793 0 314.469 0Zm0 0" />
+      </clipPath>
+      <clipPath id="b">
+        <path d="M0 0h1500v750H0z" />
+      </clipPath>
+      <clipPath id="f">
+        <path d="M48.207 26.594h1349.309v651.691H48.207Zm0 0" />
+      </clipPath>
+      <clipPath id="g">
+        <path
+          d="M1071.48 26.594c179.957 0 325.844 145.886 325.844 325.847 0 179.957-145.887 325.844-325.844 325.844H374.05c-179.956 0-325.843-145.887-325.843-325.844 0-179.96 145.887-325.847 325.844-325.847Zm0 0" />
+      </clipPath>
+      <clipPath id="h">
+        <path d="M84.188 65.957h1349.308v651.691H84.188Zm0 0" />
+      </clipPath>
+      <clipPath id="i">
+        <path
+          d="M1107.457 65.957c179.961 0 325.848 145.887 325.848 325.848 0 179.957-145.887 325.843-325.848 325.843H410.031c-179.96 0-325.843-145.886-325.843-325.843 0-179.961 145.882-325.848 325.843-325.848Zm0 0" />
+      </clipPath>
+      <clipPath id="e">
+        <path d="M0 0h1500v750H0z" />
+      </clipPath>
+      <clipPath id="j">
+        <path d="M174.64 124.84h1151.133v500.32H174.641Zm0 0" />
+      </clipPath>
+      <clipPath id="k">
+        <path
+          d="M1075.2 124.84c138.16 0 250.16 112 250.16 250.16s-112 250.16-250.16 250.16H424.8c-138.16 0-250.16-112-250.16-250.16s112-250.16 250.16-250.16Zm0 0" />
+      </clipPath>
+      <clipPath id="m">
+        <path d="M.64.84h1150.88v500.32H.64Zm0 0" />
+      </clipPath>
+      <clipPath id="n">
+        <path
+          d="M901.2.84c138.16 0 250.16 112 250.16 250.16s-112 250.16-250.16 250.16H250.8C112.64 501.16.64 389.16.64 251S112.64.84 250.8.84Zm0 0" />
+      </clipPath>
+      <clipPath id="l">
+        <path d="M0 0h1152v502H0z" />
+      </clipPath>
+    </defs>
+    <g clip-path="url(#a)">
+      <g clip-path="url(#b)">
+        <g clip-path="url(#c)">
+          <g clip-path="url(#d)">
+            <path fill="#c5426a" d="M-330-165h2160V915H-330z" />
+          </g>
+        </g>
+      </g>
+    </g>
+    <g clip-path="url(#e)">
+      <g clip-path="url(#f)">
+        <g clip-path="url(#g)">
+          <path fill="none" stroke="#fff" stroke-width="30" #whiteBikePath
+            [style.stroke-dashoffset]="whiteDashOffset"
+            [style.stroke-dasharray]="whitePathLength"
+            d="M1071.48 26.594c179.958 0 325.845 145.887 325.845 325.847 0 179.958-145.887 325.844-325.844 325.844H374.05c-179.957 0-325.844-145.886-325.844-325.844 0-179.96 145.887-325.847 325.844-325.847Zm0 0" />
+        </g>
+      </g>
+      <g clip-path="url(#h)">
+        <g clip-path="url(#i)">
+          <path fill="none" stroke="#400112" stroke-width="30" #blackBikePath
+            [style.stroke-dashoffset]="blackDashOffset"
+            [style.stroke-dasharray]="blackPathLength"
+            d="M1107.457 65.957c179.961 0 325.848 145.887 325.848 325.848 0 179.957-145.887 325.844-325.848 325.844H410.031c-179.96 0-325.843-145.887-325.843-325.844 0-179.961 145.882-325.848 325.843-325.848Zm0 0" />
+        </g>
+      </g>
+    </g>
+    <g clip-path="url(#j)">
+      <g clip-path="url(#k)">
+        <g clip-path="url(#l)" transform="translate(174 124)">
+          <g clip-path="url(#m)">
+            <g clip-path="url(#n)">
+              <path fill="#ecaec0" d="M.64.84h1151.133v500.32H.641Zm0 0" />
+            </g>
+          </g>
+        </g>
+      </g>
+    </g>
+  </svg>
 </div>
