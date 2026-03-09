@@ -1,0 +1,1 @@
+Platzhalterfile für neuen Ordner
