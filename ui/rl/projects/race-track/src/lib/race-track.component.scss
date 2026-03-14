@@ -1,9 +1,6 @@
-// Hide paths that haven't had their length calculated yet
-path[stroke-dasharray="0"] {
-  visibility: hidden;
+.bg-light-pink {
+  background: #ecaec0;
 }
-
 path {
-  // Ensure the transition only happens AFTER the initial length is set
-  transition: stroke-dashoffset 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }

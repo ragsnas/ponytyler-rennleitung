@@ -23,17 +23,18 @@ export class RaceTrackComponent implements AfterViewInit, OnInit, OnDestroy {
   player2Progress$: Observable<number> = this.fakePlayer2Data$.pipe(map(playerData => playerData.progress));
   player2AverageSpeed$: Observable<number> = this.fakePlayer2Data$.pipe(map((playerData: PlayerData) => playerData.averageSpeedInKmh));
   player2timeInSeconds$: Observable<number> = this.fakePlayer2Data$.pipe(map((playerData: PlayerData) => playerData.timeInSeconds));
+  
   private unsubscribe$: Subject<void> = new Subject<void>();
 
   @ViewChild('whiteBikePath') whiteBikePath!: ElementRef<SVGPathElement>;
   @ViewChild('blackBikePath') blackBikePath!: ElementRef<SVGPathElement>;
+  
   public whitePathLength: number = 0;
   public blackPathLength: number = 0;
   public whiteDashOffset: number = 0;
   public blackDashOffset: number = 0;
 
   ngOnInit(): void {
-    // console.log(`ng on init called`);
     let player1Progress: number = 0;
     let player2Progress: number = 0;
 
@@ -50,8 +51,6 @@ export class RaceTrackComponent implements AfterViewInit, OnInit, OnDestroy {
       takeUntil(this.unsubscribe$),
       takeWhile(() => player1Progress < 100 && player2Progress < 100),
     ).subscribe((timer) => {
-      // console.log(`\nSetting Player Progress for Players`);
-
       player1Progress = this.setPlayerProgress(this.fakePlayer1Data$, player1Progress, timer);
       player2Progress = this.setPlayerProgress(this.fakePlayer2Data$, player2Progress, timer);
     });
@@ -60,33 +59,31 @@ export class RaceTrackComponent implements AfterViewInit, OnInit, OnDestroy {
   ngAfterViewInit(): void {
     setTimeout(() => {
       if (this.whiteBikePath) {
-        const length = this.blackBikePath.nativeElement.getTotalLength();
+        const length = this.whiteBikePath.nativeElement.getTotalLength();
         this.whitePathLength = length;
         this.whiteDashOffset = length;
       }
       if (this.blackBikePath) {
         const length = this.blackBikePath.nativeElement.getTotalLength();
-        this.blackPathLength = this.blackBikePath.nativeElement.getTotalLength();
-        this.blackDashOffset = this.blackPathLength;
+        this.blackPathLength = length;
+        this.blackDashOffset = length;
       }
     });
   }
 
   private calculateOffset(progress: number, totalLength: number): number {
-    // Formula: Length - (Progress% * Length / 100)
-    const p = Math.min(Math.max(progress, 0), 100); // Clamp between 0-100
+    const p = Math.min(Math.max(progress, 0), 100);
     return totalLength - (p * totalLength / 100);
   }
 
   private setPlayerProgress(playerData$: Subject<PlayerData>, playerProgress: number, timer: number) {
     const currentPlayerProgress = Math.random();
     playerProgress += currentPlayerProgress;
-    // console.log(`\nSetting Player Progress:`, playerProgress);
     playerData$.next({
       progress: playerProgress,
       averageSpeedInKmh: currentPlayerProgress * 50,
       timeInSeconds: timer / 1000
-    })
+    });
     return playerProgress;
   }
 
