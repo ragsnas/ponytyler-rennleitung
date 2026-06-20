@@ -1,8 +1,16 @@
-FROM node:18-alpine
+FROM node:26-alpine AS build
 WORKDIR /app
-COPY . .
-RUN npm install
+RUN apk add --no-cache openssl bash
+RUN npm install -g @nestjs/cli
+COPY . /app
+RUN npm i
 RUN npx prisma generate
+RUN npx prisma generate --sql
+RUN npx prisma migrate deploy
 RUN npm run build
-CMD ["node", "dist/main.js"]
-EXPOSE 3000:3000
+
+FROM node:26-alpine AS final
+WORKDIR /app
+COPY --from=build app/dist ./app
+RUN node dist/main.js
+EXPOSE 3000

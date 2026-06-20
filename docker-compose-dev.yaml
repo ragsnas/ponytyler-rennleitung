@@ -1,0 +1,24 @@
+services:
+  backend:
+    build: 
+      context: ./be
+      dockerfile: Dockerfile.dev
+    volumes:
+      - ./be:/app
+#      - /usr/src/app/node_modules
+      - ./data:/app/data # Persistent SQLite location
+    ports:
+      - "3000:3000"
+    command: /bin/bash start.sh
+    #command: npm run start:dev
+
+  frontend:
+    build:
+      context: ./ui/rl
+      dockerfile: Dockerfile.dev
+    volumes:
+      - ./ui/rl:/app
+    ports:
+      - "4200:4200"
+    # poll flag is often needed for Docker to detect file changes on some OS
+    #command: npm run start:dev

@@ -33,7 +33,6 @@
     "reflect-metadata": "^0.1.13",
     "rxjs": "^7.8.1",
     "ts-md5": "^1.3.1",
-    "usb": "^2.14.0",
     "webdav": "^5.6.0"
   },
   "devDependencies": {
@@ -76,5 +75,11 @@
     ],
     "coverageDirectory": "../coverage",
     "testEnvironment": "node"
+  },
+  "allowScripts": {
+    "@nestjs/core@10.4.22": true,
+    "@prisma/client@5.22.0": true,
+    "@prisma/engines@5.22.0": true,
+    "prisma@5.22.0": true
   }
 }

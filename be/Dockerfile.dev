@@ -1,0 +1,10 @@
+FROM node:26-alpine
+WORKDIR /app
+RUN apk add --no-cache openssl bash
+RUN npm install -g @nestjs/cli
+COPY . /app
+RUN npm i
+#RUN npx prisma generate
+#RUN npx prisma generate --sql
+#RUN npx prisma migrate deploy
+EXPOSE 3000

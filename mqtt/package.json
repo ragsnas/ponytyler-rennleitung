@@ -1,0 +1,19 @@
+{
+  "name": "@ponytyler/mqtt-broker",
+  "version": "0.0.1",
+  "description": "MQTT Broker for the Pony Tyler Rennleitung project",
+  "author": "Ansgar Schuermann <ansgar.schuermann@gmx.de>",
+  "private": true,
+  "license": "UNLICENSED",
+  "scripts": {
+    "start": "bun broker.ts"
+  },
+  "dependencies": {
+    "aedes": "^1.0.2",
+    "mqtt": "^5.15.1",
+    "net": "^1.0.2"
+  },
+  "devDependencies": {
+    "@types/node": "^25.6.0"
+  }
+}

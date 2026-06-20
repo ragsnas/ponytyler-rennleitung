@@ -1,10 +1,14 @@
 {
   "name": "rl",
-  "version": "0.0.0",
+  "version": "1.0.0",
+  "engines": {
+    "npm": ">=11.16",
+    "node" : ">=24"
+  },
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
-    "start:dev": "ng serve --watch",
+    "start:dev": "ng serve --watch --poll 2000 --configuration development",
     "lint:fix": "ng lint --fix",
     "build": "ng build",
     "build:raspberry": "ng build",

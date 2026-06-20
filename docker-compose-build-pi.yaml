@@ -1,0 +1,18 @@
+services:
+  backend:
+    build: 
+      context: ./be
+      dockerfile: Dockerfile
+      target: build
+    volumes:
+      - ./data:/app/data # Persistent SQLite location
+    ports:
+      - "3000:3000"
+
+  frontend:
+    build:
+      context: ./ui/rl
+      dockerfile: Dockerfile
+      target: build
+    ports:
+      - "80:80"
