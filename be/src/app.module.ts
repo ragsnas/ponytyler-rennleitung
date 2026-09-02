@@ -11,6 +11,7 @@ import { ShiftsModule } from "./shifts/shifts.module";
 import { UserModule } from "./user/user.module";
 import { StatisticsModule } from "./statistics/statistics.module";
 import { BackupModule } from "./backup/backup.module";
+import { ImportExportModule } from './import-export/import-export.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { BackupModule } from "./backup/backup.module";
     CronModule,
     NextcloudModule,
     ConfigModule.forRoot({}),
+    ImportExportModule,
   ],
   controllers: [AppController],
   providers: [AppService],

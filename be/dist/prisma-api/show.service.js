@@ -80,6 +80,11 @@ let ShowService = class ShowService {
         });
         return this.prisma.$transaction([deleteRaces, deleteShifts, deleteShiftsRoles, deleteShow]);
     }
+    allShowsWithRaces() {
+        return this.prisma.show.findMany({
+            include: { races: true, shifts: true }
+        });
+    }
 };
 exports.ShowService = ShowService;
 exports.ShowService = ShowService = __decorate([

@@ -1,28 +1,15 @@
 import mqtt from 'mqtt';
 
-enum RaceState {
-BEFORE_SHOW = 'BEFORE_SHOW',
-BEFORE_RACE = 'BEFORE_RACE',
-RACE = 'RACE',
-RACE_FINISHED = 'RACE_FINISHED',
-PLAYING_VIDEO = 'PLAYING_VIDEO',
-VIDEO_FINISHED = 'VIDEO_FINISHED',
-SHOW_FINISHED = 'SHOW_FINISHED', 
-BEFORE_ENCORE = 'BEFORE_ENCORE',
-PLAYING_ENCORE = 'PLAYING_ENCORE',
-ENCORE_FINISHED = 'ENCORE_FINISHED'
-}
-
-let currentRaceState: RaceState = RaceState.BEFORE_SHOW;
 
 // Connect to your local Bun broker
-const client = mqtt.connect('mqtt://localhost:3001');
-const INTERVAL = 5; // 5 milliseconds
+const client = mqtt.connect('mqtt://localhost:3001', {
+  clientId: 'fake-producer'
+});
+const INTERVAL = 2; // milliseconds
 const MAX_BIKE_ADVANCE = 120; // 5 milliseconds
 const bikeAdvanceTopic1 = 'sensors/bike-1';
 const bikeAdvanceTopic2 = 'sensors/bike-2';
-const stateChangeTopic = 'state/change';
-
+const stateChangeTopic = 'state/change-unused-producer';
 
 client.on('connect', () => {
   console.log('✅ Connected to broker');
@@ -30,21 +17,7 @@ client.on('connect', () => {
   let bikeAdvance1 = 0;
   let bikeAdvance2 = 0;
 
-  function sendMessage(topic: string, value: string) {
-    client.publish(
-        topic,
-        value,
-        { qos: 1 },
-        (err) => {
-            if (err) {
-                console.error('❌ Failed to publish:', err);
-            } else {
-                console.log(`🚀 Message sent to ${topic}:`, value);
-            }
-        }
-    );
-  }
-
+  /*
   client.subscribe(stateChangeTopic, (err) => {
     if (!err) {
       console.log(`📥 Subscribed to ${stateChangeTopic}`);
@@ -52,19 +25,60 @@ client.on('connect', () => {
       console.error('Subscription error:', err);
     }
   });
+  */
 
-  client.on("message", (_, payload) => {
-    console.info('Received state change message:', payload?.toString());
-    const stateChange = JSON.parse(payload?.toString() || '{}');
-    if(stateChange.newState) {
-        currentRaceState = stateChange.newState;
+  /*
+  client.on("message", (topic, payload) => {
+    console.info(`Received message [${topic}]:`, payload?.toString());
+    const messageObject = JSON.parse(payload?.toString() || '{}');
+    if(messageObject && messageObject.newState) {
+        currentRaceState = messageObject.newState;
         console.info('Updated current race state to:', currentRaceState);
+    } else {
+      console.info('Could not convert Message:', payload);
     }
   });
+  */
+
+
+  let sequenzCounter = 0;
+  let pulseCounter1 = 0;
+  let pulseCounter2 = 0;
+  let timestamp = 0;
 
   const interval = setInterval(() => {
     
-    if (currentRaceState ===  RaceState.BEFORE_SHOW) {
+    if (true) {
+      timestamp++;
+      sequenzCounter++;
+      if(Math.random() > 0.33) {
+        pulseCounter1 += Math.round(Math.random()*1.2);
+        sendBikeMessage('1', sequenzCounter, pulseCounter1, timestamp);
+      }
+      if(Math.random() > 0.33) {
+        timestamp++;
+        pulseCounter2 += Math.round(Math.random()*1.2);
+        sendBikeMessage('2', sequenzCounter, pulseCounter2, timestamp);
+      }
+    }
+  }, INTERVAL);
+
+setTimeout(() => {
+  interval.close();
+  client.end();
+}, INTERVAL * 500)
+
+//  interval._onTimeout = () => {
+ //   client.end();
+ // }
+
+});
+
+function handleStateChange(
+  currentRaceState: RaceState,
+  bikeAdvance1: number,
+  bikeAdvance2: number) {
+  if (currentRaceState ===  RaceState.BEFORE_SHOW) {
         if(Math.random() < 0.01) {
           sendMessage(
             stateChangeTopic,
@@ -119,13 +133,32 @@ client.on('connect', () => {
           JSON.stringify({ newState: RaceState.BEFORE_RACE }));
       }
     }
-  }, INTERVAL);
+}
 
-//  interval._onTimeout = () => {
- //   client.end();
- // }
+  function sendBikeMessage(bikeId: '1' | '2', sequenzCounter: number, pulseCounter: number, timestamp: number) {
+          sendMessage(
+            `Bike/${bikeId}`,
+            JSON.stringify({
+              "sequenz":sequenzCounter++,
+              "pulsecount": pulseCounter,
+              "timestamp": timestamp
+             }));
+        }
 
-});
+  function sendMessage(topic: string, value: string) {
+    client.publish(
+        topic,
+        value,
+        { qos: 1 },
+        (err) => {
+            if (err) {
+                console.error('❌ Failed to publish:', err);
+            } else {
+                console.log(`🚀 Message sent to ${topic}:`, value);
+            }
+        }
+    );
+  }
 
 client.on('error', (err) => {
   console.error('Connection error:', err);

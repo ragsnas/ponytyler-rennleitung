@@ -4,6 +4,7 @@ import { Show, Prisma, Shift } from "@prisma/client";
 
 @Injectable()
 export class ShowService {
+
   constructor(private prisma: PrismaService) {}
 
   async show(
@@ -40,7 +41,7 @@ export class ShowService {
   async createShow(data: Prisma.ShowCreateInput): Promise<Show> {
     return this.prisma.show.create({
       data,
-    });
+    }) as Promise<Show>;
   }
 
   async updateShow(params: {
@@ -91,4 +92,12 @@ export class ShowService {
 
     return this.prisma.$transaction([deleteRaces, deleteShifts, deleteShiftsRoles, deleteShow]);
   }
+
+  allShowsWithRaces() {
+      return this.prisma.show.findMany({
+        include: {races: true, shifts: true}
+      });
+  }
+
+
 }
