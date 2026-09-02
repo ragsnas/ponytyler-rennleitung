@@ -1,16 +1,7 @@
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  Param,
-  Patch,
-  Post,
-  Query,
-} from "@nestjs/common";
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from "@nestjs/common";
 import { RaceService } from "src/prisma-api/race.service";
 import { ShowService } from "src/prisma-api/show.service";
-import { Prisma, Race } from "@prisma/client";
+import { Prisma } from "@prisma/client";
 import { combineLatest, map } from "rxjs";
 
 export enum RaceState {
