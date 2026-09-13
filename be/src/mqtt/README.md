@@ -87,6 +87,8 @@ mosquitto_pub -h localhost -p 3001 -t 'Bike/1' -m '{"pulsecount":10,"sequenz":1,
 - `Bike/1/cmd`, `Bike/2/cmd` — free-form commands for a bike, just logged.
 - Anything else is logged as an unrecognized message (no error — publishing
   is not restricted to these topics).
+- `RaceStateChange` — state machine status messages for races: `{ raceId, state }`.
+- `ShowStateChange` — state machine status message for show: `{ showId, state }`.
 
 See `helper/fake-mqtt-signal-producer` in the repo root for a script that
 simulates bike sensor traffic against this broker.

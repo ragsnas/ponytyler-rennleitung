@@ -30,7 +30,7 @@ export class ShowService {
     return this.http.get<Show[]>(environment.apiUrl + 'api/show/current-shows')
   }
 
-  getCurrentShow(): Observable<Show> | undefined {
+  getCurrentShow(): Observable<Show> {
     return this.http.get<Show>(environment.apiUrl + 'api/show/current-show')
   }
 

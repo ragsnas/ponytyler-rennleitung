@@ -1,7 +1,8 @@
 import { Component, OnInit } from "@angular/core";
 import { BackendApiModule } from "projects/backend-api/src/public-api";
-import { RaceService } from 'projects/backend-api/src/lib/race.service';
-import { ShowService } from 'projects/backend-api/src/lib/show.service';
+import { Race, RaceService } from "projects/backend-api/src/lib/race.service";
+import { Show, ShowService } from "projects/backend-api/src/lib/show.service";
+import { firstValueFrom } from "rxjs";
 
 @Component({
   selector: 'lib-state-machine',
@@ -11,6 +12,9 @@ import { ShowService } from 'projects/backend-api/src/lib/show.service';
 })
 export class StateMachineComponent implements OnInit {
 
+  private currentRace: Race | undefined;
+  private currentShow: Show | undefined;
+
   constructor(
     private raceService: RaceService,
     private showService: ShowService
@@ -18,12 +22,13 @@ export class StateMachineComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.getCurrentShowAndRace();
     // @todo: load current Show, ShowState, Race and RaceState
     // @todo: Listen to ShowState and RaceState Changes via mqtt
   }
 
-  getCurrentShowAndRace() {
-    let currentShow = this.showService.getCurrentShow();
-    let currentRace = this.raceService.getCurrentRace();
+  async getCurrentShowAndRace() {
+    this.currentShow = await firstValueFrom(this.showService.getCurrentShow());
+    this.currentRace = await  firstValueFrom(this.raceService.getCurrentRace());
   }
 }
