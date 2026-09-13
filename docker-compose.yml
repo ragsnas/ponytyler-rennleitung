@@ -1,0 +1,72 @@
+services:
+  backend:
+    build:
+      context: ./be
+      dockerfile: Dockerfile
+    container_name: ponytyler-backend-dev
+    ports:
+      - "3000:3000"
+      - "3001:3001"
+    environment:
+      - NODE_ENV=development
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/ponytyler
+      - MQTT_PORT=3001
+    volumes:
+      - ./be:/app
+      - /app/node_modules
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - ponytyler-network
+    command: sh -c "npx prisma generate && npx prisma db push && npm run start:dev"
+
+  frontend:
+    build:
+      context: ./ui/rl
+      dockerfile: Dockerfile.dev
+      args:
+        - NODE_ENV=development
+    container_name: ponytyler-frontend-dev
+    ports:
+      - "4200:4200"
+    volumes:
+      - ./ui/rl:/app
+      - /app/node_modules
+      - /app/dist
+    environment:
+      - NODE_ENV=development
+    restart: unless-stopped
+    networks:
+      - ponytyler-network
+    depends_on:
+      backend:
+        condition: service_started
+
+  postgres:
+    image: postgres:15-alpine
+    container_name: ponytyler-postgres-dev
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=ponytyler
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
+    networks:
+      - ponytyler-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+networks:
+  ponytyler-network:
+    driver: bridge
+
+volumes:
+  postgres-data:

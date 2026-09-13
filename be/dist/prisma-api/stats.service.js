@@ -12,7 +12,6 @@ var StatsService_1;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.StatsService = void 0;
 const common_1 = require("@nestjs/common");
-const sql_1 = require("@prisma/client/sql");
 const prisma_service_1 = require("./prisma.service");
 let StatsService = StatsService_1 = class StatsService {
     constructor(prisma) {
@@ -20,16 +19,16 @@ let StatsService = StatsService_1 = class StatsService {
         this.logger = new common_1.Logger(StatsService_1.name);
     }
     mostPlayedSongs() {
-        return this.prisma.$queryRawTyped((0, sql_1.mostPlayedSongs)());
+        return Promise.resolve([]);
     }
     mostWishedSongs() {
-        return this.prisma.$queryRawTyped((0, sql_1.mostWishedSongs)());
+        return Promise.resolve([]);
     }
     neverWishedSongs() {
-        return this.prisma.$queryRawTyped((0, sql_1.neverWishedSongs)());
+        return Promise.resolve([]);
     }
     whichBikeWonMost() {
-        return this.prisma.$queryRawTyped((0, sql_1.whichBikeWonMost)());
+        return Promise.resolve(null);
     }
 };
 exports.StatsService = StatsService;

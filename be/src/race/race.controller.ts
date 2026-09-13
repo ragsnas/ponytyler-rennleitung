@@ -6,9 +6,14 @@ import { combineLatest, map } from "rxjs";
 
 export enum RaceState {
   WAITING_FOR_OPPONENT = "WAITING_FOR_OPPONENT",
-  WAITING_TO_RACE = "WAITING_TO_RACE",
   CANCELED = "CANCELED",
+  LISTED = "LISTED",
+  WAITING_TO_RACE = "WAITING_TO_RACE",
+  RACING = "RACING",
   RACED = "RACED",
+  ERROR = "ERROR",
+  VIDEO_PLAYING = "VIDEO_PLAYING",
+  DONE = "DONE"
 }
 
 @Controller("api/race")
@@ -77,6 +82,7 @@ export class RaceController {
             .reduce(
               (accumulator: number, currentValue: number) =>
                 accumulator + currentValue,
+              0,
             ) || 0;
 
         const totalTime =
@@ -85,11 +91,17 @@ export class RaceController {
             .reduce(
               (accumulator: number, currentValue: number) =>
                 accumulator + currentValue,
+              0,
             ) || 0;
 
         return Math.round(numberOfRaces / (totalTime / 60));
       }),
     );
+  }
+
+  @Get("current")
+  findCurrentRace() {
+    return this.raceService.currentRace();
   }
 
   @Get("upcoming-race-with-songs")

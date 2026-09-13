@@ -47,8 +47,6 @@ export class CreateShowComponent {
       name,
       date,
       duration: Number(duration) || 0,
-      active: true,
-      finished: false,
     }).subscribe({
       next: (result) => {
         this.snackBar.open(`Successfully Created Show ${name}`, "OK", { panelClass: "success" })

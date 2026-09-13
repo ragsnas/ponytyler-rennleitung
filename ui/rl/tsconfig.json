@@ -48,6 +48,9 @@
       "song-search": [
         "dist/song-search"
       ],
+      "state-machine": [
+        "./dist/state-machine"
+      ],
       "stats": [
         "./dist/stats"
       ],

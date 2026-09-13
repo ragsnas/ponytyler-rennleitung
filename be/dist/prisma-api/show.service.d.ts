@@ -24,6 +24,7 @@ export declare class ShowService {
         actualStartTime: Date | null;
         duration: number | null;
         finished: boolean;
+        showState: import(".prisma/client").$Enums.ShowState;
         active: boolean;
     }]>;
 }

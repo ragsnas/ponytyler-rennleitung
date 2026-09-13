@@ -66,7 +66,7 @@ export class InputComponent implements OnInit, OnDestroy, ControlValueAccessor, 
       takeUntil(this.unsubscribe$),
       map(([songs, races]: [Song[], Race[]]) => {
         const racesFinished = races.filter(race => race.raceState === RaceState.RACED);
-        const racesUpcoming = races.filter(race => race.raceState === RaceState.WAITING_TO_RACE || race.raceState === RaceState.WAITING_FOR_OPPONENT);
+        const racesUpcoming = races.filter(race => race.raceState === RaceState.LISTED || race.raceState === RaceState.WAITING_FOR_OPPONENT);
         const songIdsAlreadyPlayed = racesFinished.map(race => {
           if (race.bikeWon === 1) {
             return race.song1Id;

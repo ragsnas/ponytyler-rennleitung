@@ -12,6 +12,19 @@ import { ShowService } from "../prisma-api/show.service";
 import { Show, Prisma } from "@prisma/client";
 import { RaceService } from "../prisma-api/race.service";
 
+  enum ShowState {
+    BEFORE_SHOW = 'BEFORE_SHOW',
+    BEFORE_RACE = 'BEFORE_RACE',
+    RACE = 'RACE',
+    RACE_FINISHED = 'RACE_FINISHED',
+    PLAYING_VIDEO = 'PLAYING_VIDEO',
+    VIDEO_FINISHED = 'VIDEO_FINISHED',
+    SHOW_FINISHED = 'SHOW_FINISHED',
+    BEFORE_ENCORE = 'BEFORE_ENCORE',
+    PLAYING_ENCORE = 'PLAYING_ENCORE',
+    ENCORE_FINISHED = 'ENCORE_FINISHED'
+  }
+
 @Controller("api/show")
 export class ShowController {
   constructor(

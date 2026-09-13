@@ -673,6 +673,39 @@
           }
         }
       }
+    },
+    "state-machine": {
+      "projectType": "library",
+      "root": "projects/state-machine",
+      "sourceRoot": "projects/state-machine/src",
+      "prefix": "lib",
+      "architect": {
+        "build": {
+          "builder": "@angular-devkit/build-angular:ng-packagr",
+          "options": {
+            "project": "projects/state-machine/ng-package.json"
+          },
+          "configurations": {
+            "production": {
+              "tsConfig": "projects/state-machine/tsconfig.lib.prod.json"
+            },
+            "development": {
+              "tsConfig": "projects/state-machine/tsconfig.lib.json"
+            }
+          },
+          "defaultConfiguration": "production"
+        },
+        "test": {
+          "builder": "@angular-devkit/build-angular:karma",
+          "options": {
+            "tsConfig": "projects/state-machine/tsconfig.spec.json",
+            "polyfills": [
+              "zone.js",
+              "zone.js/testing"
+            ]
+          }
+        }
+      }
     }
   },
   "cli": {

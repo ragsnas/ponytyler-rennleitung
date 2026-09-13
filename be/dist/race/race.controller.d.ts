@@ -3,9 +3,14 @@ import { ShowService } from "src/prisma-api/show.service";
 import { Prisma } from "@prisma/client";
 export declare enum RaceState {
     WAITING_FOR_OPPONENT = "WAITING_FOR_OPPONENT",
-    WAITING_TO_RACE = "WAITING_TO_RACE",
     CANCELED = "CANCELED",
-    RACED = "RACED"
+    LISTED = "LISTED",
+    WAITING_TO_RACE = "WAITING_TO_RACE",
+    RACING = "RACING",
+    RACED = "RACED",
+    ERROR = "ERROR",
+    VIDEO_PLAYING = "VIDEO_PLAYING",
+    DONE = "DONE"
 }
 export declare class RaceController {
     private readonly raceService;
@@ -64,6 +69,36 @@ export declare class RaceController {
         bikeWon: number;
     }[]>;
     calculateAverageRacesPerHour(): import("rxjs").Observable<number>;
+    findCurrentRace(): Prisma.Prisma__RaceClient<{
+        song1: {
+            id: number;
+            name: string;
+            artist: string;
+            selectable: boolean;
+            deleted: boolean;
+            origin: string;
+        };
+        song2: {
+            id: number;
+            name: string;
+            artist: string;
+            selectable: boolean;
+            deleted: boolean;
+            origin: string;
+        };
+    } & {
+        id: number;
+        showId: number;
+        orderNumber: number;
+        createdAt: Date;
+        raced: boolean;
+        raceState: string;
+        person1: string | null;
+        song1Id: number | null;
+        person2: string | null;
+        song2Id: number | null;
+        bikeWon: number;
+    }, null, import("@prisma/client/runtime/library").DefaultArgs>;
     findUpcomingRaceWithSongs(): Promise<{
         song1: {
             id: number;

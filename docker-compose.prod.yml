@@ -1,0 +1,72 @@
+services:
+  backend:
+    image: ponytyler/backend:prod
+    build:
+      context: ./be
+      dockerfile: Dockerfile.prod
+    container_name: ponytyler-backend-prod
+    ports:
+      - "3000:3000"
+      - "3001:3001"
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=postgresql://${DB_USER:-postgres}:${DB_PASSWORD:-postgres}@postgres:5432/${DB_NAME:-ponytyler}
+      - MQTT_PORT=3001
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: always
+    networks:
+      - ponytyler-network
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3000/health', (r) => {if (r.statusCode !== 200) throw new Error(r.statusCode)})"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+  frontend:
+    image: ponytyler/frontend:prod
+    build:
+      context: ./ui/rl
+      dockerfile: Dockerfile.prod
+    container_name: ponytyler-frontend-prod
+    ports:
+      - "80:80"
+    restart: always
+    networks:
+      - ponytyler-network
+    depends_on:
+      - backend
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+  postgres:
+    image: postgres:15-alpine
+    container_name: ponytyler-postgres-prod
+    environment:
+      - POSTGRES_USER=${DB_USER:-postgres}
+      - POSTGRES_PASSWORD=${DB_PASSWORD:-postgres}
+      - POSTGRES_DB=${DB_NAME:-ponytyler}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    restart: always
+    networks:
+      - ponytyler-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+networks:
+  ponytyler-network:
+    driver: bridge
+
+volumes:
+  postgres-data:
+    driver: local

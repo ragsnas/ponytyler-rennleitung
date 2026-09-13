@@ -7,8 +7,21 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = "file:./rl.db"
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum ShowState {
+    BEFORE_SHOW
+    BEFORE_RACE
+    RACE
+    RACE_FINISHED
+    PLAYING_VIDEO
+    VIDEO_FINISHED
+    SHOW_FINISHED
+    BEFORE_ENCORE
+    PLAYING_ENCORE
+    ENCORE_FINISHED
 }
 
 model Show {
@@ -18,6 +31,7 @@ model Show {
   actualStartTime DateTime?
   duration        Int?
   finished        Boolean   @default(false)
+  showState       ShowState @default(SHOW_FINISHED)
   active          Boolean   @default(false)
   races           Race[]    @relation(name: "ShowToRace")
   shifts          Shift[]   @relation(name: "ShowToShift")
@@ -62,7 +76,7 @@ model Race {
   orderNumber Int
   createdAt   DateTime
   raced       Boolean  @default(false)
-  raceState   String   @default("WAITING_TO_RACE")
+  raceState   String   @default("LISTED")
   person1     String?
   song1       Song?    @relation(name: "SongForPerson1", fields: [song1Id], references: [id])
   song1Id     Int?
@@ -70,6 +84,18 @@ model Race {
   song2       Song?    @relation(name: "SongForPerson2", fields: [song2Id], references: [id])
   song2Id     Int?
   bikeWon     Int      @default(0)
+}
+
+enum RaceState {
+  WAITING_FOR_OPPONENT
+  CANCELED
+  LISTED
+  WAITING_TO_RACE
+  RACING
+  RACED
+  ERROR
+  VIDEO_PLAYING
+  DONE
 }
 
 model User {

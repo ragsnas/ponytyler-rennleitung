@@ -37,7 +37,7 @@ let RaceService = class RaceService {
         return this.prisma.race.findFirst({
             where: {
                 showId: Number(show.id),
-                raceState: { equals: race_controller_1.RaceState.WAITING_TO_RACE },
+                raceState: { equals: race_controller_1.RaceState.LISTED },
             },
             include: { song1: true, song2: true },
             orderBy: { orderNumber: "asc" },
@@ -52,7 +52,7 @@ let RaceService = class RaceService {
         return this.prisma.race.findMany({
             where: {
                 showId: Number(show.id),
-                raceState: { equals: race_controller_1.RaceState.WAITING_TO_RACE },
+                raceState: { equals: race_controller_1.RaceState.LISTED },
             },
             include: { song1: true, song2: true },
             orderBy: { orderNumber: "asc" },
@@ -140,7 +140,7 @@ let RaceService = class RaceService {
         const raceToSwitchWithResults = await this.races({
             where: {
                 showId: Number(raceToMove.showId),
-                raceState: race_controller_1.RaceState.WAITING_TO_RACE,
+                raceState: race_controller_1.RaceState.LISTED,
                 orderNumber: orderNumberEqClause,
             },
             orderBy: { orderNumber: params.upOrDown === "up" ? "desc" : "asc" },
@@ -175,17 +175,32 @@ let RaceService = class RaceService {
             data.song2Id &&
             data.person1 &&
             data.person2) {
-            return race_controller_1.RaceState.WAITING_TO_RACE;
+            return race_controller_1.RaceState.LISTED;
         }
-        else if (data.raceState === race_controller_1.RaceState.WAITING_TO_RACE &&
+        else if (data.raceState === race_controller_1.RaceState.LISTED &&
             !(data.song1Id && data.song2Id && data.person1 && data.person2)) {
             return race_controller_1.RaceState.WAITING_FOR_OPPONENT;
         }
-        return data.raceState || race_controller_1.RaceState.WAITING_TO_RACE;
+        return data.raceState || race_controller_1.RaceState.LISTED;
     }
     async deleteRace(where) {
         return this.prisma.race.delete({
             where,
+        });
+    }
+    currentRace() {
+        return this.prisma.race.findFirst({
+            where: {
+                raceState: {
+                    notIn: [
+                        race_controller_1.RaceState.WAITING_FOR_OPPONENT,
+                        race_controller_1.RaceState.CANCELED,
+                        race_controller_1.RaceState.LISTED,
+                        race_controller_1.RaceState.DONE,
+                    ],
+                },
+            },
+            include: { song1: true, song2: true },
         });
     }
 };

@@ -52,7 +52,7 @@ export class CreateRaceComponent implements OnInit {
   createRace() {
     this.createInProcess = true;
     const race = this.form.getRawValue();
-    const raceState = race.person1 && race.person2 && race.song1Id && race.song2Id ? RaceState.WAITING_TO_RACE : RaceState.WAITING_FOR_OPPONENT;
+    const raceState = race.person1 && race.person2 && race.song1Id && race.song2Id ? RaceState.LISTED : RaceState.WAITING_FOR_OPPONENT;
     this.raceService.createRace({
       ...race,
       raceState,

@@ -1,5 +1,5 @@
 import { Injectable, Logger } from "@nestjs/common";
-import { mostPlayedSongs, mostWishedSongs, neverWishedSongs, whichBikeWonMost } from "@prisma/client/sql";
+// import { mostPlayedSongs, mostWishedSongs, neverWishedSongs, whichBikeWonMost } from "@prisma/client/sql";
 import { PrismaService } from "./prisma.service";
 
 @Injectable()
@@ -9,18 +9,22 @@ export class StatsService {
   private readonly logger = new Logger(StatsService.name);
 
   mostPlayedSongs() {
-    return this.prisma.$queryRawTyped(mostPlayedSongs());
+    // TODO: Implement once Prisma SQL functions are defined in schema
+    return Promise.resolve([]);
   }
 
   mostWishedSongs() {
-    return this.prisma.$queryRawTyped(mostWishedSongs());
+    // TODO: Implement once Prisma SQL functions are defined in schema
+    return Promise.resolve([]);
   }
 
   neverWishedSongs() {
-    return this.prisma.$queryRawTyped(neverWishedSongs());
+    // TODO: Implement once Prisma SQL functions are defined in schema
+    return Promise.resolve([]);
   }
 
   whichBikeWonMost() {
-    return this.prisma.$queryRawTyped(whichBikeWonMost());
+    // TODO: Implement once Prisma SQL functions are defined in schema
+    return Promise.resolve(null);
   }
 }

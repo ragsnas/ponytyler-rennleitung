@@ -31,12 +31,13 @@ export class StatisticsService {
     return combineLatest([
       this.raceService.averageRacesPerHour(),
       this.raceService.getAllRacesForShow(showId, true).pipe(
-        map((races: Race[]) => races.filter((race: Race) => race.raceState === RaceState.RACED || race.raceState === RaceState.WAITING_TO_RACE || race.raceState === RaceState.WAITING_FOR_OPPONENT)),
+        map((races: Race[]) => races.filter((race: Race) => race.raceState === RaceState.RACED || race.raceState === RaceState.LISTED || race.raceState === RaceState.WAITING_FOR_OPPONENT)),
       ),
       this.showService.getShow(showId),
     ]).pipe(
       map(([averageRacesPerHour, races, show]: [number, Race[], Show]) => {
-        return (races.length - 2) > Math.round((show.duration / 60) * averageRacesPerHour);
+        const duration = show.duration || 0;
+        return (races.length - 2) > Math.round((duration / 60) * averageRacesPerHour);
       }),
     );
   }

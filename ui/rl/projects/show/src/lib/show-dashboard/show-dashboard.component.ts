@@ -37,7 +37,7 @@ const PONTY_TYPER_REFRESH_TIMER_INTERVAL = "pontyTyperRefreshTimerInterval";
 
 function compareRaceState(race1: Race, race2: Race) {
   const order = {
-    [RaceState.WAITING_TO_RACE]: 1,
+    [RaceState.LISTED]: 1,
     [RaceState.WAITING_FOR_OPPONENT]: 2,
     [RaceState.RACED]: 3,
     [RaceState.CANCELED]: 4,
@@ -66,7 +66,7 @@ function sortRacesForList() {
     const raceStateSortResult = compareRaceState(race1, race2);
     if (raceStateSortResult !== 0) {
       return raceStateSortResult;
-    } else if (race1.raceState === RaceState.WAITING_TO_RACE || race1.raceState === RaceState.WAITING_FOR_OPPONENT) {
+    } else if (race1.raceState === RaceState.LISTED || race1.raceState === RaceState.WAITING_FOR_OPPONENT) {
       return compareRacesByOrderNumber(race1, race2, "asc");
     } else if (race1.raceState === RaceState.RACED || race1.raceState === RaceState.CANCELED) {
       return compareRacesByOrderNumber(race1, race2, "desc");
@@ -139,7 +139,7 @@ export class ShowDashboardComponent implements OnInit, OnDestroy {
       next: ([show, races]) => {
         this.show = show;
         const finishedRaces = races.filter(race => race.raceState === RaceState.RACED);
-        const racesWaitingToRace = races.filter(race => race.raceState === RaceState.WAITING_TO_RACE);
+        const racesWaitingToRace = races.filter(race => race.raceState === RaceState.LISTED);
         this.lastRaceWaitingToRaceId = racesWaitingToRace[racesWaitingToRace.length - 1]?.id;
         this.firstRaceWaitingToRaceId = racesWaitingToRace[0]?.id;
         this.finishedRaces$.next(finishedRaces);
@@ -160,7 +160,7 @@ export class ShowDashboardComponent implements OnInit, OnDestroy {
   }
 
   bikeWon(bike: number, race: Race) {
-    if (race.raceState !== RaceState.WAITING_TO_RACE) {
+    if (race.raceState !== RaceState.LISTED) {
       this.snackBar.open(`Can't mark Winning Bike if Race is not Waiting to be Raced`, "OK", {
         duration: 5000, announcementMessage: `Error`, panelClass: "error",
       });
@@ -233,7 +233,7 @@ export class ShowDashboardComponent implements OnInit, OnDestroy {
 
   markRaceAsNotRaced(race: Race): void {
     this.raceService
-      .updateRace({ ...race, raced: false, bikeWon: 0, raceState: RaceState.WAITING_TO_RACE } as Race)
+      .updateRace({ ...race, raced: false, bikeWon: 0, raceState: RaceState.LISTED } as Race)
       .subscribe({
         next: (result) => {
           this.snackBar.open(`Marked Race as NOT over`, "OK", { panelClass: "success", duration: 250 });
@@ -257,7 +257,7 @@ export class ShowDashboardComponent implements OnInit, OnDestroy {
   }
 
   private addAlreadyPlayedInfoToRacesFromFinishedRaces(races: Race[], finishedRaces: Race[]): RaceWithSongPlayedInfo[] {
-    const racesWaitingToRace = races.filter(race => race.raceState === RaceState.WAITING_TO_RACE || race.raceState === RaceState.WAITING_FOR_OPPONENT);
+    const racesWaitingToRace = races.filter(race => race.raceState === RaceState.LISTED || race.raceState === RaceState.WAITING_FOR_OPPONENT);
     return races.map((race: Race) => ({
       ...race,
       song1AlreadyPlayed: this.getSongAlreadyPlayed(finishedRaces, race.song1Id),
@@ -348,7 +348,7 @@ export class ShowDashboardComponent implements OnInit, OnDestroy {
           song1Id,
           person2,
           song2Id,
-          raceState: RaceState.WAITING_TO_RACE,
+          raceState: RaceState.LISTED,
         }),
         this.raceService.updateRace({
           ...otherRaceWaitingForOpponent,

@@ -21,10 +21,15 @@ export interface Race {
 }
 
 export enum RaceState {
-  WAITING_FOR_OPPONENT = 'WAITING_FOR_OPPONENT',
-  WAITING_TO_RACE = 'WAITING_TO_RACE',
-  CANCELED = 'CANCELED',
-  RACED = 'RACED',
+  WAITING_FOR_OPPONENT = "WAITING_FOR_OPPONENT",
+  CANCELED = "CANCELED",
+  LISTED = "LISTED",
+  WAITING_TO_RACE = "WAITING_TO_RACE",
+  RACING = "RACING",
+  RACED = "RACED",
+  ERROR = "ERROR",
+  VIDEO_PLAYING = "VIDEO_PLAYING",
+  DONE = "DONE"
 }
 
 @Injectable({
@@ -93,6 +98,12 @@ export class RaceService {
   averageRacesPerHour() {
     return this.http.get<number>(
       environment.apiUrl + `api/race/average-races-per-hour`
+    );
+  }
+
+  getCurrentRace() {
+    return this.http.get<Race>(
+      environment.apiUrl + `api/race/current`
     );
   }
 }

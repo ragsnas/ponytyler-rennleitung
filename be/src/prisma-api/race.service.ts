@@ -32,7 +32,7 @@ export class RaceService {
     return this.prisma.race.findFirst({
       where: {
         showId: Number(show.id),
-        raceState: { equals: RaceState.WAITING_TO_RACE },
+        raceState: { equals: RaceState.LISTED },
       },
       include: { song1: true, song2: true },
       orderBy: { orderNumber: "asc" },
@@ -48,7 +48,7 @@ export class RaceService {
     return this.prisma.race.findMany({
       where: {
         showId: Number(show.id),
-        raceState: { equals: RaceState.WAITING_TO_RACE },
+        raceState: { equals: RaceState.LISTED },
       },
       include: { song1: true, song2: true },
       orderBy: { orderNumber: "asc" },
@@ -154,7 +154,7 @@ export class RaceService {
     const raceToSwitchWithResults: Race[] = await this.races({
       where: {
         showId: Number(raceToMove.showId),
-        raceState: RaceState.WAITING_TO_RACE,
+        raceState: RaceState.LISTED,
         orderNumber: orderNumberEqClause,
       },
       orderBy: { orderNumber: params.upOrDown === "up" ? "desc" : "asc" },
@@ -194,20 +194,36 @@ export class RaceService {
       data.person1 &&
       data.person2
     ) {
-      return RaceState.WAITING_TO_RACE;
+      return RaceState.LISTED;
     } else if (
-      data.raceState === RaceState.WAITING_TO_RACE &&
+      data.raceState === RaceState.LISTED &&
       !(data.song1Id && data.song2Id && data.person1 && data.person2)
     ) {
       return RaceState.WAITING_FOR_OPPONENT;
     }
 
-    return (data.raceState as RaceState) || RaceState.WAITING_TO_RACE;
+    return (data.raceState as RaceState) || RaceState.LISTED;
   }
 
   async deleteRace(where: Prisma.RaceWhereUniqueInput): Promise<Race> {
     return this.prisma.race.delete({
       where,
+    });
+  }
+
+  currentRace() {
+    return this.prisma.race.findFirst({
+      where: {
+        raceState: {
+          notIn: [
+            RaceState.WAITING_FOR_OPPONENT,
+            RaceState.CANCELED,
+            RaceState.LISTED,
+            RaceState.DONE,
+          ],
+        },
+      },
+      include: { song1: true, song2: true },
     });
   }
 }

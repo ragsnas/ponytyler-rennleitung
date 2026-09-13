@@ -17,6 +17,19 @@ const common_1 = require("@nestjs/common");
 const show_service_1 = require("../prisma-api/show.service");
 const client_1 = require("@prisma/client");
 const race_service_1 = require("../prisma-api/race.service");
+var ShowState;
+(function (ShowState) {
+    ShowState["BEFORE_SHOW"] = "BEFORE_SHOW";
+    ShowState["BEFORE_RACE"] = "BEFORE_RACE";
+    ShowState["RACE"] = "RACE";
+    ShowState["RACE_FINISHED"] = "RACE_FINISHED";
+    ShowState["PLAYING_VIDEO"] = "PLAYING_VIDEO";
+    ShowState["VIDEO_FINISHED"] = "VIDEO_FINISHED";
+    ShowState["SHOW_FINISHED"] = "SHOW_FINISHED";
+    ShowState["BEFORE_ENCORE"] = "BEFORE_ENCORE";
+    ShowState["PLAYING_ENCORE"] = "PLAYING_ENCORE";
+    ShowState["ENCORE_FINISHED"] = "ENCORE_FINISHED";
+})(ShowState || (ShowState = {}));
 let ShowController = class ShowController {
     constructor(showService, raceService) {
         this.showService = showService;

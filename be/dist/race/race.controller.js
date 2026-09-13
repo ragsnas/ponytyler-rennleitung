@@ -21,9 +21,14 @@ const rxjs_1 = require("rxjs");
 var RaceState;
 (function (RaceState) {
     RaceState["WAITING_FOR_OPPONENT"] = "WAITING_FOR_OPPONENT";
-    RaceState["WAITING_TO_RACE"] = "WAITING_TO_RACE";
     RaceState["CANCELED"] = "CANCELED";
+    RaceState["LISTED"] = "LISTED";
+    RaceState["WAITING_TO_RACE"] = "WAITING_TO_RACE";
+    RaceState["RACING"] = "RACING";
     RaceState["RACED"] = "RACED";
+    RaceState["ERROR"] = "ERROR";
+    RaceState["VIDEO_PLAYING"] = "VIDEO_PLAYING";
+    RaceState["DONE"] = "DONE";
 })(RaceState || (exports.RaceState = RaceState = {}));
 let RaceController = class RaceController {
     constructor(raceService, showService) {
@@ -71,12 +76,15 @@ let RaceController = class RaceController {
         ]).pipe((0, rxjs_1.map)(([races, shows]) => {
             const numberOfRaces = races
                 .map((race) => (race.bikeWon === 3 ? 2 : 1))
-                .reduce((accumulator, currentValue) => accumulator + currentValue) || 0;
+                .reduce((accumulator, currentValue) => accumulator + currentValue, 0) || 0;
             const totalTime = shows
                 .map((show) => show.duration)
-                .reduce((accumulator, currentValue) => accumulator + currentValue) || 0;
+                .reduce((accumulator, currentValue) => accumulator + currentValue, 0) || 0;
             return Math.round(numberOfRaces / (totalTime / 60));
         }));
+    }
+    findCurrentRace() {
+        return this.raceService.currentRace();
     }
     findUpcomingRaceWithSongs() {
         return this.raceService.upcomingRaceWithSongs();
@@ -135,6 +143,12 @@ __decorate([
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", void 0)
 ], RaceController.prototype, "calculateAverageRacesPerHour", null);
+__decorate([
+    (0, common_1.Get)("current"),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", void 0)
+], RaceController.prototype, "findCurrentRace", null);
 __decorate([
     (0, common_1.Get)("upcoming-race-with-songs"),
     __metadata("design:type", Function),

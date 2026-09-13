@@ -11,6 +11,9 @@ import { ShiftsModule } from "./shifts/shifts.module";
 import { UserModule } from "./user/user.module";
 import { StatisticsModule } from "./statistics/statistics.module";
 import { BackupModule } from "./backup/backup.module";
+import { MqttModule } from "./mqtt/mqtt.module";
+import { ExportModule } from "./export/export.module";
+import { ImportModule } from "./import/import.module";
 
 @Module({
   imports: [
@@ -23,6 +26,9 @@ import { BackupModule } from "./backup/backup.module";
     UserModule,
     CronModule,
     NextcloudModule,
+    MqttModule,
+    ExportModule,
+    ImportModule,
     ConfigModule.forRoot({}),
   ],
   controllers: [AppController],

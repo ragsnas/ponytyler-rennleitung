@@ -108,4 +108,34 @@ export declare class RaceService {
     }]>;
     private calculateRaceState;
     deleteRace(where: Prisma.RaceWhereUniqueInput): Promise<Race>;
+    currentRace(): Prisma.Prisma__RaceClient<{
+        song1: {
+            id: number;
+            name: string;
+            artist: string;
+            selectable: boolean;
+            deleted: boolean;
+            origin: string;
+        };
+        song2: {
+            id: number;
+            name: string;
+            artist: string;
+            selectable: boolean;
+            deleted: boolean;
+            origin: string;
+        };
+    } & {
+        id: number;
+        showId: number;
+        orderNumber: number;
+        createdAt: Date;
+        raced: boolean;
+        raceState: string;
+        person1: string | null;
+        song1Id: number | null;
+        person2: string | null;
+        song2Id: number | null;
+        bikeWon: number;
+    }, null, import("@prisma/client/runtime/library").DefaultArgs>;
 }
