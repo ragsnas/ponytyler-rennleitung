@@ -53,7 +53,7 @@ export class EditSongComponent {
           duration: 10000, panelClass: 'error'
         });
       }
-    });;
+    });
   }
 
 

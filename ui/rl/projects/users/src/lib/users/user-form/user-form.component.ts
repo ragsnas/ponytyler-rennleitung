@@ -42,7 +42,7 @@ export class UserFormComponent implements ControlValueAccessor, OnInit, OnDestro
   }
 
   ngOnDestroy() {
-    for (let sub of this.onChangeSubs) {
+    for (const sub of this.onChangeSubs) {
       sub.unsubscribe();
     }
   }
