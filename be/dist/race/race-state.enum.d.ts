@@ -1,0 +1,11 @@
+export declare enum RaceState {
+    WAITING_FOR_OPPONENT = "WAITING_FOR_OPPONENT",
+    CANCELED = "CANCELED",
+    LISTED = "LISTED",
+    WAITING_TO_RACE = "WAITING_TO_RACE",
+    RACING = "RACING",
+    RACED = "RACED",
+    ERROR = "ERROR",
+    VIDEO_PLAYING = "VIDEO_PLAYING",
+    DONE = "DONE"
+}

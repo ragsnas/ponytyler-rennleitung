@@ -1,17 +1,6 @@
-import { RaceService } from "src/prisma-api/race.service";
-import { ShowService } from "src/prisma-api/show.service";
+import { RaceService } from "../prisma-api/race.service";
+import { ShowService } from "../prisma-api/show.service";
 import { Prisma } from "@prisma/client";
-export declare enum RaceState {
-    WAITING_FOR_OPPONENT = "WAITING_FOR_OPPONENT",
-    CANCELED = "CANCELED",
-    LISTED = "LISTED",
-    WAITING_TO_RACE = "WAITING_TO_RACE",
-    RACING = "RACING",
-    RACED = "RACED",
-    ERROR = "ERROR",
-    VIDEO_PLAYING = "VIDEO_PLAYING",
-    DONE = "DONE"
-}
 export declare class RaceController {
     private readonly raceService;
     private readonly showService;
@@ -98,7 +87,7 @@ export declare class RaceController {
         person2: string | null;
         song2Id: number | null;
         bikeWon: number;
-    }, null, import("@prisma/client/runtime/library").DefaultArgs>;
+    }, null, import("@prisma/client/runtime/client").DefaultArgs, Prisma.PrismaClientOptions>;
     findUpcomingRaceWithSongs(): Promise<{
         song1: {
             id: number;

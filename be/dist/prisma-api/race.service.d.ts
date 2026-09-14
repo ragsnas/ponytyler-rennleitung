@@ -137,5 +137,5 @@ export declare class RaceService {
         person2: string | null;
         song2Id: number | null;
         bikeWon: number;
-    }, null, import("@prisma/client/runtime/library").DefaultArgs>;
+    }, null, import("@prisma/client/runtime/client").DefaultArgs, Prisma.PrismaClientOptions>;
 }

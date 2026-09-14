@@ -12,7 +12,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.RaceService = void 0;
 const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("./prisma.service");
-const race_controller_1 = require("../race/race.controller");
+const race_state_enum_1 = require("../race/race-state.enum");
 let RaceService = class RaceService {
     constructor(prisma) {
         this.prisma = prisma;
@@ -37,7 +37,7 @@ let RaceService = class RaceService {
         return this.prisma.race.findFirst({
             where: {
                 showId: Number(show.id),
-                raceState: { equals: race_controller_1.RaceState.LISTED },
+                raceState: { equals: race_state_enum_1.RaceState.LISTED },
             },
             include: { song1: true, song2: true },
             orderBy: { orderNumber: "asc" },
@@ -52,7 +52,7 @@ let RaceService = class RaceService {
         return this.prisma.race.findMany({
             where: {
                 showId: Number(show.id),
-                raceState: { equals: race_controller_1.RaceState.LISTED },
+                raceState: { equals: race_state_enum_1.RaceState.LISTED },
             },
             include: { song1: true, song2: true },
             orderBy: { orderNumber: "asc" },
@@ -140,7 +140,7 @@ let RaceService = class RaceService {
         const raceToSwitchWithResults = await this.races({
             where: {
                 showId: Number(raceToMove.showId),
-                raceState: race_controller_1.RaceState.LISTED,
+                raceState: race_state_enum_1.RaceState.LISTED,
                 orderNumber: orderNumberEqClause,
             },
             orderBy: { orderNumber: params.upOrDown === "up" ? "desc" : "asc" },
@@ -170,18 +170,18 @@ let RaceService = class RaceService {
         }
     }
     calculateRaceState(data) {
-        if (data.raceState === race_controller_1.RaceState.WAITING_FOR_OPPONENT &&
+        if (data.raceState === race_state_enum_1.RaceState.WAITING_FOR_OPPONENT &&
             data.song1Id &&
             data.song2Id &&
             data.person1 &&
             data.person2) {
-            return race_controller_1.RaceState.LISTED;
+            return race_state_enum_1.RaceState.LISTED;
         }
-        else if (data.raceState === race_controller_1.RaceState.LISTED &&
+        else if (data.raceState === race_state_enum_1.RaceState.LISTED &&
             !(data.song1Id && data.song2Id && data.person1 && data.person2)) {
-            return race_controller_1.RaceState.WAITING_FOR_OPPONENT;
+            return race_state_enum_1.RaceState.WAITING_FOR_OPPONENT;
         }
-        return data.raceState || race_controller_1.RaceState.LISTED;
+        return data.raceState || race_state_enum_1.RaceState.LISTED;
     }
     async deleteRace(where) {
         return this.prisma.race.delete({
@@ -193,10 +193,10 @@ let RaceService = class RaceService {
             where: {
                 raceState: {
                     notIn: [
-                        race_controller_1.RaceState.WAITING_FOR_OPPONENT,
-                        race_controller_1.RaceState.CANCELED,
-                        race_controller_1.RaceState.LISTED,
-                        race_controller_1.RaceState.DONE,
+                        race_state_enum_1.RaceState.WAITING_FOR_OPPONENT,
+                        race_state_enum_1.RaceState.CANCELED,
+                        race_state_enum_1.RaceState.LISTED,
+                        race_state_enum_1.RaceState.DONE,
                     ],
                 },
             },

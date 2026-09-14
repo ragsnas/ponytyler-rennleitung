@@ -12,24 +12,13 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.RaceController = exports.RaceState = void 0;
+exports.RaceController = void 0;
 const common_1 = require("@nestjs/common");
 const race_service_1 = require("../prisma-api/race.service");
 const show_service_1 = require("../prisma-api/show.service");
 const client_1 = require("@prisma/client");
 const rxjs_1 = require("rxjs");
-var RaceState;
-(function (RaceState) {
-    RaceState["WAITING_FOR_OPPONENT"] = "WAITING_FOR_OPPONENT";
-    RaceState["CANCELED"] = "CANCELED";
-    RaceState["LISTED"] = "LISTED";
-    RaceState["WAITING_TO_RACE"] = "WAITING_TO_RACE";
-    RaceState["RACING"] = "RACING";
-    RaceState["RACED"] = "RACED";
-    RaceState["ERROR"] = "ERROR";
-    RaceState["VIDEO_PLAYING"] = "VIDEO_PLAYING";
-    RaceState["DONE"] = "DONE";
-})(RaceState || (exports.RaceState = RaceState = {}));
+const race_state_enum_1 = require("./race-state.enum");
 let RaceController = class RaceController {
     constructor(raceService, showService) {
         this.raceService = raceService;
@@ -43,8 +32,8 @@ let RaceController = class RaceController {
             where: {
                 showId: Number(showId),
                 raceState: raced
-                    ? { equals: RaceState.RACED }
-                    : { not: { equals: RaceState.RACED } },
+                    ? { equals: race_state_enum_1.RaceState.RACED }
+                    : { not: { equals: race_state_enum_1.RaceState.RACED } },
             },
             orderBy: { orderNumber: raced ? "desc" : "asc" },
         });
@@ -64,7 +53,7 @@ let RaceController = class RaceController {
         return (0, rxjs_1.combineLatest)([
             this.raceService.races({
                 where: {
-                    raceState: { equals: RaceState.RACED },
+                    raceState: { equals: race_state_enum_1.RaceState.RACED },
                     show: { finished: { equals: true } },
                 },
             }),
