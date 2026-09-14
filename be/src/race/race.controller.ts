@@ -1,20 +1,9 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from "@nestjs/common";
-import { RaceService } from "src/prisma-api/race.service";
-import { ShowService } from "src/prisma-api/show.service";
+import { RaceService } from "../prisma-api/race.service";
+import { ShowService } from "../prisma-api/show.service";
 import { Prisma } from "@prisma/client";
 import { combineLatest, map } from "rxjs";
-
-export enum RaceState {
-  WAITING_FOR_OPPONENT = "WAITING_FOR_OPPONENT",
-  CANCELED = "CANCELED",
-  LISTED = "LISTED",
-  WAITING_TO_RACE = "WAITING_TO_RACE",
-  RACING = "RACING",
-  RACED = "RACED",
-  ERROR = "ERROR",
-  VIDEO_PLAYING = "VIDEO_PLAYING",
-  DONE = "DONE"
-}
+import { RaceState } from "./race-state.enum";
 
 @Controller("api/race")
 export class RaceController {

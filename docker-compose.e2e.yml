@@ -1,0 +1,62 @@
+# Dedicated stack for running the Playwright e2e suite (see e2e/README.md).
+#
+# Isolated from docker-compose.yml (dev) so both can run at the same time:
+# different container names, network, and host ports, and an ephemeral
+# (tmpfs) database that always starts empty.
+services:
+  backend:
+    build:
+      context: ./be
+      dockerfile: Dockerfile
+    container_name: ponytyler-backend-e2e
+    ports:
+      - "3010:3000"
+      - "3011:3001"
+    environment:
+      - NODE_ENV=development
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/ponytyler
+      - MQTT_PORT=3001
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - ponytyler-e2e-network
+    command: sh -c "npx prisma generate && npx prisma db push && npm run start:dev"
+
+  frontend:
+    build:
+      context: ./ui/rl
+      dockerfile: Dockerfile.dev
+      args:
+        - NODE_ENV=development
+    container_name: ponytyler-frontend-e2e
+    ports:
+      - "4210:4200"
+    environment:
+      - NODE_ENV=development
+    networks:
+      - ponytyler-e2e-network
+    depends_on:
+      backend:
+        condition: service_started
+
+  postgres:
+    image: postgres:15-alpine
+    container_name: ponytyler-postgres-e2e
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=ponytyler
+    tmpfs:
+      - /var/lib/postgresql/data
+    networks:
+      - ponytyler-e2e-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+networks:
+  ponytyler-e2e-network:
+    driver: bridge

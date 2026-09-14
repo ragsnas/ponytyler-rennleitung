@@ -18,7 +18,7 @@ npm test
 ```
 
 This will:
-1. Start all services via docker-compose (backend, frontend, postgres — the backend also hosts the embedded MQTT broker)
+1. Start the dedicated e2e stack via `docker-compose.e2e.yml` (backend, frontend, postgres — the backend also hosts the embedded MQTT broker)
 2. Wait for all services to be healthy
 3. Run all Playwright tests
 4. Generate an HTML report in `playwright-report/`
@@ -47,41 +47,57 @@ This opens the Playwright inspector for step-by-step debugging.
 - Docker and Docker Compose must be installed
 - Node.js 18+ must be installed locally (for Playwright)
 
+## The e2e Docker Stack
+
+`docker-compose.e2e.yml` (project root) is a stack dedicated to this test
+suite — separate from the `docker-compose.yml` used for local development:
+
+- Different container names (`*-e2e`) and network, so it can run alongside
+  the dev stack without clashing.
+- Different host ports (frontend `4210`, backend `3010`/`3011`, postgres
+  `5433`) for the same reason.
+- No bind mounts — images are built fresh from the committed source, so the
+  suite runs against exactly what's in the repo (add `--build` if you've
+  changed code and containers are already up).
+- Postgres data lives in `tmpfs`, so every run starts from an empty database.
+
 ## How It Works
 
-1. Playwright's `webServer` configuration automatically starts docker-compose before running tests
-2. The frontend connects to the backend API on `http://localhost:3000`
-3. The backend connects to PostgreSQL and hosts the embedded MQTT broker on port 3001
-4. Tests run against `http://localhost:4200` (the Angular frontend)
-5. After tests complete, containers remain running for manual testing (to stop them manually: `docker-compose down`)
+1. Playwright's `webServer` configuration automatically starts
+   `docker-compose.e2e.yml` before running tests
+2. The frontend proxies API calls to the backend service internally
+3. The backend connects to PostgreSQL and hosts the embedded MQTT broker
+4. Tests run against `http://localhost:4210` (the Angular frontend)
+5. After tests complete, containers remain running for manual testing (to stop them manually: `npm run docker:down`)
 
 ## Troubleshooting
 
 ### Tests timeout waiting for services
-- Check that docker-compose services are healthy: `docker-compose ps`
-- Check backend logs: `docker logs ponytyler-backend-dev`
-- Check frontend logs: `docker logs ponytyler-frontend-dev`
+- Check that the e2e services are healthy: `docker-compose -f ../docker-compose.e2e.yml ps`
+- Check backend logs: `docker logs ponytyler-backend-e2e`
+- Check frontend logs: `docker logs ponytyler-frontend-e2e`
 
 ### Browser not found
 ```bash
 npx playwright install
 ```
 
-### Tests fail with "cannot connect to localhost:4200"
-- Ensure docker-compose services are running
-- Check that ports 4200, 3000, 5432, 3001 are not in use on your local machine
+### Tests fail with "cannot connect to localhost:4210"
+- Ensure the e2e docker-compose services are running
+- Check that ports 4210, 3010, 3011, 5433 are not in use on your local machine
 - Wait a bit longer - services may still be starting up
 
 ### Check service status
 ```bash
-# From the project root
-docker-compose ps
-docker-compose logs -f backend
-docker-compose logs -f frontend
+# From the e2e directory
+npm run docker:up      # start (foreground, --build)
+docker-compose -f ../docker-compose.e2e.yml ps
+docker-compose -f ../docker-compose.e2e.yml logs -f backend
+docker-compose -f ../docker-compose.e2e.yml logs -f frontend
 ```
 
 ### Clean up containers
 ```bash
-# From the project root
-docker-compose down -v  # -v removes volumes too
+# From the e2e directory
+npm run docker:down   # stops and removes containers + volumes
 ```

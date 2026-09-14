@@ -173,6 +173,22 @@ If ports are already in use:
 - Use `docker system prune` to clean up unused images/containers
 - For large projects, consider using BuildKit: `DOCKER_BUILDKIT=1 docker-compose build`
 
+## E2E Test Stack
+
+`docker-compose.e2e.yml` is a stack dedicated to the Playwright suite in
+`e2e/` — see `e2e/README.md` for details. It's isolated from the dev stack
+above (own container names, network, and host ports: frontend `4210`,
+backend `3010`/`3011`, postgres `5433`) so both can run at the same time, and
+its Postgres data lives in `tmpfs` so every run starts empty. Playwright
+starts and tears it down automatically via `npm test` in `e2e/`; to drive it
+by hand:
+
+```bash
+cd e2e
+npm run docker:up    # build and start, foreground
+npm run docker:down  # stop and remove containers + volumes
+```
+
 ## Offline / Raspberry Pi deployment
 
 For a Raspberry Pi (or any host) with **no internet access**, images can't be

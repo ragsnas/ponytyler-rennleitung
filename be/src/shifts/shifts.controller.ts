@@ -10,7 +10,7 @@ import {
 } from "@nestjs/common";
 import { ShiftsService } from "../prisma-api/shifts.service";
 import { Shift, Prisma } from "@prisma/client";
-import { RaceState } from "../race/race.controller";
+import { RaceState } from "../race/race-state.enum";
 
 @Controller("api/shifts")
 export class ShiftsController {

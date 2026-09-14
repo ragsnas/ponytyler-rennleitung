@@ -1,5 +1,5 @@
 import { Module } from "@nestjs/common";
-import { PrismaApiModule } from "src/prisma-api/prisma-api.module";
+import { PrismaApiModule } from "../prisma-api/prisma-api.module";
 import { ShiftsController } from "./shifts.controller";
 
 @Module({

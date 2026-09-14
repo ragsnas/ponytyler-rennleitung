@@ -1,6 +1,6 @@
 {
   "/api": {
-    "target": "http://ponytyler-backend-dev:3000",
+    "target": "http://backend:3000",
     "secure": false
   }
 }

@@ -10,7 +10,7 @@ export default defineConfig({
   reporter: 'html',
   timeout: 60000, // 60 second per-test timeout
   use: {
-    baseURL: 'http://localhost:4200',
+    baseURL: 'http://localhost:4210',
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
   },
@@ -23,8 +23,8 @@ export default defineConfig({
   ],
 
   webServer: {
-    command: `cd ${path.join(__dirname, '..')} && docker-compose -f docker-compose.yml up --abort-on-container-exit`,
-    url: 'http://localhost:4200',
+    command: `cd ${path.join(__dirname, '..')} && docker-compose -f docker-compose.e2e.yml up --build --abort-on-container-exit`,
+    url: 'http://localhost:4210',
     reuseExistingServer: !process.env.CI,
     timeout: 180 * 1000, // 3 minutes for services to start
   },
