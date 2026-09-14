@@ -29,7 +29,7 @@ export class RaceTrackComponent implements OnInit, OnDestroy {
     console.log(`ng on init called`);
     let player1Progress: number = 0;
     let player2Progress: number = 0;
-    const timer$ = timer(0, 100).pipe(
+    timer(0, 100).pipe(
       takeUntil(this.unsubscribe$),
       takeWhile(() => player1Progress < 100 && player2Progress < 100),
     ).subscribe((timer) => {

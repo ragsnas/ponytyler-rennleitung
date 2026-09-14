@@ -36,16 +36,18 @@ export interface RaceWithSongPlayedInfo extends Race {
 const PONTY_TYPER_REFRESH_TIMER_INTERVAL = "pontyTyperRefreshTimerInterval";
 
 function compareRaceState(race1: Race, race2: Race) {
-  const order = {
+  const order: Partial<Record<RaceState, number>> = {
     [RaceState.LISTED]: 1,
     [RaceState.WAITING_FOR_OPPONENT]: 2,
     [RaceState.RACED]: 3,
     [RaceState.CANCELED]: 4,
   };
-  if (order[race1.raceState as RaceState] > order[race2.raceState as RaceState]) {
+  const order1 = (race1.raceState && order[race1.raceState]) ?? Number.MAX_SAFE_INTEGER;
+  const order2 = (race2.raceState && order[race2.raceState]) ?? Number.MAX_SAFE_INTEGER;
+  if (order1 > order2) {
     return 1;
   }
-  if (order[race1.raceState as RaceState] < order[race2.raceState as RaceState]) {
+  if (order1 < order2) {
     return -1;
   }
   return 0;
@@ -173,7 +175,7 @@ export class ShowDashboardComponent implements OnInit, OnDestroy {
           raced: true,
         } as Race)
         .subscribe({
-          next: (result) => {
+          next: () => {
             this.snackBar.open(`Marked Race as "Bike ${bike} won!" Congrats ${bike === 1 ? race.person1 : race.person2}`, "OK", {
               panelClass: "success",
               duration: 250,
@@ -199,7 +201,7 @@ export class ShowDashboardComponent implements OnInit, OnDestroy {
         bikeWon: 3,
       } as Race)
       .subscribe({
-        next: (result) => {
+        next: () => {
           this.snackBar.open(`Marked Race as "Both Won"`, "OK", { panelClass: "success", duration: 250 });
           this.loadRaces();
         },
@@ -219,7 +221,7 @@ export class ShowDashboardComponent implements OnInit, OnDestroy {
         raceState: RaceState.CANCELED,
       } as Race)
       .subscribe({
-        next: (result) => {
+        next: () => {
           this.snackBar.open(`Marked Race as over`, "OK", { panelClass: "success", duration: 250 });
           this.loadRaces();
         },
@@ -235,7 +237,7 @@ export class ShowDashboardComponent implements OnInit, OnDestroy {
     this.raceService
       .updateRace({ ...race, raced: false, bikeWon: 0, raceState: RaceState.LISTED } as Race)
       .subscribe({
-        next: (result) => {
+        next: () => {
           this.snackBar.open(`Marked Race as NOT over`, "OK", { panelClass: "success", duration: 250 });
           this.loadRaces();
         },
@@ -319,7 +321,7 @@ export class ShowDashboardComponent implements OnInit, OnDestroy {
     dialog.afterClosed().subscribe(result => {
       if (result) {
         this.showService.deleteShow(this.show?.id as string).subscribe({
-          next: (result) => {
+          next: () => {
             this.snackBar.open(`Show was deleted`, "OK", { panelClass: "success", duration: 250 });
             this.router.navigate(["../"]);
           },
@@ -374,7 +376,7 @@ export class ShowDashboardComponent implements OnInit, OnDestroy {
     this.raceService
       .moveRaceUpOrDown({ ...race } as Race, upOrDown)
       .subscribe({
-        next: (result) => {
+        next: () => {
           this.snackBar.open(`Moved Race "${upOrDown}"`, "OK", { panelClass: "success", duration: 250 });
           this.loadRaces();
         },
@@ -396,7 +398,7 @@ export class ShowDashboardComponent implements OnInit, OnDestroy {
 
   repairOrder() {
     this.raceService.repairOrder(this.show?.id || "").subscribe({
-      next: (result) => {
+      next: () => {
         this.snackBar.open(`Race Order Repaired"`, "OK", { panelClass: "success", duration: 250 });
         this.loadRaces();
       },

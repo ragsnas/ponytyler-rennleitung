@@ -2,11 +2,11 @@ import {Component, OnInit} from '@angular/core';
 import {FormControl, FormGroup} from '@angular/forms';
 import {ActivatedRoute, Router} from '@angular/router';
 import {Song, SongService} from 'projects/song/src/public-api';
-import {Race, RaceService, RaceState} from 'projects/backend-api/src/lib/race.service';
+import {RaceService, RaceState} from 'projects/backend-api/src/lib/race.service';
 import {StatisticsService} from 'projects/backend-api/src/lib/statistics.service';
 import {MatSnackBar} from "@angular/material/snack-bar";
 import {Show, ShowService} from 'projects/backend-api/src/lib/show.service';
-import {combineLatest, filter, map, Observable} from 'rxjs';
+import {Observable} from 'rxjs';
 
 @Component({
   selector: 'lib-create-race',
@@ -58,7 +58,7 @@ export class CreateRaceComponent implements OnInit {
       raceState,
       showId: this.route.snapshot.paramMap.get('showId')
     }).subscribe({
-      next: (result) => {
+      next: () => {
         let snackBarMessage = `Successfully Created Race between ${race.person1} and ${race.person2}`;
         if (raceState === RaceState.WAITING_FOR_OPPONENT) {
           snackBarMessage = `Successfully Created Race for Waiting List`;

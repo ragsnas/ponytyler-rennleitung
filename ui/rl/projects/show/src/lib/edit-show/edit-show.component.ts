@@ -64,7 +64,7 @@ export class EditShowComponent implements OnInit {
       active: true,
       finished: this.show?.finished || false,
     }).subscribe({
-      next: (result) => {
+      next: () => {
         this.snackBar.open(`Successfully Updated Show ${name}`, 'OK', {duration: 200, panelClass: 'success'})
           .afterDismissed()
           .subscribe(() => {

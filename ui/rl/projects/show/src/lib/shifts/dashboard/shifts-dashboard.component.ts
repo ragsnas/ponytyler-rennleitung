@@ -1,11 +1,9 @@
 import { Component, OnInit } from "@angular/core";
-import { DatePipe } from "@angular/common";
 import { Observable } from "rxjs";
 import { Show, ShowService } from "projects/backend-api/src/lib/show.service";
 import { ActivatedRoute, Router } from "@angular/router";
 import { MatSnackBar } from "@angular/material/snack-bar";
 import { Shift, ShiftService } from "projects/backend-api/src/lib/shift.service";
-import { info } from "ng-packagr/lib/utils/log";
 
 @Component({
   selector: "lib-dashboard",

@@ -48,7 +48,7 @@ export class InputComponent implements OnInit, OnDestroy, ControlValueAccessor, 
   unsubscribe$: Subject<void> = new Subject<void>();
 
   disabled = false;
-  onChange = (value: Song) => {};
+  onChange = (_value: Song) => {};
   onTouched = () => {};
 
   constructor(private songsService: SongService, private raceService: RaceService) {}
@@ -119,16 +119,16 @@ export class InputComponent implements OnInit, OnDestroy, ControlValueAccessor, 
       this.songControl.patchValue(song.artist + ' - ' + song.name);
     }
   }
-  registerOnChange(fn: any): void {
+  registerOnChange(fn: (value: Song) => void): void {
     this.onChange = fn;
   }
-  registerOnTouched(fn: any): void {
+  registerOnTouched(fn: () => void): void {
     this.onTouched = fn;
   }
   setDisabledState?(isDisabled: boolean): void {
     this.disabled = isDisabled;
   }
-  validate(control: AbstractControl): ValidationErrors | null {
+  validate(_control: AbstractControl): ValidationErrors | null {
     return null;
   }
   markAsTouched(): void {

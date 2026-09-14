@@ -19,7 +19,7 @@ export class BackupService {
         console.log(`isDownloadPossible is now ${result}`);
         isDownloadPossible$.next(result);
       });
-    } catch (e) {
+    } catch {
       isDownloadPossible$.next(false);
     }
     return isDownloadPossible$.asObservable();

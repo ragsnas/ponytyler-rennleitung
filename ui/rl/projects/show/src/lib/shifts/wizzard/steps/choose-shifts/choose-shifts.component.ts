@@ -1,5 +1,5 @@
 import { Component } from "@angular/core";
-import { Shift, ShiftRole } from "../../../../../../../backend-api/src/lib/shift.service";
+import { Shift } from "../../../../../../../backend-api/src/lib/shift.service";
 import { FormBuilder, FormControl, FormGroup } from "@angular/forms";
 import { WizzardService } from "../../wizzard.service";
 

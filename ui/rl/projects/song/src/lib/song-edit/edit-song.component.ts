@@ -41,7 +41,7 @@ export class EditSongComponent {
         ...this.form.getRawValue() as Song
       } as Song
     ).subscribe({
-      next: (result) => {
+      next: () => {
         this.snackBar.open(`Successfully Updated Song`, 'OK', {duration: 200, panelClass: 'success'})
           .afterDismissed()
           .subscribe(() => {

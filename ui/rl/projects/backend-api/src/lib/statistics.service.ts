@@ -30,7 +30,7 @@ export class StatisticsService {
   isListFull(showId: string): Observable<boolean> {
     return combineLatest([
       this.raceService.averageRacesPerHour(),
-      this.raceService.getAllRacesForShow(showId, true).pipe(
+      this.raceService.getAllRacesForShow(showId).pipe(
         map((races: Race[]) => races.filter((race: Race) => race.raceState === RaceState.RACED || race.raceState === RaceState.LISTED || race.raceState === RaceState.WAITING_FOR_OPPONENT)),
       ),
       this.showService.getShow(showId),

@@ -20,6 +20,15 @@ export default tseslint.config(
         ...globals.browser,
       },
     },
+    rules: {
+      // Interface implementations (e.g. ControlValueAccessor, Validator) often require
+      // parameters that a given implementation doesn't need; a leading underscore marks
+      // that as intentional rather than an oversight.
+      "@typescript-eslint/no-unused-vars": [
+        "error",
+        { argsIgnorePattern: "^_", ignoreRestSiblings: true },
+      ],
+    },
   },
   {
     files: ["**/*.spec.ts"],

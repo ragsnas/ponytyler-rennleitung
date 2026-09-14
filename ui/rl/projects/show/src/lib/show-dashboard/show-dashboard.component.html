@@ -66,17 +66,17 @@
           [ngClass]="{
               'alreadyPlayed': element.raceState !== 'RACED' && element.song1AlreadyPlayed,
               'alreadyWished': element.raceState !== 'RACED' && element.song1AlreadyWished,
-              'winning-bike': element.raceState === 'RACED' && (element.bikeWon == '1' || element.bikeWon == '3'),
-              'losing-bike': element.raceState === 'RACED' && (element.bikeWon == '2')
+              'winning-bike': element.raceState === 'RACED' && (element.bikeWon === '1' || element.bikeWon === '3'),
+              'losing-bike': element.raceState === 'RACED' && (element.bikeWon === '2')
               }"
           class="song-column">
           <strong>{{ element.person1 }}</strong>
           <br />
           {{ element.song1?.artist }}<br />{{ element.song1?.name }}
           <span class="song-already-played-info" *ngIf="element.raceState !== 'RACED' && element.song1AlreadyPlayed">Please choose a different Song <mat-icon>warning</mat-icon></span>
-          <mat-icon *ngIf="element.raceState === 'RACED' && element.bikeWon == '2'" class="bike-has-lost">thumb_down
+          <mat-icon *ngIf="element.raceState === 'RACED' && element.bikeWon === '2'" class="bike-has-lost">thumb_down
           </mat-icon>
-          <mat-icon *ngIf="element.raceState === 'RACED' && (element.bikeWon == '1' || element.bikeWon == '3')"
+          <mat-icon *ngIf="element.raceState === 'RACED' && (element.bikeWon === '1' || element.bikeWon === '3')"
             class="bike-has-won">thumb_up
           </mat-icon>
           <button *ngIf="element.raceState === 'LISTED'" class="bike-won-button" mat-icon-button
@@ -93,17 +93,17 @@
           [ngClass]="{
               'alreadyPlayed': element.raceState !== 'RACED' && element.song2AlreadyPlayed,
               'alreadyWished': element.raceState !== 'RACED' && element.song2AlreadyWished,
-              'winning-bike': element.raceState === 'RACED' && (element.bikeWon == '2' || element.bikeWon == '3'),
-              'losing-bike': element.raceState === 'RACED' && (element.bikeWon == '1')
+              'winning-bike': element.raceState === 'RACED' && (element.bikeWon === '2' || element.bikeWon === '3'),
+              'losing-bike': element.raceState === 'RACED' && (element.bikeWon === '1')
               }"
           class="song-column">
           <strong>{{ element.person2 }}</strong>
           <br />
           {{ element.song2?.artist }}<br />{{ element.song2?.name }}
           <span class="song-already-played-info" *ngIf="element.raceState !== 'RACED' && element.song2AlreadyPlayed">Please choose a different Song <mat-icon>warning</mat-icon></span>
-          <mat-icon *ngIf="element.raceState === 'RACED' && element.bikeWon == '1'" class="bike-has-lost">thumb_down
+          <mat-icon *ngIf="element.raceState === 'RACED' && element.bikeWon === '1'" class="bike-has-lost">thumb_down
           </mat-icon>
-          <mat-icon *ngIf="element.raceState === 'RACED' && (element.bikeWon == '2' || element.bikeWon == '3')"
+          <mat-icon *ngIf="element.raceState === 'RACED' && (element.bikeWon === '2' || element.bikeWon === '3')"
             class="bike-has-won">thumb_up
           </mat-icon>
           <button *ngIf="element.raceState === 'LISTED'" class="bike-won-button" mat-icon-button

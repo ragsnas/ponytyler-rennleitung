@@ -2,10 +2,10 @@ import { Component, OnDestroy, OnInit } from "@angular/core";
 import {
   AbstractControl,
   ControlValueAccessor,
-  FormBuilder,
   FormControl,
   FormGroup,
   NG_VALUE_ACCESSOR, Validators,
+  ValidationErrors,
 } from "@angular/forms";
 import { User } from "projects/backend-api/src/lib/user.service";
 import { Subscription } from "rxjs";
@@ -47,7 +47,7 @@ export class UserFormComponent implements ControlValueAccessor, OnInit, OnDestro
     }
   }
 
-  registerOnChange(onChange: any) {
+  registerOnChange(onChange: (value: User) => void) {
     const sub = this.form?.valueChanges.subscribe({
       next: (valueChange) => onChange(valueChange)
     });
@@ -56,7 +56,7 @@ export class UserFormComponent implements ControlValueAccessor, OnInit, OnDestro
     }
   }
 
-  registerOnTouched(onTouched: Function) {
+  registerOnTouched(onTouched: () => void) {
     this.onTouched = onTouched;
   }
 
@@ -69,15 +69,15 @@ export class UserFormComponent implements ControlValueAccessor, OnInit, OnDestro
     }
   }
 
-  writeValue(value: any) {
+  writeValue(value: User | null) {
     if (value) {
       this.form?.setValue(value, {emitEvent: false});
     }
   }
 
-  onChange = (user: User) => {};
+  onChange = (_user: User) => {};
 
-  onTouched: Function = () => {};
+  onTouched: () => void = () => {};
 
   markAsTouched() {
     if (!this.touched) {
@@ -86,19 +86,19 @@ export class UserFormComponent implements ControlValueAccessor, OnInit, OnDestro
     }
   }
 
-  validate(control: AbstractControl) {
+  validate(_control: AbstractControl) {
 
     if (this.form.valid) {
       return null;
     }
 
-    let errors : any = {};
+    let errors : ValidationErrors = {};
     errors = this.addControlErrors(errors, "name");
 
     return errors;
   }
 
-  addControlErrors(allErrors: any, controlName:string) {
+  addControlErrors(allErrors: ValidationErrors, controlName:string) {
 
     const errors = {...allErrors};
 

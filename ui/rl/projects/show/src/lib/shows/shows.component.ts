@@ -1,10 +1,9 @@
 import { Component, Inject, LOCALE_ID, OnInit, Renderer2 } from "@angular/core";
 import { Show, ShowService } from "projects/backend-api/src/lib/show.service";
-import { Observable, of, Subject } from "rxjs";
+import { Observable, of } from "rxjs";
 import { MatSnackBar } from "@angular/material/snack-bar";
 import { formatDate } from "@angular/common";
-import { MatDialog } from "@angular/material/dialog";
-import { BackendApiModule, BackupService } from "projects/backend-api/src/public-api";
+import { BackupService } from "projects/backend-api/src/public-api";
 import { environment } from "../../../../../src/environments/environment";
 
 @Component({
@@ -36,7 +35,7 @@ export class ShowsComponent implements OnInit {
       ...show,
       active: !show.active,
     }).subscribe({
-      next: (result) => {
+      next: () => {
         console.log(`this worked`);
         this.shows$ = this.showService.getAllShows();
       },
@@ -54,7 +53,7 @@ export class ShowsComponent implements OnInit {
       finished: !show.finished,
       active: (!show.finished) ? false : show.active,
     }).subscribe({
-      next: (result) => {
+      next: () => {
         this.shows$ = this.showService.getAllShows();
       },
       error: (error) => {

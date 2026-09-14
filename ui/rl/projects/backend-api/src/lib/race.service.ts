@@ -44,7 +44,7 @@ export class RaceService {
     );
   }
 
-  getAllRacesForShow(showId: string, raced: boolean = false): Observable<Race[]> {
+  getAllRacesForShow(showId: string): Observable<Race[]> {
     return this.http.get<Race[]>(
       `${environment.apiUrl}api/race/for-show/${showId}/all`
     );

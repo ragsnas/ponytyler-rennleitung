@@ -1,7 +1,7 @@
 <h3>Songs File Sync</h3>
-<div (click)="uploadFile.click()">
-    <button mat-flat-button color="primary">Choose Files from DJ Notebook</button>
-    <input #uploadFile [multiple]="true" (change)="filesChanged($event)" type='file' style="display:none"/> 
+<div>
+    <button mat-flat-button color="primary" (click)="uploadFile.click()">Choose Files from DJ Notebook</button>
+    <input #uploadFile [multiple]="true" (change)="filesChanged($event)" type='file' style="display:none"/>
 </div>
 
 <div *ngIf="nothingFound">

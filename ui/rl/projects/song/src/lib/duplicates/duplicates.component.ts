@@ -76,7 +76,7 @@ export class DuplicatesComponent implements OnInit {
       ...song.duplicate,
       selectable: false
     }).subscribe({
-      next: (result) => {
+      next: () => {
         this.snackBar.open(`Successfully deactivated Duplicate`, 'OK', {duration: 250, panelClass: 'success'})
           .afterDismissed()
           .subscribe(() => {

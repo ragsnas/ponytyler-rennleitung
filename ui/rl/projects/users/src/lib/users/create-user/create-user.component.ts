@@ -26,7 +26,7 @@ export class CreateUserComponent {
     this.userService.createUser({
       ...this.form.controls['user'].getRawValue()
     }).subscribe({
-      next: (result) => {
+      next: () => {
         console.log(`It worked! A new User was created!`);
         this.router.navigate(['../'], {relativeTo: this.route});
 

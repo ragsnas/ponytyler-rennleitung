@@ -1,10 +1,10 @@
-import {Component, OnDestroy, OnInit} from '@angular/core';
-import {FormControl, FormGroup, Validators} from '@angular/forms';
+import {Component, OnInit} from '@angular/core';
+import {FormControl, FormGroup} from '@angular/forms';
 import {ActivatedRoute, Router} from '@angular/router';
 import {Song, SongService} from 'projects/song/src/public-api';
 import {Race, RaceService} from '../../../../backend-api/src/lib/race.service';
 import {MatSnackBar} from "@angular/material/snack-bar";
-import {Observable, Subject} from 'rxjs';
+import {Observable} from 'rxjs';
 import {Show, ShowService } from 'projects/backend-api/src/lib/show.service';
 
 @Component({
@@ -62,7 +62,7 @@ export class UpdateRaceComponent implements OnInit {
       song2Id: updatedRace.song2?.id || updatedRace.song2Id || undefined,
       ...this.form.getRawValue()
     }).subscribe({
-      next: (result) => {
+      next: () => {
         this.snackBar.open(`Successfully Updated the Race`, 'OK', {duration: 200, panelClass: 'success'})
           .afterDismissed()
           .subscribe(() => {

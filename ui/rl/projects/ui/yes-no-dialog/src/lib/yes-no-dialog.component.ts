@@ -1,4 +1,4 @@
-import {Component, Inject, Input, OnInit} from '@angular/core';
+import {Component, Inject} from '@angular/core';
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
 
 export interface DialogData {
@@ -13,7 +13,7 @@ export interface DialogData {
   templateUrl: 'yes-no-dialog.component.html',
   styles: []
 })
-export class YesNoDialogComponent implements OnInit {
+export class YesNoDialogComponent {
 
   title: string | undefined = '';
   text: string | undefined = '';
@@ -28,9 +28,6 @@ export class YesNoDialogComponent implements OnInit {
     this.title = data.title;
     this.optionNo = data.optionNo;
     this.optionYes = data.optionYes;
-  }
-
-  ngOnInit(): void {
   }
 
   yes() {

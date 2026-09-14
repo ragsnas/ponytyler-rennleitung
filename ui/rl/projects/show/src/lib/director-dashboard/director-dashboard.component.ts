@@ -57,7 +57,7 @@ export class DirectorDashboardComponent implements OnInit {
         raced: true,
       } as Race)
       .subscribe({
-        next: (result) => {
+        next: () => {
           this.snackBar.open(`Marked Race as "Bike ${bike} won!" Congrats ${bike === 1 ? race.person1 : race.person2}`, 'OK', {panelClass: 'success', duration: 250});
           this.loadRaces();
         },
@@ -77,7 +77,7 @@ export class DirectorDashboardComponent implements OnInit {
         bikeWon: 3
       } as Race)
       .subscribe({
-        next: (result) => {
+        next: () => {
           this.snackBar.open(`Marked Race as "Both Won"`, 'OK', {panelClass: 'success', duration: 250});
           this.loadRaces();
         },
@@ -96,7 +96,7 @@ export class DirectorDashboardComponent implements OnInit {
         raced: true,
       } as Race)
       .subscribe({
-        next: (result) => {
+        next: () => {
           this.snackBar.open(`Marked Race as over`, 'OK', {panelClass: 'success', duration: 250});
           this.loadRaces();
         },
@@ -112,7 +112,7 @@ export class DirectorDashboardComponent implements OnInit {
     this.raceService
       .updateRace({ ...race, raced: false } as Race)
       .subscribe({
-        next: (result) => {
+        next: () => {
           this.snackBar.open(`Marked Race as NOT over`, 'OK', {panelClass: 'success', duration: 250});
           this.loadRaces();
         },

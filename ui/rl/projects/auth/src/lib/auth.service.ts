@@ -1,17 +1,17 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Subject, map } from 'rxjs';
+import { Subject } from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
 })
 export class AuthService {
-  currentUserValue: any;
-  currentUserSubject: Subject<any> = new Subject<any>();
+  currentUserValue: unknown;
+  currentUserSubject: Subject<unknown> = new Subject<unknown>();
 
   constructor(private http: HttpClient) {}
 
-  login(username: string, password: string) {
+  login() {
     return {};
   }
   logout() {
