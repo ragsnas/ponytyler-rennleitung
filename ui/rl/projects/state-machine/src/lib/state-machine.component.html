@@ -1,1 +1,65 @@
+<ng-container *ngIf="currentShow">
+  <div class="showInfo">
+    <h3>{{currentShow.name}}</h3>
+  </div>
+</ng-container>
 
+<ng-container *ngIf="currentRace">
+  <div class="raceInfo">
+    <div class="raceInfo_bike1">
+      <p>{{ currentRace.person1 }}</p>
+      <br/><p>{{ currentRace.song1 }}</p>
+    </div>
+    <div class="raceInfo_bike2">
+      <p>{{ currentRace.person2 }}</p>
+      <br/><p>{{ currentRace.song2 }}</p>
+    </div>
+  </div>
+</ng-container>
+
+<ng-container *ngIf="currentShowState">
+  <ng-container *ngIf="currentShowState === 'BEFORE_SHOW'">
+    <p>Waiting for Show to begin</p>
+  </ng-container>
+  <ng-container *ngIf="currentShowState === 'BEFORE_RACE'">
+    <p>Waiting for Race to Start</p>
+  </ng-container>
+  <ng-container *ngIf="currentShowState === 'RACE'">
+    RACE!
+    <ng-container *ngIf="currentRace">
+      <ng-container *ngIf="currentRaceState === 'WAITING_TO_RACE'">
+        Press Play to Start Countdown
+      </ng-container>
+      <ng-container *ngIf="currentRaceState === 'ERROR'">
+        ERROR! FEHLSTART!
+      </ng-container>
+      <ng-container *ngIf="currentRaceState === 'RACING'">
+        RACE PRESENTATION GOES HERE!
+      </ng-container>
+      <ng-container *ngIf="currentRaceState === 'RACED'">
+        RACE IS OVER!
+      </ng-container>
+    </ng-container>
+  </ng-container>
+  <ng-container *ngIf="currentShowState === 'RACE_FINISHED'">
+    Celebrate the winner!
+  </ng-container>
+  <ng-container *ngIf="currentShowState === 'PLAYING_VIDEO'">
+    VIDEO IS PLAYING NOW
+  </ng-container>
+  <ng-container *ngIf="currentShowState === 'VIDEO_FINISHED'">
+    VIDEO FINISHED!
+  </ng-container>
+  <ng-container *ngIf="currentShowState === 'BEFORE_ENCORE'">
+    Goodbye! :wink:
+  </ng-container>
+  <ng-container *ngIf="currentShowState === 'PLAYING_ENCORE'">
+    ENCORE!!!
+  </ng-container>
+  <ng-container *ngIf="currentShowState === 'ENCORE_FINISHED'">
+    The Show is over! Go Home!
+  </ng-container>
+  <ng-container *ngIf="currentShowState === 'SHOW_FINISHED'">
+    The Show is now actually over! Go Home!
+  </ng-container>
+</ng-container>

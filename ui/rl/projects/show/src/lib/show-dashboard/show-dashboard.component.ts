@@ -2,7 +2,7 @@ import { Component, OnDestroy, OnInit } from "@angular/core";
 import { ActivatedRoute, ParamMap, Router } from "@angular/router";
 import { Race, RaceService, RaceState } from "projects/backend-api/src/lib/race.service";
 import { StatisticsService } from "projects/backend-api/src/lib/statistics.service";
-import { Show, ShowService } from "projects/backend-api/src/lib/show.service";
+import { Show, ShowService, ShowState } from "projects/backend-api/src/lib/show.service";
 import {
   BehaviorSubject,
   combineLatest,
@@ -37,10 +37,12 @@ const PONTY_TYPER_REFRESH_TIMER_INTERVAL = "pontyTyperRefreshTimerInterval";
 
 function compareRaceState(race1: Race, race2: Race) {
   const order: Partial<Record<RaceState, number>> = {
-    [RaceState.LISTED]: 1,
-    [RaceState.WAITING_FOR_OPPONENT]: 2,
-    [RaceState.RACED]: 3,
-    [RaceState.CANCELED]: 4,
+    [RaceState.WAITING_TO_RACE]: 1,
+    [RaceState.RACING]: 2,
+    [RaceState.LISTED]: 3,
+    [RaceState.WAITING_FOR_OPPONENT]: 4,
+    [RaceState.RACED]: 5,
+    [RaceState.CANCELED]: 6,
   };
   const order1 = (race1.raceState && order[race1.raceState]) ?? Number.MAX_SAFE_INTEGER;
   const order2 = (race2.raceState && order[race2.raceState]) ?? Number.MAX_SAFE_INTEGER;
@@ -97,6 +99,7 @@ export class ShowDashboardComponent implements OnInit, OnDestroy {
   secondsRemainingPercentage$: Observable<string> = of("");
   isListFull: boolean = false;
   moreThanOnePersonWaitingForOpponent: boolean = false;
+  lastUpdated: Date | undefined;
 
   constructor(
     private showService: ShowService,
@@ -151,6 +154,7 @@ export class ShowDashboardComponent implements OnInit, OnDestroy {
         ));
         this.moreThanOnePersonWaitingForOpponent = races.filter((race: Race) => race.raceState === RaceState.WAITING_FOR_OPPONENT).length > 1;
         this.refreshing = false;
+        this.lastUpdated = new Date();
       },
       error: (error) => {
         this.snackBar.open(`Error during loading of Data: ${JSON.stringify(error)}`, "OK", {
@@ -309,6 +313,11 @@ export class ShowDashboardComponent implements OnInit, OnDestroy {
     this.timerSubscription.unsubscribe();
   }
 
+  manualRefresh(): void {
+    this.refreshing = true;
+    this.refresh$.next();
+  }
+
   deleteShow() {
     const dialog = this.dialog.open(YesNoDialogComponent, {
       data: {
@@ -394,6 +403,23 @@ export class ShowDashboardComponent implements OnInit, OnDestroy {
 
   isRaceFirstWaitingToRace(race: Race) {
     return (this.firstRaceWaitingToRaceId === race.id);
+  }
+
+  startRace(race: Race): void {
+    combineLatest([
+      this.raceService.updateRace({ ...race, raceState: RaceState.WAITING_TO_RACE } as Race),
+      this.showService.updateShow({ ...this.show, showState: ShowState.BEFORE_RACE } as Show),
+    ]).subscribe({
+      next: () => {
+        this.snackBar.open(`Race started`, "OK", { panelClass: "success", duration: 250 });
+        this.loadRaces();
+      },
+      error: (error) => {
+        this.snackBar.open(`Race could not be started: ${JSON.stringify(error)}`, "OK", {
+          duration: 10000, panelClass: "error",
+        });
+      },
+    });
   }
 
   repairOrder() {

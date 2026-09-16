@@ -10,6 +10,20 @@ export interface Show {
   duration?: number;
   active?: boolean;
   finished?: boolean;
+  showState?: ShowState;
+}
+
+export enum ShowState {
+  BEFORE_SHOW = "BEFORE_SHOW",
+  BEFORE_RACE = "BEFORE_RACE",
+  RACE = "RACE",
+  RACE_FINISHED = "RACE_FINISHED",
+  PLAYING_VIDEO = "PLAYING_VIDEO",
+  VIDEO_FINISHED = "VIDEO_FINISHED",
+  SHOW_FINISHED = "SHOW_FINISHED",
+  BEFORE_ENCORE = "BEFORE_ENCORE",
+  PLAYING_ENCORE = "PLAYING_ENCORE",
+  ENCORE_FINISHED = "ENCORE_FINISHED"
 }
 
 @Injectable({

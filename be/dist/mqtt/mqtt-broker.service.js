@@ -15,9 +15,15 @@ const common_1 = require("@nestjs/common");
 const config_1 = require("@nestjs/config");
 const aedes_1 = require("aedes");
 const net_1 = require("net");
+const aedes_server_factory_1 = require("aedes-server-factory");
+const client_1 = require("@prisma/client");
+const race_service_1 = require("../prisma-api/race.service");
+const show_service_1 = require("../prisma-api/show.service");
+const race_state_enum_1 = require("../race/race-state.enum");
 const MAX_BIKE_ADVANCE = 120;
 const ADDITIONAL_SEQUENCE_STORAGE = 4;
 const DEFAULT_MQTT_PORT = 3001;
+const DEFAULT_MQTT_WS_PORT = 3002;
 const BIKE_STATUS_TOPIC = /^Bike\/[1-2]{1}$/i;
 const BIKE_CMD_TOPIC = /^Bike\/[1-2]{1}\/cmd$/i;
 function initialBikeState() {
@@ -29,8 +35,10 @@ function initialBikeState() {
     };
 }
 let MqttBrokerService = MqttBrokerService_1 = class MqttBrokerService {
-    constructor(configService) {
+    constructor(configService, raceService, showService) {
         this.configService = configService;
+        this.raceService = raceService;
+        this.showService = showService;
         this.logger = new common_1.Logger(MqttBrokerService_1.name);
         this.utf16Decoder = new TextDecoder("UTF-8");
         this.bikeState = new Map([
@@ -44,15 +52,24 @@ let MqttBrokerService = MqttBrokerService_1 = class MqttBrokerService {
     }
     async onApplicationBootstrap() {
         const port = Number(this.configService.get("MQTT_PORT") ?? DEFAULT_MQTT_PORT);
+        const wsPort = Number(this.configService.get("MQTT_WS_PORT") ?? DEFAULT_MQTT_WS_PORT);
         this.broker = await aedes_1.Aedes.createBroker();
         this.server = (0, net_1.createServer)(this.broker.handle);
+        this.wsServer = (0, aedes_server_factory_1.createServer)(this.broker, {
+            ws: true,
+        });
         this.registerBrokerListeners(this.broker);
         await new Promise((resolve) => this.server.listen(port, resolve));
         this.logger.log(`🚀 MQTT Broker started and listening on port ${port}`);
+        await new Promise((resolve) => this.wsServer.listen(wsPort, resolve));
+        this.logger.log(`🚀 MQTT-over-WebSocket listening on port ${wsPort}`);
     }
     async onModuleDestroy() {
         if (this.server) {
             await new Promise((resolve) => this.server.close(() => resolve()));
+        }
+        if (this.wsServer) {
+            await new Promise((resolve) => this.wsServer.close(() => resolve()));
         }
         if (this.broker) {
             await new Promise((resolve) => this.broker.close(() => resolve()));
@@ -71,12 +88,14 @@ let MqttBrokerService = MqttBrokerService_1 = class MqttBrokerService {
         });
     }
     handlePublish(packet, client) {
-        const payloadText = typeof packet.payload === "string" ? packet.payload : this.utf16Decoder.decode(packet.payload);
+        const payloadText = typeof packet.payload === "string"
+            ? packet.payload
+            : this.utf16Decoder.decode(packet.payload);
         let payloadObject = undefined;
         try {
             payloadObject = JSON.parse(payloadText);
         }
-        catch (e) {
+        catch {
             this.logger.log(`📝 Client ${client ? client.id : "unknown"} published unparsable payload: ${payloadText}`);
         }
         const topic = packet.topic;
@@ -122,9 +141,37 @@ let MqttBrokerService = MqttBrokerService_1 = class MqttBrokerService {
             return;
         }
         this.logger.log(`Analyzing Bike ${bikeId}:`);
-        if (!otherBikeState.finished || otherBikeState.mostRecentStatus.timestamp > thisBikeState.mostRecentStatus.timestamp) {
+        if (!otherBikeState.finished ||
+            otherBikeState.mostRecentStatus.timestamp >
+                thisBikeState.mostRecentStatus.timestamp) {
             this.updatePartialBikeState(bikeId, { won: true });
+            void this.markCurrentRaceAsWonBy(bikeId);
             this.logger.log(`🏆 Bike ${bikeId === "1" ? "1️⃣" : "2️⃣"} won! 🎉`);
+        }
+    }
+    async markCurrentRaceAsWonBy(bikeId) {
+        try {
+            const race = await this.raceService.currentRace();
+            if (!race) {
+                this.logger.warn(`No current race found while marking Bike ${bikeId} as winner`);
+                return;
+            }
+            await this.raceService.updateRace({
+                where: { id: race.id },
+                data: {
+                    showId: race.showId,
+                    bikeWon: Number(bikeId),
+                    raceState: race_state_enum_1.RaceState.RACED,
+                    raced: true,
+                },
+            });
+            await this.showService.updateShow({
+                where: { id: race.showId },
+                data: { showState: client_1.ShowState.RACE_FINISHED },
+            });
+        }
+        catch (error) {
+            this.logger.error(`Failed to persist win for Bike ${bikeId}: ${error}`);
         }
     }
     isBikeStatusPayload(payloadObject) {
@@ -146,11 +193,16 @@ let MqttBrokerService = MqttBrokerService_1 = class MqttBrokerService {
         const bikeStatusMessages = this.bikeStates.get(bikeId) || [];
         const bikeStateForThisBike = this.bikeState.get(bikeId) || initialBikeState();
         bikeStatusMessages.push(bikeStatusMessage);
-        if ((!bikeStateForThisBike.finished && bikeStatusMessage.sequenz > bikeStateForThisBike.mostRecentStatus?.sequenz) ||
+        if ((!bikeStateForThisBike.finished &&
+            bikeStatusMessage.sequenz >
+                bikeStateForThisBike.mostRecentStatus?.sequenz) ||
             (bikeStateForThisBike.finished &&
                 bikeStatusMessage.pulsecount > MAX_BIKE_ADVANCE &&
-                bikeStatusMessage.sequenz < bikeStateForThisBike.mostRecentStatus?.sequenz)) {
-            this.updatePartialBikeState(bikeId, { mostRecentStatus: bikeStatusMessage });
+                bikeStatusMessage.sequenz <
+                    bikeStateForThisBike.mostRecentStatus?.sequenz)) {
+            this.updatePartialBikeState(bikeId, {
+                mostRecentStatus: bikeStatusMessage,
+            });
         }
         this.bikeStates.set(bikeId, bikeStatusMessages);
         this.bikeState.set(bikeId, bikeStateForThisBike);
@@ -159,6 +211,8 @@ let MqttBrokerService = MqttBrokerService_1 = class MqttBrokerService {
 exports.MqttBrokerService = MqttBrokerService;
 exports.MqttBrokerService = MqttBrokerService = MqttBrokerService_1 = __decorate([
     (0, common_1.Injectable)(),
-    __metadata("design:paramtypes", [config_1.ConfigService])
+    __metadata("design:paramtypes", [config_1.ConfigService,
+        race_service_1.RaceService,
+        show_service_1.ShowService])
 ], MqttBrokerService);
 //# sourceMappingURL=mqtt-broker.service.js.map

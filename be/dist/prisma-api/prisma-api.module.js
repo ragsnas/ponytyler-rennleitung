@@ -26,7 +26,7 @@ exports.PrismaApiModule = PrismaApiModule = __decorate([
             show_service_1.ShowService,
             shifts_service_1.ShiftsService,
             song_service_1.SongService,
-            stats_service_1.StatsService
+            stats_service_1.StatsService,
         ],
         exports: [
             prisma_service_1.PrismaService,
@@ -34,7 +34,7 @@ exports.PrismaApiModule = PrismaApiModule = __decorate([
             show_service_1.ShowService,
             shifts_service_1.ShiftsService,
             song_service_1.SongService,
-            stats_service_1.StatsService
+            stats_service_1.StatsService,
         ],
     })
 ], PrismaApiModule);

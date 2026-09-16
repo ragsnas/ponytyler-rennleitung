@@ -1,19 +1,22 @@
 import { Component, OnInit } from "@angular/core";
 import { BackendApiModule } from "projects/backend-api/src/public-api";
-import { Race, RaceService } from "projects/backend-api/src/lib/race.service";
-import { Show, ShowService } from "projects/backend-api/src/lib/show.service";
+import { Race, RaceService, RaceState } from "projects/backend-api/src/lib/race.service";
+import { Show, ShowService, ShowState } from "projects/backend-api/src/lib/show.service";
 import { firstValueFrom } from "rxjs";
+import { NgIf } from "@angular/common";
 
 @Component({
   selector: 'lib-state-machine',
   standalone: true,
-  imports: [BackendApiModule],
+  imports: [BackendApiModule, NgIf],
   templateUrl: 'state-machine.component.html'
 })
 export class StateMachineComponent implements OnInit {
 
-  private currentRace: Race | undefined;
-  private currentShow: Show | undefined;
+  public currentRace: Race | undefined;
+  public currentRaceState: RaceState | undefined;
+  public currentShow: Show | undefined;
+  public currentShowState: ShowState | undefined;
 
   constructor(
     private raceService: RaceService,

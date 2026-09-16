@@ -135,8 +135,12 @@ let RaceService = class RaceService {
         return this.prisma.$transaction(transactions);
     }
     async moveRacePosition(params) {
-        const raceToMove = await this.race({ id: Number(params.raceToMoveId) });
-        const orderNumberEqClause = params.upOrDown === "up" ? { lt: raceToMove.orderNumber } : { gt: raceToMove.orderNumber };
+        const raceToMove = await this.race({
+            id: Number(params.raceToMoveId),
+        });
+        const orderNumberEqClause = params.upOrDown === "up"
+            ? { lt: raceToMove.orderNumber }
+            : { gt: raceToMove.orderNumber };
         const raceToSwitchWithResults = await this.races({
             where: {
                 showId: Number(raceToMove.showId),
@@ -148,10 +152,10 @@ let RaceService = class RaceService {
         });
         const raceToSwitchWith = raceToSwitchWithResults[0];
         if (raceToSwitchWith) {
-            console.log(`>>>>>\nraceToMove #${raceToMove.id}: ${raceToMove.orderNumber}`
-                + `\nwill switch with:`
-                + `\nraceToSwitchWith #${raceToSwitchWith.id}: ${raceToSwitchWith.orderNumber}`
-                + `\n to move "${params.upOrDown}"`);
+            console.log(`>>>>>\nraceToMove #${raceToMove.id}: ${raceToMove.orderNumber}` +
+                `\nwill switch with:` +
+                `\nraceToSwitchWith #${raceToSwitchWith.id}: ${raceToSwitchWith.orderNumber}` +
+                `\n to move "${params.upOrDown}"`);
             console.log(`raceToMove:`, raceToMove);
             console.log(`raceToSwitchWith:`, raceToSwitchWith);
             const updateRaceToMove = this.prisma.race.update({
@@ -166,7 +170,10 @@ let RaceService = class RaceService {
                 },
                 where: { id: raceToSwitchWith.id },
             });
-            return this.prisma.$transaction([updateRaceToSwitchWith, updateRaceToMove]);
+            return this.prisma.$transaction([
+                updateRaceToSwitchWith,
+                updateRaceToMove,
+            ]);
         }
     }
     calculateRaceState(data) {

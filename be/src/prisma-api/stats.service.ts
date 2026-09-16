@@ -1,6 +1,12 @@
 import { Injectable, Logger } from "@nestjs/common";
-// import { mostPlayedSongs, mostWishedSongs, neverWishedSongs, whichBikeWonMost } from "@prisma/client/sql";
+import { Prisma } from "@prisma/client";
 import { PrismaService } from "./prisma.service";
+
+export interface SongPlayCount {
+  artist: string;
+  name: string;
+  totalCount: number;
+}
 
 @Injectable()
 export class StatsService {
@@ -8,9 +14,40 @@ export class StatsService {
 
   private readonly logger = new Logger(StatsService.name);
 
+  /**
+   * Mirrors prisma/sql/mostPlayedSongs.sql. Kept as a plain $queryRaw
+   * (rather than Prisma's typedSql codegen) because typedSql needs a live,
+   * schema-matching database at `prisma generate` time, which isn't
+   * available during the backend's Docker build (see be/Dockerfile).
+   */
   mostPlayedSongs() {
-    // TODO: Implement once Prisma SQL functions are defined in schema
-    return Promise.resolve([]);
+    return this.prisma.$queryRaw<SongPlayCount[]>(Prisma.sql`
+      SELECT
+        s.artist, s.name, stats."totalCount" AS "totalCount"
+      FROM "Song" s
+        INNER JOIN (
+          SELECT
+            (COALESCE(s1."songId", s2."songId")) AS "songId",
+            (COALESCE(s1."countSong1",0)+COALESCE(s2."countSong2",0)) AS "totalCount"
+          FROM (
+            SELECT
+              r."song1Id" AS "songId",
+              COUNT(r."song1Id")::int AS "countSong1"
+            FROM "Race" r
+            WHERE r.raced = true
+            GROUP BY r."song1Id"
+          ) AS s1
+          LEFT OUTER JOIN (
+            SELECT
+              r."song2Id" AS "songId",
+              COUNT(r."song2Id")::int AS "countSong2"
+            FROM "Race" r
+            WHERE r.raced = true
+            GROUP BY r."song2Id"
+          ) AS s2 ON (s1."songId" = s2."songId")
+        ) as stats ON (s.id = stats."songId")
+      ORDER BY stats."totalCount" DESC
+    `);
   }
 
   mostWishedSongs() {

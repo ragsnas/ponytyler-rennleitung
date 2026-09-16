@@ -9,6 +9,10 @@ import { Aedes, AedesPublishPacket, Client, Subscription } from "aedes";
 import { createServer as createTcpServer, Server } from "net";
 import { createServer as createWsCapableServer } from "aedes-server-factory";
 import { Server as HttpServer } from "http";
+import { ShowState } from "@prisma/client";
+import { RaceService } from "../prisma-api/race.service";
+import { ShowService } from "../prisma-api/show.service";
+import { RaceState } from "../race/race-state.enum";
 
 type BikeStatusMessage = {
   pulsecount: number;
@@ -71,7 +75,11 @@ export class MqttBrokerService
     ["2", []],
   ]);
 
-  constructor(private readonly configService: ConfigService) {}
+  constructor(
+    private readonly configService: ConfigService,
+    private readonly raceService: RaceService,
+    private readonly showService: ShowService,
+  ) {}
 
   async onApplicationBootstrap() {
     const port = Number(
@@ -206,7 +214,37 @@ export class MqttBrokerService
         thisBikeState.mostRecentStatus.timestamp
     ) {
       this.updatePartialBikeState(bikeId, { won: true });
+      void this.markCurrentRaceAsWonBy(bikeId);
       this.logger.log(`🏆 Bike ${bikeId === "1" ? "1️⃣" : "2️⃣"} won! 🎉`);
+    }
+  }
+
+  private async markCurrentRaceAsWonBy(bikeId: BikeId): Promise<void> {
+    try {
+      const race = await this.raceService.currentRace();
+      if (!race) {
+        this.logger.warn(
+          `No current race found while marking Bike ${bikeId} as winner`,
+        );
+        return;
+      }
+
+      await this.raceService.updateRace({
+        where: { id: race.id },
+        data: {
+          showId: race.showId,
+          bikeWon: Number(bikeId),
+          raceState: RaceState.RACED,
+          raced: true,
+        },
+      });
+
+      await this.showService.updateShow({
+        where: { id: race.showId },
+        data: { showState: ShowState.RACE_FINISHED },
+      });
+    } catch (error) {
+      this.logger.error(`Failed to persist win for Bike ${bikeId}: ${error}`);
     }
   }
 

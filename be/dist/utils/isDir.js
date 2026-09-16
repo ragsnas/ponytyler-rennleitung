@@ -7,7 +7,7 @@ function isDir(path) {
         const stat = (0, fs_1.lstatSync)(path);
         return stat.isDirectory();
     }
-    catch (e) {
+    catch {
         return false;
     }
 }

@@ -22,7 +22,8 @@ let BackupController = class BackupController {
     constructor(dbBackupService) {
         this.dbBackupService = dbBackupService;
         this.prismaFolder = "prisma";
-        if (!(0, isDir_1.isDir)(`prisma/backups`) && (0, isDir_1.isDir)(`/home/ponytyler/ponytyler-rennleitung/be/prisma/backups`)) {
+        if (!(0, isDir_1.isDir)(`prisma/backups`) &&
+            (0, isDir_1.isDir)(`/home/ponytyler/ponytyler-rennleitung/be/prisma/backups`)) {
             this.prismaFolder = `/home/ponytyler/ponytyler-rennleitung/be/prisma`;
         }
     }

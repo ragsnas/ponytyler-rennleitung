@@ -28,7 +28,7 @@ let UserController = class UserController {
     }
     async createUser(userData) {
         return this.userService.createUser({
-            ...userData
+            ...userData,
         });
     }
     async updateUser(id, userData) {

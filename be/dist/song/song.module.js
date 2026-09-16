@@ -10,12 +10,13 @@ exports.SongModule = void 0;
 const common_1 = require("@nestjs/common");
 const song_controller_1 = require("./song.controller");
 const prisma_api_module_1 = require("../prisma-api/prisma-api.module");
+const cron_module_1 = require("../cron/cron.module");
 let SongModule = class SongModule {
 };
 exports.SongModule = SongModule;
 exports.SongModule = SongModule = __decorate([
     (0, common_1.Module)({
-        imports: [prisma_api_module_1.PrismaApiModule],
+        imports: [prisma_api_module_1.PrismaApiModule, cron_module_1.CronModule],
         controllers: [song_controller_1.SongController],
     })
 ], SongModule);

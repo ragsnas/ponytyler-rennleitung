@@ -22,10 +22,10 @@ table th {
 }
 
 .race-state-waiting-for-opponent td {
-  background-color: #e6bff5;
+  background-color: #ffede5;
 }
 
-.race-state-waiting-to-race td {
+.race-state-listed td {
   background-color: #f5f5f5;
 }
 
@@ -37,6 +37,16 @@ table th {
 
 .race-state-raced td {
   background-color: #c3e8ff;
+}
+
+.race-state-waiting-to-race td {
+  background-color: #c201de;
+  color: #ffffff;
+}
+
+.race-state-racing td {
+  background-color: #8d00a1;
+  color: #ffffff;
 }
 
 tr.race-state-waiting-to-race + tr.race-state-waiting-for-opponent td,

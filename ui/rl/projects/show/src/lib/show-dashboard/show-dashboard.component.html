@@ -23,18 +23,24 @@
       <button mat-flat-button color="primary" [routerLink]="'create-race'">Add Race for this Show</button>
     </ui-button-list>
     <div style="flex-basis: auto; min-height: 90px;flex-grow: 2;">
-      <mat-form-field style="margin-bottom: 2px;" id="show-dashboard-refresh-setting-dropdown" subscriptSizing="dynamic">
-        <mat-label>Refresh Interval</mat-label>
-        <mat-select [formControl]="refreshIntervalFormControl" (selectionChange)="refreshIntervalChange($event)">
-          <mat-option value="5000">5 Sekunden</mat-option>
-          <mat-option value="8000">8 Sekunden</mat-option>
-          <mat-option value="10000">10 Sekunden</mat-option>
-          <mat-option value="15000">15 Sekunden</mat-option>
-          <mat-option value="30000">30 Sekunden</mat-option>
-          <mat-option value="stop">Stopp</mat-option>
-        </mat-select>
-      </mat-form-field>
+      <div style="display: flex; flex-direction: row; align-items: center; gap: 4px;">
+        <mat-form-field style="margin-bottom: 2px;" id="show-dashboard-refresh-setting-dropdown" subscriptSizing="dynamic">
+          <mat-label>Refresh Interval</mat-label>
+          <mat-select [formControl]="refreshIntervalFormControl" (selectionChange)="refreshIntervalChange($event)">
+            <mat-option value="5000">5 Sekunden</mat-option>
+            <mat-option value="8000">8 Sekunden</mat-option>
+            <mat-option value="10000">10 Sekunden</mat-option>
+            <mat-option value="15000">15 Sekunden</mat-option>
+            <mat-option value="30000">30 Sekunden</mat-option>
+            <mat-option value="stop">Stopp</mat-option>
+          </mat-select>
+        </mat-form-field>
+        <button mat-icon-button aria-label="Refresh now" (click)="manualRefresh()" [disabled]="refreshing">
+          <mat-icon>refresh</mat-icon>
+        </button>
+      </div>
       <mat-progress-bar mode="determinate" value="{{secondsRemainingPercentage$ | async}}"></mat-progress-bar>
+      <span class="last-updated" *ngIf="lastUpdated">Last updated: {{ lastUpdated | date: "HH:mm:ss" }}</span>
     </div>
   </div>
 
@@ -116,6 +122,10 @@
       <ng-container matColumnDef="actions">
         <th mat-header-cell *matHeaderCellDef>Actions</th>
         <td mat-cell *matCellDef="let element">
+          <button *ngIf="element.raceState === 'LISTED'" mat-icon-button aria-label="Start Race"
+            (click)="startRace(element)" [disabled]="refreshing">
+            <mat-icon>play_arrow</mat-icon>
+          </button>
           <button *ngIf="element.raceState === 'LISTED'" mat-icon-button aria-label="Songs Beide"
             (click)="markRaceAsPlayBoth(element)" [disabled]="refreshing">
             <mat-icon matBadge="2" matBadgeColor="accent" matBadgeSize="small">sports_score</mat-icon>
@@ -150,12 +160,15 @@
             (click)="mergeTopWaitingForOpponentRaces(element)">
             <mat-icon>merge</mat-icon>
           </button>
+          <p>RaceState: {{ element.raceState }}</p>
         </td>
       </ng-container>
 
       <tr mat-header-row *matHeaderRowDef="['orderNumber', 'song1', 'song2', 'actions']"></tr>
       <tr mat-row *matRowDef="let row; columns: ['orderNumber', 'song1', 'song2', 'actions'];" [ngClass]="{
-              'race-state-waiting-to-race': row.raceState === 'LISTED',
+              'race-state-listed': row.raceState === 'LISTED',
+              'race-state-waiting-to-race': row.raceState === 'WAITING_TO_RACE',
+              'race-state-racing': row.raceState === 'RACING',
               'race-state-waiting-for-opponent': row.raceState === 'WAITING_FOR_OPPONENT',
               'race-state-raced': row.raceState === 'RACED',
               'race-state-canceled': row.raceState === 'CANCELED'

@@ -1,6 +1,10 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { MatIconModule } from '@angular/material/icon';
+import { MatListModule } from '@angular/material/list';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { ButtonListModule } from 'projects/ui/button-list/src/public-api';
 
 import { SongSyncComponent } from './song-sync.component';
 
@@ -14,7 +18,13 @@ describe('SongSyncComponent', () => {
     snackBar = jasmine.createSpyObj('MatSnackBar', ['open']);
 
     await TestBed.configureTestingModule({
-      imports: [HttpClientTestingModule],
+      imports: [
+        HttpClientTestingModule,
+        MatIconModule,
+        MatListModule,
+        MatProgressSpinnerModule,
+        ButtonListModule,
+      ],
       declarations: [SongSyncComponent],
       providers: [{ provide: MatSnackBar, useValue: snackBar }],
     }).compileComponents();

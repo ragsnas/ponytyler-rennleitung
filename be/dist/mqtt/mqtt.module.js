@@ -9,13 +9,14 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.MqttModule = void 0;
 const common_1 = require("@nestjs/common");
 const config_1 = require("@nestjs/config");
+const prisma_api_module_1 = require("../prisma-api/prisma-api.module");
 const mqtt_broker_service_1 = require("./mqtt-broker.service");
 let MqttModule = class MqttModule {
 };
 exports.MqttModule = MqttModule;
 exports.MqttModule = MqttModule = __decorate([
     (0, common_1.Module)({
-        imports: [config_1.ConfigModule],
+        imports: [config_1.ConfigModule, prisma_api_module_1.PrismaApiModule],
         providers: [mqtt_broker_service_1.MqttBrokerService],
         exports: [mqtt_broker_service_1.MqttBrokerService],
     })

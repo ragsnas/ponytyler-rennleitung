@@ -12,6 +12,7 @@ var StatsService_1;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.StatsService = void 0;
 const common_1 = require("@nestjs/common");
+const client_1 = require("@prisma/client");
 const prisma_service_1 = require("./prisma.service");
 let StatsService = StatsService_1 = class StatsService {
     constructor(prisma) {
@@ -19,7 +20,33 @@ let StatsService = StatsService_1 = class StatsService {
         this.logger = new common_1.Logger(StatsService_1.name);
     }
     mostPlayedSongs() {
-        return Promise.resolve([]);
+        return this.prisma.$queryRaw(client_1.Prisma.sql `
+      SELECT
+        s.artist, s.name, stats."totalCount" AS "totalCount"
+      FROM "Song" s
+        INNER JOIN (
+          SELECT
+            (COALESCE(s1."songId", s2."songId")) AS "songId",
+            (COALESCE(s1."countSong1",0)+COALESCE(s2."countSong2",0)) AS "totalCount"
+          FROM (
+            SELECT
+              r."song1Id" AS "songId",
+              COUNT(r."song1Id")::int AS "countSong1"
+            FROM "Race" r
+            WHERE r.raced = true
+            GROUP BY r."song1Id"
+          ) AS s1
+          LEFT OUTER JOIN (
+            SELECT
+              r."song2Id" AS "songId",
+              COUNT(r."song2Id")::int AS "countSong2"
+            FROM "Race" r
+            WHERE r.raced = true
+            GROUP BY r."song2Id"
+          ) AS s2 ON (s1."songId" = s2."songId")
+        ) as stats ON (s.id = stats."songId")
+      ORDER BY stats."totalCount" DESC
+    `);
     }
     mostWishedSongs() {
         return Promise.resolve([]);

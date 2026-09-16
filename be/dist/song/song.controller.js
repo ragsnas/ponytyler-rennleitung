@@ -16,9 +16,11 @@ exports.SongController = void 0;
 const common_1 = require("@nestjs/common");
 const song_service_1 = require("../prisma-api/song.service");
 const client_1 = require("@prisma/client");
+const song_sync_service_1 = require("../cron/song-sync/song-sync.service");
 let SongController = class SongController {
-    constructor(songService) {
+    constructor(songService, songSyncService) {
         this.songService = songService;
+        this.songSyncService = songSyncService;
     }
     create(data) {
         return this.songService.createSong(data);
@@ -80,6 +82,9 @@ let SongController = class SongController {
     syncWithSingleSourceOfTruth() {
         return this.songService.syncWithSingleSourceOfTruth();
     }
+    triggerCloudSync() {
+        return this.songSyncService.triggerSync();
+    }
     update(id, data) {
         return this.songService.updateSong({ where: { id: Number(id) }, data });
     }
@@ -128,6 +133,12 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], SongController.prototype, "syncWithSingleSourceOfTruth", null);
 __decorate([
+    (0, common_1.Post)("cloud-sync"),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", void 0)
+], SongController.prototype, "triggerCloudSync", null);
+__decorate([
     (0, common_1.Patch)(":id"),
     __param(0, (0, common_1.Param)("id")),
     __param(1, (0, common_1.Body)()),
@@ -144,6 +155,7 @@ __decorate([
 ], SongController.prototype, "remove", null);
 exports.SongController = SongController = __decorate([
     (0, common_1.Controller)("api/song"),
-    __metadata("design:paramtypes", [song_service_1.SongService])
+    __metadata("design:paramtypes", [song_service_1.SongService,
+        song_sync_service_1.SongSyncService])
 ], SongController);
 //# sourceMappingURL=song.controller.js.map

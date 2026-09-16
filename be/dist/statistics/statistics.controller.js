@@ -55,7 +55,7 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], StatisticsController.prototype, "whichBikeWonMost", null);
 exports.StatisticsController = StatisticsController = __decorate([
-    (0, common_1.Controller)('api/statistics'),
+    (0, common_1.Controller)("api/statistics"),
     __metadata("design:paramtypes", [stats_service_1.StatsService])
 ], StatisticsController);
 //# sourceMappingURL=statistics.controller.js.map

@@ -1,6 +1,9 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { provideHttpClient } from '@angular/common/http';
+import { provideRouter } from '@angular/router';
+import { provideNoopAnimations } from '@angular/platform-browser/animations';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 
+import { SongModule } from '../song.module';
 import { DuplicatesComponent } from './duplicates.component';
 
 describe('DuplicatesComponent', () => {
@@ -9,8 +12,8 @@ describe('DuplicatesComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ DuplicatesComponent ],
-      providers: [ provideHttpClient() ]
+      imports: [ SongModule, HttpClientTestingModule ],
+      providers: [ provideRouter([]), provideNoopAnimations() ]
     })
     .compileComponents();
 

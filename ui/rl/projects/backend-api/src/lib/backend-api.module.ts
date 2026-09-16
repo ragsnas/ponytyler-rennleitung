@@ -6,6 +6,7 @@ import { SongService } from "./song.service";
 import { StatisticsService } from "./statistics.service";
 import { UserService } from "./user.service";
 import { BackupService } from "./backup.service";
+import { HealthService } from "./health.service";
 
 
 @NgModule({
@@ -16,6 +17,7 @@ import { BackupService } from "./backup.service";
     UserService,
     StatisticsService,
     BackupService,
+    HealthService,
     provideHttpClient(withInterceptorsFromDi()),
   ],
 })

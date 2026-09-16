@@ -14,8 +14,22 @@ exports.ImportService = void 0;
 const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../prisma-api/prisma.service");
 const export_types_1 = require("../export/export.types");
-const REQUIRED_ARRAY_KEYS = ["shows", "shifts", "shiftRoles", "songs", "races", "users"];
-const TABLES_CHILD_TO_PARENT = ["ShiftRole", "Race", "Shift", "Show", "Song", "User"];
+const REQUIRED_ARRAY_KEYS = [
+    "shows",
+    "shifts",
+    "shiftRoles",
+    "songs",
+    "races",
+    "users",
+];
+const TABLES_CHILD_TO_PARENT = [
+    "ShiftRole",
+    "Race",
+    "Shift",
+    "Show",
+    "Song",
+    "User",
+];
 let ImportService = ImportService_1 = class ImportService {
     constructor(prisma) {
         this.prisma = prisma;

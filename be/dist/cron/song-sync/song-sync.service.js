@@ -21,36 +21,56 @@ let SongSyncService = SongSyncService_1 = class SongSyncService {
         this.httpService = httpService;
         this.songService = songService;
         this.logger = new common_1.Logger(SongSyncService_1.name);
+        this.syncInProgress = false;
     }
     async handleCron() {
-        this.logger.log("Running Song Sync Cron-Job.");
-        let songsFromCloud = undefined;
+        if (this.syncInProgress) {
+            this.logger.log("Song Sync already running, skipping scheduled run.");
+            return;
+        }
+        await this.runSync();
+    }
+    async triggerSync() {
+        if (this.syncInProgress) {
+            throw new common_1.ConflictException("Song Sync is already running.");
+        }
+        await this.runSync();
+    }
+    async runSync() {
+        this.syncInProgress = true;
         try {
-            songsFromCloud = await (0, rxjs_1.firstValueFrom)(this.httpService.get("https://songlist.ponytyler.de/api/index.php"));
+            this.logger.log("Running Song Sync Cron-Job.");
+            let songsFromCloud = undefined;
+            try {
+                songsFromCloud = await (0, rxjs_1.firstValueFrom)(this.httpService.get("https://songlist.ponytyler.de/api/index.php"));
+            }
+            catch (e) {
+                this.logger.error(`could not receive songs from cloud: `, e);
+            }
+            const localSongs = await this.songService.songs({});
+            if (songsFromCloud && localSongs) {
+                songsFromCloud.data.forEach((song) => {
+                    const fullCloudSongName = `${song.artist} - ${song.title}`;
+                    if (!localSongs.some((localSong) => this.cleanSongname(this.songToString(localSong)) ===
+                        this.cleanSongname(fullCloudSongName))) {
+                        this.logger.log("Need to create Song:" + JSON.stringify(song));
+                        this.songService
+                            .createSong({
+                            name: song.title,
+                            artist: song.artist,
+                            selectable: true,
+                            deleted: false,
+                            origin: song_service_1.Origin.FROM_CLOUD_SYNC,
+                        })
+                            .then((song) => {
+                            this.logger.log("Song Created:" + JSON.stringify(song));
+                        });
+                    }
+                });
+            }
         }
-        catch (e) {
-            this.logger.error(`could not receive songs from cloud: `, e);
-        }
-        const localSongs = await this.songService.songs({});
-        if (songsFromCloud && localSongs) {
-            songsFromCloud.data.forEach((song) => {
-                const fullCloudSongName = `${song.artist} - ${song.title}`;
-                if (!localSongs.some((localSong) => this.cleanSongname(this.songToString(localSong)) ===
-                    this.cleanSongname(fullCloudSongName))) {
-                    this.logger.log("Need to create Song:" + JSON.stringify(song));
-                    this.songService
-                        .createSong({
-                        name: song.title,
-                        artist: song.artist,
-                        selectable: true,
-                        deleted: false,
-                        origin: song_service_1.Origin.FROM_CLOUD_SYNC,
-                    })
-                        .then((song) => {
-                        this.logger.log("Song Created:" + JSON.stringify(song));
-                    });
-                }
-            });
+        finally {
+            this.syncInProgress = false;
         }
     }
     cleanSongname(name) {

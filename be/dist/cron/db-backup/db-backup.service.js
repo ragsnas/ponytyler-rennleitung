@@ -25,13 +25,14 @@ let DbBackupService = DbBackupService_1 = class DbBackupService {
         this.backupFolder = "prisma/backups";
     }
     async hourly() {
-        if (!(0, isDir_1.isDir)(`prisma/backups`) && (0, isDir_1.isDir)(`/home/ponytyler/ponytyler-rennleitung/be/prisma/backups`)) {
+        if (!(0, isDir_1.isDir)(`prisma/backups`) &&
+            (0, isDir_1.isDir)(`/home/ponytyler/ponytyler-rennleitung/be/prisma/backups`)) {
             this.prismaFolder = `/home/ponytyler/ponytyler-rennleitung/be/prisma`;
             this.backupFolder = `/home/ponytyler/rl-db-backups`;
         }
         this.logger.log("Running DB Backup Cron-Job.");
         if (!this.isBackupNecessary()) {
-            this.logger.log('No changes since last Backup.');
+            this.logger.log("No changes since last Backup.");
         }
         else {
             this.createBackup();
@@ -77,31 +78,33 @@ let DbBackupService = DbBackupService_1 = class DbBackupService {
         const backupDirectoryContent = (0, fs_1.readdirSync)(directory)
             .sort()
             .reverse()
-            .filter(name => !!name)
-            .filter(name => (0, shared_utils_1.isNumber)(Number(name)))
-            .filter(name => (0, isDir_1.isDir)(`${directory}/${name}`));
+            .filter((name) => !!name)
+            .filter((name) => (0, shared_utils_1.isNumber)(Number(name)))
+            .filter((name) => (0, isDir_1.isDir)(`${directory}/${name}`));
         if (backupDirectoryContent && backupDirectoryContent.length > 0) {
             const yearFolder = backupDirectoryContent[0];
             const backupDirectoryYearContent = (0, fs_1.readdirSync)(`${directory}/${yearFolder}`)
                 .sort()
                 .reverse()
-                .filter(name => (0, shared_utils_1.isNumber)(Number(name)))
-                .filter(name => (0, isDir_1.isDir)(`${directory}/${yearFolder}/` + name));
+                .filter((name) => (0, shared_utils_1.isNumber)(Number(name)))
+                .filter((name) => (0, isDir_1.isDir)(`${directory}/${yearFolder}/` + name));
             if (backupDirectoryYearContent && backupDirectoryYearContent.length > 0) {
                 const monthFolder = backupDirectoryYearContent[0];
                 const backupDirectoryMonthContent = (0, fs_1.readdirSync)(`${directory}/${yearFolder}/${monthFolder}`)
                     .sort()
                     .reverse()
-                    .filter(name => (0, shared_utils_1.isNumber)(Number(name)))
-                    .filter(name => (0, isDir_1.isDir)(`${directory}/${yearFolder}//${monthFolder}/` + name));
-                if (backupDirectoryMonthContent && backupDirectoryMonthContent.length > 0) {
+                    .filter((name) => (0, shared_utils_1.isNumber)(Number(name)))
+                    .filter((name) => (0, isDir_1.isDir)(`${directory}/${yearFolder}//${monthFolder}/` + name));
+                if (backupDirectoryMonthContent &&
+                    backupDirectoryMonthContent.length > 0) {
                     const filePatternRegex = /^(\d){2}-(\d){2}\.db$/;
                     const dayFolder = backupDirectoryMonthContent[0];
                     const backupDirectoryDayContent = (0, fs_1.readdirSync)(`${directory}/${yearFolder}/${monthFolder}/${dayFolder}`)
-                        .filter(name => filePatternRegex.test(name))
+                        .filter((name) => filePatternRegex.test(name))
                         .sort()
                         .reverse();
-                    if (backupDirectoryDayContent && backupDirectoryDayContent.length > 0) {
+                    if (backupDirectoryDayContent &&
+                        backupDirectoryDayContent.length > 0) {
                         const newestFile = backupDirectoryDayContent[0];
                         return `${directory}/${yearFolder}/${monthFolder}/${dayFolder}/${newestFile}`;
                     }

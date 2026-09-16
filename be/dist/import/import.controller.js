@@ -28,7 +28,7 @@ let ImportController = class ImportController {
         try {
             parsed = JSON.parse(file.buffer.toString("utf-8"));
         }
-        catch (e) {
+        catch {
             throw new common_1.BadRequestException("Uploaded file is not valid JSON.");
         }
         return this.importService.importDatabase(parsed);
