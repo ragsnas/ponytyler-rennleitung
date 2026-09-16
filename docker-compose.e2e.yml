@@ -12,10 +12,12 @@ services:
     ports:
       - "3010:3000"
       - "3011:3001"
+      - "3012:3002"
     environment:
       - NODE_ENV=development
       - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/ponytyler
       - MQTT_PORT=3001
+      - MQTT_WS_PORT=3002
     depends_on:
       postgres:
         condition: service_healthy

@@ -1,0 +1,12 @@
+<h2>MQTT Broker</h2>
+
+<p class="connection-status">Status: {{ connected ? 'Connected' : 'Disconnected' }}</p>
+
+<ul class="messages" *ngIf="messages.length > 0; else noMessages">
+  <li *ngFor="let message of messages">
+    <span class="topic">{{ message.topic }}</span>: <span class="payload">{{ message.payload }}</span>
+  </li>
+</ul>
+<ng-template #noMessages>
+  <p>No messages received yet.</p>
+</ng-template>

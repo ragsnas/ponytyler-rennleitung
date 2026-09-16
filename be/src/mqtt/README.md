@@ -29,9 +29,10 @@ NestJS app *is* starting/stopping the broker.
 
 ## Configuration
 
-| Env var     | Default | Description                                   |
-|-------------|---------|------------------------------------------------|
-| `MQTT_PORT` | `3001`  | TCP port the embedded broker listens on.        |
+| Env var        | Default | Description                                        |
+|----------------|---------|-----------------------------------------------------|
+| `MQTT_PORT`    | `3001`  | TCP port the embedded broker listens on.             |
+| `MQTT_WS_PORT` | `3002`  | Port the same broker listens on for MQTT-over-WebSocket. |
 
 Set it like any other backend env var (`.env`, shell, or the `environment:`
 block in `docker-compose.yml` / `docker-compose.prod.yml`).
@@ -46,15 +47,19 @@ npm run start:dev
 ```
 
 The broker listens on `mqtt://localhost:3001` (or whatever `MQTT_PORT` is
-set to).
+set to) for plain MQTT clients, and on `ws://localhost:3002` (or whatever
+`MQTT_WS_PORT` is set to) for MQTT-over-WebSocket clients, e.g. the "MQTT
+Broker" page in the Angular frontend (`ui/rl/projects/mqtt-broker`), which
+can't open a raw TCP socket from the browser.
 
 ### Via Docker Compose
 
 `docker-compose.yml` / `docker-compose.prod.yml` publish the backend's
-`3001` port to the host, so from your machine it's still:
+`3001` and `3002` ports to the host, so from your machine it's still:
 
 ```
 mqtt://localhost:3001
+ws://localhost:3002
 ```
 
 From another container on the `ponytyler-network`, use the backend's
@@ -62,7 +67,12 @@ container hostname instead:
 
 ```
 mqtt://backend:3001
+ws://backend:3002
 ```
+
+The Angular frontend's dev server proxies `/mqtt-ws` to `ws://backend:3002`
+(see `ui/rl/src/proxy.conf.json`), so browser code just connects to
+`ws://<frontend-host>/mqtt-ws`.
 
 ### Example: publish a bike status message
 

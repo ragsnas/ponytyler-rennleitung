@@ -6,6 +6,7 @@ const NAVIGATION_ENTRIES = [
   { menuLabel: 'Views', path: '/views', heading: 'Views' },
   { menuLabel: 'Users', path: '/users', heading: 'Users' },
   { menuLabel: 'Statistiken', path: '/stats', heading: 'Stats' },
+  { menuLabel: 'MQTT Broker', path: '/mqtt-broker', heading: 'MQTT Broker' },
 ];
 
 test('all main navigation entries can be reached and show the correct title', async ({ page }) => {

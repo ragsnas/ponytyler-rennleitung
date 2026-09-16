@@ -39,6 +39,9 @@
       "race-track": [
         "dist/race-track"
       ],
+      "mqtt-broker": [
+        "dist/mqtt-broker"
+      ],
       "show": [
         "dist/show"
       ],
@@ -66,6 +69,7 @@
     },
     "baseUrl": "./",
     "outDir": "./dist/out-tsc",
+    "skipLibCheck": true,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "strict": true,

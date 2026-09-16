@@ -28,6 +28,7 @@
     "@ngx-dropzone/material": "^18.1.2",
     "fastest-levenshtein": "^1.0.16",
     "material-icons": "*",
+    "mqtt": "^5.16.0",
     "rxjs": "^7.8.1",
     "tslib": "^2.6.3",
     "zone.js": "^0.14.7"

@@ -7,10 +7,12 @@ services:
     ports:
       - "3000:3000"
       - "3001:3001"
+      - "3002:3002"
     environment:
       - NODE_ENV=development
       - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/ponytyler
       - MQTT_PORT=3001
+      - MQTT_WS_PORT=3002
     volumes:
       - ./be:/app
       - /app/node_modules

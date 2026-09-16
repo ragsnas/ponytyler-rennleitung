@@ -1,7 +1,9 @@
 import { Injectable, Logger, OnApplicationBootstrap, OnModuleDestroy } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { Aedes, AedesPublishPacket, Client, Subscription } from "aedes";
-import { createServer, Server } from "net";
+import { createServer as createTcpServer, Server } from "net";
+import { createServer as createWsCapableServer } from "aedes-server-factory";
+import { Server as HttpServer } from "http";
 
 type BikeStatusMessage = {
   pulsecount: number;
@@ -21,6 +23,7 @@ type BikeId = "1" | "2";
 const MAX_BIKE_ADVANCE = 120; // 5 milliseconds
 const ADDITIONAL_SEQUENCE_STORAGE = 4;
 const DEFAULT_MQTT_PORT = 3001;
+const DEFAULT_MQTT_WS_PORT = 3002;
 
 const BIKE_STATUS_TOPIC = /^Bike\/[1-2]{1}$/i;
 const BIKE_CMD_TOPIC = /^Bike\/[1-2]{1}\/cmd$/i;
@@ -38,6 +41,10 @@ function initialBikeState(): BikeState {
  * Hosts an embedded MQTT broker (Aedes) inside the NestJS process so bike
  * sensors / the show control hardware can publish race telemetry directly
  * to the backend without a separate broker process. See src/mqtt/README.md.
+ *
+ * Alongside the plain TCP listener, it also exposes the same broker over
+ * MQTT-over-WebSocket so browser clients (e.g. the "MQTT Broker" page in
+ * the Angular frontend) can subscribe without a native TCP socket.
  */
 @Injectable()
 export class MqttBrokerService implements OnApplicationBootstrap, OnModuleDestroy {
@@ -46,6 +53,7 @@ export class MqttBrokerService implements OnApplicationBootstrap, OnModuleDestro
 
   private broker: Aedes | undefined;
   private server: Server | undefined;
+  private wsServer: HttpServer | undefined;
 
   private readonly bikeState: Map<BikeId, BikeState> = new Map([
     ["1", initialBikeState()],
@@ -60,18 +68,26 @@ export class MqttBrokerService implements OnApplicationBootstrap, OnModuleDestro
 
   async onApplicationBootstrap() {
     const port = Number(this.configService.get("MQTT_PORT") ?? DEFAULT_MQTT_PORT);
+    const wsPort = Number(this.configService.get("MQTT_WS_PORT") ?? DEFAULT_MQTT_WS_PORT);
 
     this.broker = await Aedes.createBroker();
-    this.server = createServer(this.broker.handle);
+    this.server = createTcpServer(this.broker.handle);
+    this.wsServer = createWsCapableServer(this.broker, { ws: true }) as HttpServer;
     this.registerBrokerListeners(this.broker);
 
     await new Promise<void>((resolve) => this.server!.listen(port, resolve));
     this.logger.log(`🚀 MQTT Broker started and listening on port ${port}`);
+
+    await new Promise<void>((resolve) => this.wsServer!.listen(wsPort, resolve));
+    this.logger.log(`🚀 MQTT-over-WebSocket listening on port ${wsPort}`);
   }
 
   async onModuleDestroy() {
     if (this.server) {
       await new Promise<void>((resolve) => this.server!.close(() => resolve()));
+    }
+    if (this.wsServer) {
+      await new Promise<void>((resolve) => this.wsServer!.close(() => resolve()));
     }
     if (this.broker) {
       await new Promise<void>((resolve) => this.broker!.close(() => resolve()));

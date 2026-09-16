@@ -10,6 +10,7 @@
     "docker:down": "docker-compose -f ../docker-compose.e2e.yml down -v"
   },
   "devDependencies": {
-    "@playwright/test": "^1.48.2"
+    "@playwright/test": "^1.48.2",
+    "mqtt": "^5.16.0"
   }
 }

@@ -10,6 +10,11 @@ RUN npm ci
 
 COPY . .
 
+# prisma.config.ts requires DATABASE_URL to be resolvable; generate only
+# needs the schema, not a reachable database, so a placeholder is enough
+# here. The real value is provided at runtime.
+ENV DATABASE_URL="postgresql://user:password@localhost:5432/db"
+
 RUN npx prisma generate
 
 RUN npm run build
@@ -30,5 +35,6 @@ COPY --from=builder /app/node_modules/.prisma node_modules/.prisma
 
 EXPOSE 3000
 EXPOSE 3001
+EXPOSE 3002
 
 CMD ["node", "dist/main.js"]

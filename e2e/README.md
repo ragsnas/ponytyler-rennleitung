@@ -40,7 +40,9 @@ This opens the Playwright inspector for step-by-step debugging.
 ## Test Files
 
 - `tests/create-show.spec.ts` - Tests creating a new show through the UI
-- `tests/main-navigation.spec.ts` - Happy path: all 5 main navigation entries (Shows, Songs, Views, Users, Statistiken) can be navigated to and each page shows its correct title
+- `tests/main-navigation.spec.ts` - Happy path: all 6 main navigation entries (Shows, Songs, Views, Users, Statistiken, MQTT Broker) can be navigated to and each page shows its correct title
+- `tests/backend-rest-api.spec.ts` - Exercises the backend REST API directly (show/song/race create, update, race winner, delete lifecycle), bypassing the frontend
+- `tests/mqtt-broker.spec.ts` - Publishes a message directly to the backend's embedded MQTT broker (over plain TCP, port 3011) and verifies it shows up live on the "MQTT Broker" page
 
 ## Prerequisites
 

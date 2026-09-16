@@ -6,6 +6,7 @@ import { ViewsModule } from "../../projects/views/src/lib/views.module";
 import { RaceTrackModule } from "../../projects/race-track/src/lib/race-track.module";
 import { UsersModule } from "../../projects/users/src/lib/users/users.module";
 import { StatsModule } from "../../projects/stats/src/lib/stats.module";
+import { MqttBrokerModule } from "../../projects/mqtt-broker/src/lib/mqtt-broker.module";
 
 const routes: Routes = [
   {
@@ -17,7 +18,8 @@ const routes: Routes = [
       {path: 'views', loadChildren: () => ViewsModule},
       {path: 'users', loadChildren: () => UsersModule},
       {path: 'race-track', loadChildren: () => RaceTrackModule},
-      {path: 'stats', loadChildren: () => StatsModule}
+      {path: 'stats', loadChildren: () => StatsModule},
+      {path: 'mqtt-broker', loadChildren: () => MqttBrokerModule}
   ]}
 ];
 
