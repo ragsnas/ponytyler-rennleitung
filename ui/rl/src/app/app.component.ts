@@ -3,7 +3,7 @@ import {Show, ShowService} from "projects/backend-api/src/lib/show.service";
 import {HealthService} from "projects/backend-api/src/lib/health.service";
 import {catchError, filter, map, Observable, of, switchMap, timer} from "rxjs";
 
-const HEALTH_CHECK_INTERVAL_MS = 60000;
+const HEALTH_CHECK_INTERVAL_MS = 5000;
 
 @Component({
   selector: 'app-root',
