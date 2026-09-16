@@ -9,10 +9,14 @@ import {
 } from "@nestjs/common";
 import { SongService } from "../prisma-api/song.service";
 import { Prisma } from "@prisma/client";
+import { SongSyncService } from "../cron/song-sync/song-sync.service";
 
 @Controller("api/song")
 export class SongController {
-  constructor(private readonly songService: SongService) {}
+  constructor(
+    private readonly songService: SongService,
+    private readonly songSyncService: SongSyncService,
+  ) {}
 
   @Post()
   create(@Body() data: Prisma.SongCreateInput) {
@@ -84,6 +88,11 @@ export class SongController {
   @Get("sync-with-single-source-of-truth")
   syncWithSingleSourceOfTruth() {
     return this.songService.syncWithSingleSourceOfTruth();
+  }
+
+  @Post("cloud-sync")
+  triggerCloudSync() {
+    return this.songSyncService.triggerSync();
   }
 
   @Patch(":id")

@@ -8,6 +8,6 @@ import { DbBackupService } from "./db-backup/db-backup.service";
 @Module({
   imports: [ScheduleModule.forRoot(), PrismaApiModule, HttpModule],
   providers: [SongSyncService, DbBackupService],
-  exports: [DbBackupService],
+  exports: [SongSyncService, DbBackupService],
 })
 export class CronModule {}

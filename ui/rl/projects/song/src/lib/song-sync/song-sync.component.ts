@@ -1,5 +1,7 @@
 import {Component} from '@angular/core';
-import {Origin, Song, SongService} from '../../public-api';
+import {Origin, Song, SongService} from 'projects/backend-api/src/lib/song.service';
+import {HttpErrorResponse} from '@angular/common/http';
+import {MatSnackBar} from '@angular/material/snack-bar';
 import {Observable} from 'rxjs';
 
 @Component({
@@ -12,8 +14,39 @@ export class SongSyncComponent {
   songsNotFoundInFiles: Song[] = [];
   processingFiles: number = 0;
   nothingFound: boolean = false;
+  syncingWithCloud: boolean = false;
 
-  constructor(private songService: SongService) {}
+  constructor(
+    private songService: SongService,
+    private snackBar: MatSnackBar,
+  ) {}
+
+  syncWithCloud() {
+    if (this.syncingWithCloud) {
+      return;
+    }
+    this.syncingWithCloud = true;
+    this.songService.triggerCloudSync().subscribe({
+      next: () => {
+        this.syncingWithCloud = false;
+        this.snackBar.open('Cloud Song Sync finished.', 'OK', { panelClass: 'success' });
+      },
+      error: (error: HttpErrorResponse) => {
+        this.syncingWithCloud = false;
+        if (error.status === 409) {
+          this.snackBar.open(
+            'Cloud Song Sync is already running. Please wait for it to finish.',
+            'OK',
+            { panelClass: 'error' },
+          );
+        } else {
+          this.snackBar.open(`Error during Cloud Song Sync: ${JSON.stringify(error.message)}`, 'OK', {
+            duration: 10000, panelClass: 'error',
+          });
+        }
+      },
+    });
+  }
 
   filesChanged(e: Event) {
     this.nothingFound = false;

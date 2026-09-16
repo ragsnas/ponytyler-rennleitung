@@ -1,18 +1,20 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { provideHttpClient } from '@angular/common/http';
 
-import { SongSyncComponent } from './duplicates.component';
+import { DuplicatesComponent } from './duplicates.component';
 
-describe('SongSyncComponent', () => {
-  let component: SongSyncComponent;
-  let fixture: ComponentFixture<SongSyncComponent>;
+describe('DuplicatesComponent', () => {
+  let component: DuplicatesComponent;
+  let fixture: ComponentFixture<DuplicatesComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ SongSyncComponent ]
+      declarations: [ DuplicatesComponent ],
+      providers: [ provideHttpClient() ]
     })
     .compileComponents();
 
-    fixture = TestBed.createComponent(SongSyncComponent);
+    fixture = TestBed.createComponent(DuplicatesComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

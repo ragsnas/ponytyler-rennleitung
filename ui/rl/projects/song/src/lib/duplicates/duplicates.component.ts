@@ -1,5 +1,5 @@
 import { Component, OnInit } from "@angular/core";
-import { Song, SongService } from "../../public-api";
+import { Song, SongService } from "projects/backend-api/src/lib/song.service";
 import { Subject } from "rxjs";
 import { closest, distance } from "fastest-levenshtein";
 import { MatSnackBar } from "@angular/material/snack-bar";

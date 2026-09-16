@@ -1,14 +1,16 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { provideHttpClient } from '@angular/common/http';
 
 import { SongsComponent } from './songs.component';
 
-describe('SongComponent', () => {
+describe('SongsComponent', () => {
   let component: SongsComponent;
   let fixture: ComponentFixture<SongsComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ SongsComponent ]
+      declarations: [ SongsComponent ],
+      providers: [ provideHttpClient() ]
     })
     .compileComponents();
 

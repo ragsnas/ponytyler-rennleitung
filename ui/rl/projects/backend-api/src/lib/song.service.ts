@@ -56,4 +56,8 @@ export class SongService {
   updateSong(song: Song) {
     return this.http.patch(`${environment.apiUrl}api/song/${song.id}`, song);
   }
+
+  triggerCloudSync(): Observable<void> {
+    return this.http.post<void>(`${environment.apiUrl}api/song/cloud-sync`, {});
+  }
 }
