@@ -1,6 +1,24 @@
-<ng-container *ngIf="currentShow">
-  <div class="showInfo">
-    <h3>{{currentShow.name}}</h3>
+<ng-container>
+  <div class="stateMachine_controlBar">
+    <ng-container *ngIf="currentShow">
+      <div class="showInfo">
+        <strong>{{currentShow.name}}</strong>
+      </div>
+    </ng-container>
+    <ui-button-list>
+    <button mat-flat-button color="accent" [routerLink]="'../'">
+      <mat-icon>play</mat-icon> Start Race
+    </button>
+    <button mat-flat-button color="accent" [routerLink]="'../'">
+      <mat-icon>next</mat-icon> Skip Race
+    </button>
+    <button mat-flat-button color="accent" [routerLink]="'../'">
+      <mat-icon>stop</mat-icon> Stop Race
+    </button>
+    <button mat-flat-button color="accent" [routerLink]="'../'">
+      <mat-icon>refresh</mat-icon> Rerun Race
+    </button>
+    </ui-button-list>
   </div>
 </ng-container>
 
@@ -8,11 +26,11 @@
   <div class="raceInfo">
     <div class="raceInfo_bike1">
       <p>{{ currentRace.person1 }}</p>
-      <br/><p>{{ currentRace.song1 }}</p>
+      <br/><p>{{ currentRace.song1?.artist }} - {{ currentRace.song1?.name }}</p>
     </div>
     <div class="raceInfo_bike2">
       <p>{{ currentRace.person2 }}</p>
-      <br/><p>{{ currentRace.song2 }}</p>
+      <br/><p>{{ currentRace.song2?.artist }} - {{ currentRace.song2?.name }}</p>
     </div>
   </div>
 </ng-container>

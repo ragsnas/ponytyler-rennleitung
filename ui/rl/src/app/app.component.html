@@ -3,6 +3,7 @@
     <mat-icon>menu</mat-icon>
   </button>
   <mat-menu #menu="matMenu">
+    <button mat-menu-item [routerLink]="'state-machine'" [routerLinkActive]="'active-link'">Steuerung</button>
     <button mat-menu-item [routerLink]="'show'" [routerLinkActive]="'active-link'">Shows</button>
     <button mat-menu-item [routerLink]="'song'" [routerLinkActive]="'active-link'">Songs</button>
     <button mat-menu-item [routerLink]="'views'" [routerLinkActive]="'active-link'">Views</button>

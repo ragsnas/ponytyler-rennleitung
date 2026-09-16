@@ -7,8 +7,6 @@ import { NgIf } from "@angular/common";
 
 @Component({
   selector: 'lib-state-machine',
-  standalone: true,
-  imports: [BackendApiModule, NgIf],
   templateUrl: 'state-machine.component.html'
 })
 export class StateMachineComponent implements OnInit {
