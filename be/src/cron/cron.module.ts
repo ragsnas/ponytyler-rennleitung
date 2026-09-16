@@ -6,13 +6,8 @@ import { SongSyncService } from "./song-sync/song-sync.service";
 import { DbBackupService } from "./db-backup/db-backup.service";
 
 @Module({
-  imports: [
-    ScheduleModule.forRoot(),
-    PrismaApiModule,
-    HttpModule,
-  ],
+  imports: [ScheduleModule.forRoot(), PrismaApiModule, HttpModule],
   providers: [SongSyncService, DbBackupService],
-  exports: [DbBackupService]
+  exports: [DbBackupService],
 })
-export class CronModule {
-}
+export class CronModule {}

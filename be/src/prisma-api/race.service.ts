@@ -5,8 +5,7 @@ import { RaceState } from "../race/race-state.enum";
 
 @Injectable()
 export class RaceService {
-  constructor(private prisma: PrismaService) {
-  }
+  constructor(private prisma: PrismaService) {}
 
   async race(
     raceWhereUniqueInput: Prisma.RaceWhereUniqueInput,
@@ -134,7 +133,9 @@ export class RaceService {
     console.log(`Found ${allRaces.length} races`);
     const transactions = [];
     for (const [indexCounter, race] of allRaces.entries()) {
-      console.log(`> [${indexCounter}] Preparing update for order nr ${race.orderNumber} (race id: ${race.id})`);
+      console.log(
+        `> [${indexCounter}] Preparing update for order nr ${race.orderNumber} (race id: ${race.id})`,
+      );
       transactions.push(
         this.prisma.race.update({
           data: {
@@ -148,9 +149,14 @@ export class RaceService {
     return this.prisma.$transaction(transactions);
   }
 
-  async moveRacePosition(params: { raceToMoveId: string, upOrDown: string }) {
-    const raceToMove: Race = await this.race({ id: Number(params.raceToMoveId) });
-    const orderNumberEqClause = params.upOrDown === "up" ? { lt: raceToMove.orderNumber } : { gt: raceToMove.orderNumber };
+  async moveRacePosition(params: { raceToMoveId: string; upOrDown: string }) {
+    const raceToMove: Race = await this.race({
+      id: Number(params.raceToMoveId),
+    });
+    const orderNumberEqClause =
+      params.upOrDown === "up"
+        ? { lt: raceToMove.orderNumber }
+        : { gt: raceToMove.orderNumber };
     const raceToSwitchWithResults: Race[] = await this.races({
       where: {
         showId: Number(raceToMove.showId),
@@ -162,10 +168,12 @@ export class RaceService {
     });
     const raceToSwitchWith: Race = raceToSwitchWithResults[0];
     if (raceToSwitchWith) {
-      console.log(`>>>>>\nraceToMove #${raceToMove.id}: ${raceToMove.orderNumber}`
-        + `\nwill switch with:`
-        + `\nraceToSwitchWith #${raceToSwitchWith.id}: ${raceToSwitchWith.orderNumber}`
-        + `\n to move "${params.upOrDown}"`);
+      console.log(
+        `>>>>>\nraceToMove #${raceToMove.id}: ${raceToMove.orderNumber}` +
+          `\nwill switch with:` +
+          `\nraceToSwitchWith #${raceToSwitchWith.id}: ${raceToSwitchWith.orderNumber}` +
+          `\n to move "${params.upOrDown}"`,
+      );
 
       console.log(`raceToMove:`, raceToMove);
       console.log(`raceToSwitchWith:`, raceToSwitchWith);
@@ -182,7 +190,10 @@ export class RaceService {
         where: { id: raceToSwitchWith.id },
       });
 
-      return this.prisma.$transaction([updateRaceToSwitchWith, updateRaceToMove]);
+      return this.prisma.$transaction([
+        updateRaceToSwitchWith,
+        updateRaceToMove,
+      ]);
     }
   }
 

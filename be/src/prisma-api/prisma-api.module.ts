@@ -14,14 +14,15 @@ import { StatsService } from "./stats.service";
     ShowService,
     ShiftsService,
     SongService,
-    StatsService],
+    StatsService,
+  ],
   exports: [
     PrismaService,
     RaceService,
     ShowService,
     ShiftsService,
     SongService,
-    StatsService],
+    StatsService,
+  ],
 })
-export class PrismaApiModule {
-}
+export class PrismaApiModule {}

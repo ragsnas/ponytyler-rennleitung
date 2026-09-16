@@ -1,9 +1,19 @@
 import { BadRequestException, Injectable, Logger } from "@nestjs/common";
 import { PrismaService } from "../prisma-api/prisma.service";
-import { DatabaseExport, DATABASE_EXPORT_FORMAT_VERSION } from "../export/export.types";
+import {
+  DatabaseExport,
+  DATABASE_EXPORT_FORMAT_VERSION,
+} from "../export/export.types";
 import { DatabaseImportSummary } from "./import.types";
 
-const REQUIRED_ARRAY_KEYS = ["shows", "shifts", "shiftRoles", "songs", "races", "users"] as const;
+const REQUIRED_ARRAY_KEYS = [
+  "shows",
+  "shifts",
+  "shiftRoles",
+  "songs",
+  "races",
+  "users",
+] as const;
 
 /**
  * Every table this import touches, in the order their rows must be deleted
@@ -11,7 +21,14 @@ const REQUIRED_ARRAY_KEYS = ["shows", "shifts", "shiftRoles", "songs", "races", 
  * this respects. Also the list of `id` sequences that need resetting after
  * a bulk import with explicit ids (see the loop in importDatabase below).
  */
-const TABLES_CHILD_TO_PARENT = ["ShiftRole", "Race", "Shift", "Show", "Song", "User"] as const;
+const TABLES_CHILD_TO_PARENT = [
+  "ShiftRole",
+  "Race",
+  "Shift",
+  "Show",
+  "Song",
+  "User",
+] as const;
 
 @Injectable()
 export class ImportService {
@@ -38,7 +55,8 @@ export class ImportService {
       if (data.users.length) await tx.user.createMany({ data: data.users });
       if (data.shifts.length) await tx.shift.createMany({ data: data.shifts });
       if (data.races.length) await tx.race.createMany({ data: data.races });
-      if (data.shiftRoles.length) await tx.shiftRole.createMany({ data: data.shiftRoles });
+      if (data.shiftRoles.length)
+        await tx.shiftRole.createMany({ data: data.shiftRoles });
 
       for (const table of TABLES_CHILD_TO_PARENT) {
         // Bulk-inserting rows with explicit `id`s bypasses each table's
@@ -51,7 +69,9 @@ export class ImportService {
       }
     });
 
-    this.logger.log(`Imported database export (formatVersion ${data.formatVersion})`);
+    this.logger.log(
+      `Imported database export (formatVersion ${data.formatVersion})`,
+    );
 
     return {
       formatVersion: data.formatVersion,
@@ -82,7 +102,9 @@ export class ImportService {
 
     for (const key of REQUIRED_ARRAY_KEYS) {
       if (!Array.isArray(data[key])) {
-        throw new BadRequestException(`Import file is missing the "${key}" array.`);
+        throw new BadRequestException(
+          `Import file is missing the "${key}" array.`,
+        );
       }
     }
 

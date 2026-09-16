@@ -1,4 +1,9 @@
-import { Injectable, Logger, OnApplicationBootstrap, OnModuleDestroy } from "@nestjs/common";
+import {
+  Injectable,
+  Logger,
+  OnApplicationBootstrap,
+  OnModuleDestroy,
+} from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { Aedes, AedesPublishPacket, Client, Subscription } from "aedes";
 import { createServer as createTcpServer, Server } from "net";
@@ -47,7 +52,9 @@ function initialBikeState(): BikeState {
  * the Angular frontend) can subscribe without a native TCP socket.
  */
 @Injectable()
-export class MqttBrokerService implements OnApplicationBootstrap, OnModuleDestroy {
+export class MqttBrokerService
+  implements OnApplicationBootstrap, OnModuleDestroy
+{
   private readonly logger = new Logger(MqttBrokerService.name);
   private readonly utf16Decoder = new TextDecoder("UTF-8");
 
@@ -67,18 +74,26 @@ export class MqttBrokerService implements OnApplicationBootstrap, OnModuleDestro
   constructor(private readonly configService: ConfigService) {}
 
   async onApplicationBootstrap() {
-    const port = Number(this.configService.get("MQTT_PORT") ?? DEFAULT_MQTT_PORT);
-    const wsPort = Number(this.configService.get("MQTT_WS_PORT") ?? DEFAULT_MQTT_WS_PORT);
+    const port = Number(
+      this.configService.get("MQTT_PORT") ?? DEFAULT_MQTT_PORT,
+    );
+    const wsPort = Number(
+      this.configService.get("MQTT_WS_PORT") ?? DEFAULT_MQTT_WS_PORT,
+    );
 
     this.broker = await Aedes.createBroker();
     this.server = createTcpServer(this.broker.handle);
-    this.wsServer = createWsCapableServer(this.broker, { ws: true }) as HttpServer;
+    this.wsServer = createWsCapableServer(this.broker, {
+      ws: true,
+    }) as HttpServer;
     this.registerBrokerListeners(this.broker);
 
     await new Promise<void>((resolve) => this.server!.listen(port, resolve));
     this.logger.log(`🚀 MQTT Broker started and listening on port ${port}`);
 
-    await new Promise<void>((resolve) => this.wsServer!.listen(wsPort, resolve));
+    await new Promise<void>((resolve) =>
+      this.wsServer!.listen(wsPort, resolve),
+    );
     this.logger.log(`🚀 MQTT-over-WebSocket listening on port ${wsPort}`);
   }
 
@@ -87,7 +102,9 @@ export class MqttBrokerService implements OnApplicationBootstrap, OnModuleDestro
       await new Promise<void>((resolve) => this.server!.close(() => resolve()));
     }
     if (this.wsServer) {
-      await new Promise<void>((resolve) => this.wsServer!.close(() => resolve()));
+      await new Promise<void>((resolve) =>
+        this.wsServer!.close(() => resolve()),
+      );
     }
     if (this.broker) {
       await new Promise<void>((resolve) => this.broker!.close(() => resolve()));
@@ -106,18 +123,23 @@ export class MqttBrokerService implements OnApplicationBootstrap, OnModuleDestro
       );
     });
 
-    broker.on("publish", (packet: AedesPublishPacket, client: Client | null) => {
-      this.handlePublish(packet, client);
-    });
+    broker.on(
+      "publish",
+      (packet: AedesPublishPacket, client: Client | null) => {
+        this.handlePublish(packet, client);
+      },
+    );
   }
 
   private handlePublish(packet: AedesPublishPacket, client: Client | null) {
     const payloadText =
-      typeof packet.payload === "string" ? packet.payload : this.utf16Decoder.decode(packet.payload);
+      typeof packet.payload === "string"
+        ? packet.payload
+        : this.utf16Decoder.decode(packet.payload);
     let payloadObject: any = undefined;
     try {
       payloadObject = JSON.parse(payloadText);
-    } catch (e) {
+    } catch {
       this.logger.log(
         `📝 Client ${client ? client.id : "unknown"} published unparsable payload: ${payloadText}`,
       );
@@ -131,7 +153,9 @@ export class MqttBrokerService implements OnApplicationBootstrap, OnModuleDestro
       }
     } else if (payloadObject && BIKE_CMD_TOPIC.test(topic)) {
       const bikeId = topic.substr(5);
-      this.logger.log(`📝 Client ${client ? client.id : "unknown"} published command for Bike ${bikeId}: ${payloadText}`);
+      this.logger.log(
+        `📝 Client ${client ? client.id : "unknown"} published command for Bike ${bikeId}: ${payloadText}`,
+      );
     } else {
       this.logger.log(
         `📝 Client ${client ? client.id : "unknown"} published unrecognizable message [topic=${topic}]: ${payloadText}`,
@@ -147,16 +171,21 @@ export class MqttBrokerService implements OnApplicationBootstrap, OnModuleDestro
 
     let thisBikeState = this.bikeState.get(bikeId)!;
     if (!thisBikeState.finished) {
-      this.logger.log(`🏁 Bike ${bikeId} finished: ${JSON.stringify(payloadObject)}`);
+      this.logger.log(
+        `🏁 Bike ${bikeId} finished: ${JSON.stringify(payloadObject)}`,
+      );
       thisBikeState = this.updatePartialBikeState(bikeId, {
         finishObservedAtSequenz: payloadObject.sequenz,
         finished: true,
       });
     }
 
-    const maxSequenzToRecord = thisBikeState.finishObservedAtSequenz! + ADDITIONAL_SEQUENCE_STORAGE;
+    const maxSequenzToRecord =
+      thisBikeState.finishObservedAtSequenz! + ADDITIONAL_SEQUENCE_STORAGE;
     if (payloadObject.sequenz < maxSequenzToRecord) {
-      this.logger.log(`📝 Adding additional state (seq ${maxSequenzToRecord}) for Bike ${bikeId}`);
+      this.logger.log(
+        `📝 Adding additional state (seq ${maxSequenzToRecord}) for Bike ${bikeId}`,
+      );
       this.addBikeState(bikeId, payloadObject);
       return;
     }
@@ -171,13 +200,19 @@ export class MqttBrokerService implements OnApplicationBootstrap, OnModuleDestro
     }
 
     this.logger.log(`Analyzing Bike ${bikeId}:`);
-    if (!otherBikeState.finished || otherBikeState.mostRecentStatus.timestamp > thisBikeState.mostRecentStatus.timestamp) {
+    if (
+      !otherBikeState.finished ||
+      otherBikeState.mostRecentStatus.timestamp >
+        thisBikeState.mostRecentStatus.timestamp
+    ) {
       this.updatePartialBikeState(bikeId, { won: true });
       this.logger.log(`🏆 Bike ${bikeId === "1" ? "1️⃣" : "2️⃣"} won! 🎉`);
     }
   }
 
-  private isBikeStatusPayload(payloadObject: object): payloadObject is BikeStatusMessage {
+  private isBikeStatusPayload(
+    payloadObject: object,
+  ): payloadObject is BikeStatusMessage {
     const hasOwn = Object.prototype.hasOwnProperty;
     return (
       hasOwn.call(payloadObject, "pulsecount") &&
@@ -186,8 +221,13 @@ export class MqttBrokerService implements OnApplicationBootstrap, OnModuleDestro
     );
   }
 
-  private updatePartialBikeState(bikeId: BikeId, element: Partial<BikeState>): BikeState {
-    this.logger.log(`📝 updatePartialBikeState for Bike ${bikeId}: ${JSON.stringify(element)}`);
+  private updatePartialBikeState(
+    bikeId: BikeId,
+    element: Partial<BikeState>,
+  ): BikeState {
+    this.logger.log(
+      `📝 updatePartialBikeState for Bike ${bikeId}: ${JSON.stringify(element)}`,
+    );
     const updated: BikeState = {
       ...this.bikeState.get(bikeId),
       ...element,
@@ -198,15 +238,21 @@ export class MqttBrokerService implements OnApplicationBootstrap, OnModuleDestro
 
   private addBikeState(bikeId: BikeId, bikeStatusMessage: BikeStatusMessage) {
     const bikeStatusMessages = this.bikeStates.get(bikeId) || [];
-    const bikeStateForThisBike: BikeState = this.bikeState.get(bikeId) || initialBikeState();
+    const bikeStateForThisBike: BikeState =
+      this.bikeState.get(bikeId) || initialBikeState();
     bikeStatusMessages.push(bikeStatusMessage);
     if (
-      (!bikeStateForThisBike.finished && bikeStatusMessage.sequenz > bikeStateForThisBike.mostRecentStatus?.sequenz) ||
+      (!bikeStateForThisBike.finished &&
+        bikeStatusMessage.sequenz >
+          bikeStateForThisBike.mostRecentStatus?.sequenz) ||
       (bikeStateForThisBike.finished &&
         bikeStatusMessage.pulsecount > MAX_BIKE_ADVANCE &&
-        bikeStatusMessage.sequenz < bikeStateForThisBike.mostRecentStatus?.sequenz)
+        bikeStatusMessage.sequenz <
+          bikeStateForThisBike.mostRecentStatus?.sequenz)
     ) {
-      this.updatePartialBikeState(bikeId, { mostRecentStatus: bikeStatusMessage });
+      this.updatePartialBikeState(bikeId, {
+        mostRecentStatus: bikeStatusMessage,
+      });
     }
     this.bikeStates.set(bikeId, bikeStatusMessages);
     this.bikeState.set(bikeId, bikeStateForThisBike);

@@ -1,27 +1,13 @@
-import {
-  Controller,
-  Param,
-  Get,
-  Post,
-  Body,
-  Patch,
-  NotFoundException,
-  Delete, Query,
-} from "@nestjs/common";
+import { Controller, Param, Get, Post, Body } from "@nestjs/common";
 import { ShiftsService } from "../prisma-api/shifts.service";
-import { Shift, Prisma } from "@prisma/client";
-import { RaceState } from "../race/race-state.enum";
+import { Prisma } from "@prisma/client";
 
 @Controller("api/shifts")
 export class ShiftsController {
-  constructor(
-    private readonly shiftsService: ShiftsService
-  ) {}
+  constructor(private readonly shiftsService: ShiftsService) {}
 
   @Get("for-show/:showId")
-  findShiftsForShow(
-    @Param("showId") showId: string
-  ) {
+  findShiftsForShow(@Param("showId") showId: string) {
     return this.shiftsService.shiftsForShow(showId);
   }
 

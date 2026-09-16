@@ -1,4 +1,13 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from "@nestjs/common";
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Query,
+} from "@nestjs/common";
 import { RaceService } from "../prisma-api/race.service";
 import { ShowService } from "../prisma-api/show.service";
 import { Prisma } from "@prisma/client";
@@ -10,8 +19,7 @@ export class RaceController {
   constructor(
     private readonly raceService: RaceService,
     private readonly showService: ShowService,
-  ) {
-  }
+  ) {}
 
   @Post()
   create(@Body() data: Prisma.RaceUncheckedCreateInput) {
@@ -114,7 +122,10 @@ export class RaceController {
   }
 
   @Patch(":id/:upOrDown")
-  async moveRaceUpOrDown(@Param("id") id: string, @Param("upOrDown") upOrDown: string) {
+  async moveRaceUpOrDown(
+    @Param("id") id: string,
+    @Param("upOrDown") upOrDown: string,
+  ) {
     return this.raceService.moveRacePosition({ raceToMoveId: id, upOrDown });
   }
 

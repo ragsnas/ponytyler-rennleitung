@@ -98,9 +98,9 @@ describe("Backend REST API lifecycle (e2e)", () => {
     const racesForShow = await request(app.getHttpServer())
       .get(`/api/race/for-show/${showId}/all`)
       .expect(200);
-    expect(racesForShow.body.map((race: { id: number }) => race.id).sort()).toEqual(
-      [race1Id, race2Id].sort(),
-    );
+    expect(
+      racesForShow.body.map((race: { id: number }) => race.id).sort(),
+    ).toEqual([race1Id, race2Id].sort());
   });
 
   it("adds a song", async () => {
@@ -124,15 +124,26 @@ describe("Backend REST API lifecycle (e2e)", () => {
       .patch(`/api/race/${race1Id}`)
       .send({ showId, song1Id: songId, person1: "Alice" })
       .expect(200);
-    expect(updated.body).toMatchObject({ song1Id: songId, raceState: RaceState.LISTED });
+    expect(updated.body).toMatchObject({
+      song1Id: songId,
+      raceState: RaceState.LISTED,
+    });
 
-    const beforeMove = await request(app.getHttpServer()).get(`/api/race/${race2Id}`);
+    const beforeMove = await request(app.getHttpServer()).get(
+      `/api/race/${race2Id}`,
+    );
     expect(beforeMove.body.orderNumber).toBe(1);
 
-    await request(app.getHttpServer()).patch(`/api/race/${race2Id}/up`).expect(200);
+    await request(app.getHttpServer())
+      .patch(`/api/race/${race2Id}/up`)
+      .expect(200);
 
-    const race1AfterMove = await request(app.getHttpServer()).get(`/api/race/${race1Id}`);
-    const race2AfterMove = await request(app.getHttpServer()).get(`/api/race/${race2Id}`);
+    const race1AfterMove = await request(app.getHttpServer()).get(
+      `/api/race/${race1Id}`,
+    );
+    const race2AfterMove = await request(app.getHttpServer()).get(
+      `/api/race/${race2Id}`,
+    );
     expect(race2AfterMove.body.orderNumber).toBe(0);
     expect(race1AfterMove.body.orderNumber).toBe(1);
   });
@@ -165,44 +176,80 @@ describe("Backend REST API lifecycle (e2e)", () => {
   });
 
   it("deletes the races", async () => {
-    await request(app.getHttpServer()).delete(`/api/race/${race1Id}`).expect(200);
-    await request(app.getHttpServer()).delete(`/api/race/${race2Id}`).expect(200);
+    await request(app.getHttpServer())
+      .delete(`/api/race/${race1Id}`)
+      .expect(200);
+    await request(app.getHttpServer())
+      .delete(`/api/race/${race2Id}`)
+      .expect(200);
 
-    const race1AfterDelete = await request(app.getHttpServer()).get(`/api/race/${race1Id}`);
-    const race2AfterDelete = await request(app.getHttpServer()).get(`/api/race/${race2Id}`);
+    const race1AfterDelete = await request(app.getHttpServer()).get(
+      `/api/race/${race1Id}`,
+    );
+    const race2AfterDelete = await request(app.getHttpServer()).get(
+      `/api/race/${race2Id}`,
+    );
     expect(race1AfterDelete.body).toEqual({});
     expect(race2AfterDelete.body).toEqual({});
   });
 
   it("deletes the show", async () => {
-    await request(app.getHttpServer()).delete(`/api/show/${showId}`).expect(200);
+    await request(app.getHttpServer())
+      .delete(`/api/show/${showId}`)
+      .expect(200);
 
-    const showAfterDelete = await request(app.getHttpServer()).get(`/api/show/${showId}`);
+    const showAfterDelete = await request(app.getHttpServer()).get(
+      `/api/show/${showId}`,
+    );
     expect(showAfterDelete.body).toEqual({});
   });
 
   it("deletes the song", async () => {
-    await request(app.getHttpServer()).delete(`/api/song/${songId}`).expect(200);
+    await request(app.getHttpServer())
+      .delete(`/api/song/${songId}`)
+      .expect(200);
 
-    const songAfterDelete = await request(app.getHttpServer()).get(`/api/song/${songId}`);
+    const songAfterDelete = await request(app.getHttpServer()).get(
+      `/api/song/${songId}`,
+    );
     expect(songAfterDelete.body).toEqual({});
   });
 
   it("imports the data, restoring the deleted show, races and song", async () => {
     await request(app.getHttpServer())
       .post("/api/import/database")
-      .attach("file", Buffer.from(JSON.stringify(exportSnapshot)), "export.json")
+      .attach(
+        "file",
+        Buffer.from(JSON.stringify(exportSnapshot)),
+        "export.json",
+      )
       .expect(201);
 
-    const restoredShow = await request(app.getHttpServer()).get(`/api/show/${showId}`);
-    expect(restoredShow.body).toMatchObject({ id: showId, name: showName, finished: true });
+    const restoredShow = await request(app.getHttpServer()).get(
+      `/api/show/${showId}`,
+    );
+    expect(restoredShow.body).toMatchObject({
+      id: showId,
+      name: showName,
+      finished: true,
+    });
 
-    const restoredSong = await request(app.getHttpServer()).get(`/api/song/${songId}`);
+    const restoredSong = await request(app.getHttpServer()).get(
+      `/api/song/${songId}`,
+    );
     expect(restoredSong.body).toMatchObject({ id: songId, name: songName });
 
-    const restoredRace1 = await request(app.getHttpServer()).get(`/api/race/${race1Id}`);
-    const restoredRace2 = await request(app.getHttpServer()).get(`/api/race/${race2Id}`);
-    expect(restoredRace1.body).toMatchObject({ id: race1Id, showId, song1Id: songId });
+    const restoredRace1 = await request(app.getHttpServer()).get(
+      `/api/race/${race1Id}`,
+    );
+    const restoredRace2 = await request(app.getHttpServer()).get(
+      `/api/race/${race2Id}`,
+    );
+    expect(restoredRace1.body).toMatchObject({
+      id: race1Id,
+      showId,
+      song1Id: songId,
+    });
     expect(restoredRace2.body).toMatchObject({ id: race2Id, showId });
 
     // Bulk-importing rows with explicit ids must not leave the id sequence
@@ -212,6 +259,8 @@ describe("Backend REST API lifecycle (e2e)", () => {
       .send({ name: `E2E Post-Import Show ${uniqueSuffix}` })
       .expect(201);
     expect(showAfterImport.body.id).toBeGreaterThan(showId);
-    await request(app.getHttpServer()).delete(`/api/show/${showAfterImport.body.id}`);
+    await request(app.getHttpServer()).delete(
+      `/api/show/${showAfterImport.body.id}`,
+    );
   });
 });

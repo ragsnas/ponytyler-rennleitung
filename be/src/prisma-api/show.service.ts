@@ -63,14 +63,14 @@ export class ShowService {
 
     const relatedShifts: Shift[] = await this.prisma.shift.findMany({
       where: {
-        showId: Number(id)
-      }
+        showId: Number(id),
+      },
     });
 
     const deleteShiftsRoles = this.prisma.shiftRole.deleteMany({
       where: {
         shiftId: {
-          in: relatedShifts.map(shift => shift.id)
+          in: relatedShifts.map((shift) => shift.id),
         },
       },
     });
@@ -78,7 +78,7 @@ export class ShowService {
     const deleteShifts = this.prisma.shift.deleteMany({
       where: {
         id: {
-          in: relatedShifts.map(shift => shift.id)
+          in: relatedShifts.map((shift) => shift.id),
         },
       },
     });
@@ -89,6 +89,11 @@ export class ShowService {
       },
     });
 
-    return this.prisma.$transaction([deleteRaces, deleteShifts, deleteShiftsRoles, deleteShow]);
+    return this.prisma.$transaction([
+      deleteRaces,
+      deleteShifts,
+      deleteShiftsRoles,
+      deleteShow,
+    ]);
   }
 }

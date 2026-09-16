@@ -7,7 +7,10 @@ export class ExportController {
   constructor(private readonly exportService: ExportService) {}
 
   @Get("database")
-  @Header("Content-Disposition", 'attachment; filename="ponytyler-db-export.json"')
+  @Header(
+    "Content-Disposition",
+    'attachment; filename="ponytyler-db-export.json"',
+  )
   async exportDatabase(): Promise<DatabaseExport> {
     return this.exportService.exportDatabase();
   }

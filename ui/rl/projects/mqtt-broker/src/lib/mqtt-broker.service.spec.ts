@@ -1,6 +1,7 @@
+import mqtt, { MqttClient } from 'mqtt';
 import { MqttBrokerMessage, MqttBrokerService } from './mqtt-broker.service';
 
-type Handler = (...args: any[]) => void;
+type Handler = (...args: unknown[]) => void;
 
 class FakeMqttClient {
   private readonly handlers: { [event: string]: Handler[] } = {};
@@ -13,7 +14,7 @@ class FakeMqttClient {
   subscribe = jasmine.createSpy('subscribe');
   end = jasmine.createSpy('end');
 
-  emit(event: string, ...args: any[]): void {
+  emit(event: string, ...args: unknown[]): void {
     (this.handlers[event] || []).forEach((handler) => handler(...args));
   }
 }
@@ -25,8 +26,8 @@ describe('MqttBrokerService', () => {
 
   beforeEach(() => {
     fakeClient = new FakeMqttClient();
-    connectFn = jasmine.createSpy('connect').and.returnValue(fakeClient as any);
-    service = new MqttBrokerService(connectFn as any);
+    connectFn = jasmine.createSpy('connect').and.returnValue(fakeClient as unknown as MqttClient);
+    service = new MqttBrokerService(connectFn as unknown as typeof mqtt.connect);
   });
 
   it('connects to the given broker url', () => {
