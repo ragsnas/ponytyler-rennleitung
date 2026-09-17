@@ -2,7 +2,7 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
   previewFeatures = ["typedSql"]
 }
 
@@ -11,29 +11,30 @@ datasource db {
 }
 
 enum ShowState {
-    BEFORE_SHOW
-    BEFORE_RACE
-    RACE
-    RACE_FINISHED
-    PLAYING_VIDEO
-    VIDEO_FINISHED
-    SHOW_FINISHED
-    BEFORE_ENCORE
-    PLAYING_ENCORE
-    ENCORE_FINISHED
+  BEFORE_SHOW
+  BEFORE_RACE
+  RACE
+  RACE_FINISHED
+  PLAYING_VIDEO
+  VIDEO_FINISHED
+  SHOW_FINISHED
+  BEFORE_ENCORE
+  PLAYING_ENCORE
+  ENCORE_FINISHED
 }
 
 model Show {
-  id              Int       @id @default(autoincrement())
-  name            String    @unique
+  id              Int          @id @default(autoincrement())
+  name            String       @unique
   date            DateTime?
   actualStartTime DateTime?
   duration        Int?
-  finished        Boolean   @default(false)
-  showState       ShowState @default(SHOW_FINISHED)
-  active          Boolean   @default(false)
-  races           Race[]    @relation(name: "ShowToRace")
-  shifts          Shift[]   @relation(name: "ShowToShift")
+  finished        Boolean      @default(false)
+  showState       ShowState    @default(SHOW_FINISHED)
+  active          Boolean      @default(false)
+  races           Race[]       @relation(name: "ShowToRace")
+  shifts          Shift[]      @relation(name: "ShowToShift")
+  encoreSongs     EncoreSong[] @relation(name: "ShowToEncoreSong")
 }
 
 model Shift {
@@ -58,14 +59,26 @@ model ShiftRole {
 }
 
 model Song {
-  id              Int     @id @default(autoincrement())
+  id              Int          @id @default(autoincrement())
   name            String
   artist          String
-  selectable      Boolean @default(true)
-  deleted         Boolean @default(false)
-  origin          String  @default("FROM_FILE_SYNC")
-  pickedByPerson1 Race[]  @relation(name: "SongForPerson1")
-  pickedByPerson2 Race[]  @relation(name: "SongForPerson2")
+  selectable      Boolean      @default(true)
+  deleted         Boolean      @default(false)
+  origin          String       @default("FROM_FILE_SYNC")
+  pickedByPerson1 Race[]       @relation(name: "SongForPerson1")
+  pickedByPerson2 Race[]       @relation(name: "SongForPerson2")
+  encoreSongs     EncoreSong[] @relation(name: "SongToEncoreSong")
+}
+
+model EncoreSong {
+  id     Int  @id @default(autoincrement())
+  show   Show @relation(name: "ShowToEncoreSong", fields: [showId], references: [id])
+  showId Int
+  song   Song @relation(name: "SongToEncoreSong", fields: [songId], references: [id])
+  songId Int
+  order  Int
+
+  @@map("encore_songs")
 }
 
 model Race {
