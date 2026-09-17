@@ -1,12 +1,12 @@
 <h3>Songs File Sync</h3>
-<div>
+<ui-button-list>
     <button mat-flat-button color="primary" (click)="uploadFile.click()">Choose Files from DJ Notebook</button>
     <input #uploadFile [multiple]="true" (change)="filesChanged($event)" type='file' style="display:none"/>
     <button mat-flat-button color="primary" (click)="syncWithCloud()" [disabled]="syncingWithCloud">
         <mat-icon>cloud_sync</mat-icon>Sync with Cloud Songlist
     </button>
     <mat-spinner *ngIf="syncingWithCloud" [diameter]="24"></mat-spinner>
-</div>
+</ui-button-list>
 
 <div *ngIf="nothingFound">
     <p>Nothing to Sync</p>
@@ -35,6 +35,6 @@
             <mat-icon matListItemIcon>audio_file</mat-icon>
             <div matListItemTitle>{{song.artist}} - {{song.name}}</div>
         </mat-list-item>
-        </mat-list>    
+        </mat-list>
 </ng-container>
 

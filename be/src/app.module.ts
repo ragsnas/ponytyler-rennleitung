@@ -14,6 +14,7 @@ import { BackupModule } from "./backup/backup.module";
 import { MqttModule } from "./mqtt/mqtt.module";
 import { ExportModule } from "./export/export.module";
 import { ImportModule } from "./import/import.module";
+import { EncoreSongModule } from "./encore-song/encore-song.module";
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { ImportModule } from "./import/import.module";
     MqttModule,
     ExportModule,
     ImportModule,
+    EncoreSongModule,
     ConfigModule.forRoot({}),
   ],
   controllers: [AppController],

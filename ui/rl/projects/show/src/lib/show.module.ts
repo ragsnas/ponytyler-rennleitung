@@ -15,6 +15,7 @@ import { BackendApiModule } from "projects/backend-api/src/public-api";
 import { SongSearchModule } from "projects/song-search/src/public-api";
 import { ButtonListModule } from "projects/ui/button-list/src/public-api";
 import { YesNoDialogModule } from "projects/ui/yes-no-dialog/src/lib/yes-no-dialog.module";
+import { AddEncoreComponent } from "./add-encore/add-encore.component";
 import { CreateRaceComponent } from "./create-race/create-race.component";
 import { CreateShowComponent } from "./create-show/create-show.component";
 import { ShowDashboardComponent } from "./show-dashboard/show-dashboard.component";
@@ -48,6 +49,7 @@ const routes: Routes = [
   { path: "create", component: CreateShowComponent },
   { path: ":showId/edit", component: EditShowComponent },
   { path: ":showId/create-race", component: CreateRaceComponent },
+  { path: ":showId/add-encore", component: AddEncoreComponent },
   { path: ":showId/race/:raceId", component: UpdateRaceComponent },
   { path: ":showId/shifts", component: ShiftsDashboardComponent },
   {
@@ -71,6 +73,7 @@ const routes: Routes = [
     EditShowComponent,
     ShowDashboardComponent,
     CreateRaceComponent,
+    AddEncoreComponent,
     UpdateRaceComponent,
     DirectorDashboardComponent,
     DirectorDashboardRedirectComponent,

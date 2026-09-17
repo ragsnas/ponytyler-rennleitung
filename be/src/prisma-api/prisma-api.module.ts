@@ -5,6 +5,7 @@ import { SongService } from "./song.service";
 import { PrismaService } from "./prisma.service";
 import { ShiftsService } from "./shifts.service";
 import { StatsService } from "./stats.service";
+import { EncoreSongService } from "./encore-song.service";
 
 @Module({
   imports: [],
@@ -15,6 +16,7 @@ import { StatsService } from "./stats.service";
     ShiftsService,
     SongService,
     StatsService,
+    EncoreSongService,
   ],
   exports: [
     PrismaService,
@@ -23,6 +25,7 @@ import { StatsService } from "./stats.service";
     ShiftsService,
     SongService,
     StatsService,
+    EncoreSongService,
   ],
 })
 export class PrismaApiModule {}
