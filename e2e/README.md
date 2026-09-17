@@ -41,6 +41,7 @@ This opens the Playwright inspector for step-by-step debugging.
 
 - `tests/create-show.spec.ts` - Tests creating a new show through the UI
 - `tests/show-dashboard.spec.ts` - Exercises the Show Dashboard page end to end: creating a show, adding races, editing a race's songs and rider names, merging two races waiting for an opponent, reordering races, marking each bike (and both bikes) as the winner, and deleting (canceling) a race
+- `tests/songs.spec.ts` - Exercises the Songs page end to end: adding a song directly, syncing songs from local files ("DJ Notebook" upload), finding/merging duplicate songs, syncing songs from the real cloud songlist (songlist.ponytyler.de), and syncing songs' selectability against that same cloud songlist
 - `tests/main-navigation.spec.ts` - Happy path: all 6 main navigation entries (Shows, Songs, Views, Users, Statistiken, MQTT Broker) can be navigated to and each page shows its correct title
 - `tests/backend-rest-api.spec.ts` - Exercises the backend REST API directly (show/song/race create, update, race winner, delete lifecycle), bypassing the frontend
 - `tests/mqtt-broker.spec.ts` - Publishes a message directly to the backend's embedded MQTT broker (over plain TCP, port 3011) and verifies it shows up live on the "MQTT Broker" page
