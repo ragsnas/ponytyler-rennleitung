@@ -60,4 +60,8 @@ export class SongService {
   triggerCloudSync(): Observable<void> {
     return this.http.post<void>(`${environment.apiUrl}api/song/cloud-sync`, {});
   }
+
+  updateSelectability(): Observable<void> {
+    return this.http.post<void>(`${environment.apiUrl}api/song/update-selectability`, {});
+  }
 }

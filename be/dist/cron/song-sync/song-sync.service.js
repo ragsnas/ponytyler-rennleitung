@@ -73,8 +73,49 @@ let SongSyncService = SongSyncService_1 = class SongSyncService {
             this.syncInProgress = false;
         }
     }
+    async updateSelectability() {
+        const songlistPage = await (0, rxjs_1.firstValueFrom)(this.httpService.get("https://songlist.ponytyler.de/", {
+            responseType: "text",
+        }));
+        const localSongs = await this.songService.songs({});
+        const cloudSongs = this.parseSonglistPage(songlistPage.data);
+        const cloudSongNames = new Set(cloudSongs.map((song) => this.cleanSongname(`${song.artist} - ${song.title}`)));
+        await Promise.all(localSongs
+            .map((localSong) => ({
+            localSong,
+            shouldBeSelectable: cloudSongNames.has(this.cleanSongname(this.songToString(localSong))),
+        }))
+            .filter(({ localSong, shouldBeSelectable }) => localSong.selectable !== shouldBeSelectable)
+            .map(({ localSong, shouldBeSelectable }) => this.songService.updateSong({
+            where: { id: localSong.id },
+            data: { selectable: shouldBeSelectable },
+        })));
+    }
     cleanSongname(name) {
         return name.replace("[PT]", "").replace("[PTHQ]", "").toLowerCase().trim();
+    }
+    parseSonglistPage(html) {
+        const songs = [];
+        const artistBlocks = html.split("<div class='content'>").slice(1);
+        for (const block of artistBlocks) {
+            const artistMatch = block.match(/<span class='artist-name'>(.*?)<\/span>/);
+            if (!artistMatch) {
+                continue;
+            }
+            const artist = this.decodeHtmlEntities(artistMatch[1]);
+            for (const songMatch of block.matchAll(/<div class='song'>(.*?)<\/div>/g)) {
+                songs.push({ artist, title: this.decodeHtmlEntities(songMatch[1]) });
+            }
+        }
+        return songs;
+    }
+    decodeHtmlEntities(text) {
+        return text
+            .replace(/&amp;/g, "&")
+            .replace(/&#039;/g, "'")
+            .replace(/&quot;/g, '"')
+            .replace(/&lt;/g, "<")
+            .replace(/&gt;/g, ">");
     }
     songToString(song) {
         return `${song.artist} - ${song.name}`;

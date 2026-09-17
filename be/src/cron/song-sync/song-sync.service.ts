@@ -82,8 +82,85 @@ export class SongSyncService {
     }
   }
 
+  /**
+   * Sets `selectable` to match presence on the cloud songlist: true for
+   * local songs found there, false for every other local song.
+   */
+  async updateSelectability(): Promise<void> {
+    const songlistPage = await firstValueFrom(
+      this.httpService.get("https://songlist.ponytyler.de/", {
+        responseType: "text",
+      }),
+    );
+    const localSongs = await this.songService.songs({});
+
+    const cloudSongs = this.parseSonglistPage(songlistPage.data);
+    const cloudSongNames = new Set(
+      cloudSongs.map((song) =>
+        this.cleanSongname(`${song.artist} - ${song.title}`),
+      ),
+    );
+
+    await Promise.all(
+      localSongs
+        .map((localSong: Song) => ({
+          localSong,
+          shouldBeSelectable: cloudSongNames.has(
+            this.cleanSongname(this.songToString(localSong)),
+          ),
+        }))
+        .filter(
+          ({ localSong, shouldBeSelectable }) =>
+            localSong.selectable !== shouldBeSelectable,
+        )
+        .map(({ localSong, shouldBeSelectable }) =>
+          this.songService.updateSong({
+            where: { id: localSong.id },
+            data: { selectable: shouldBeSelectable },
+          }),
+        ),
+    );
+  }
+
   private cleanSongname(name: string): string {
     return name.replace("[PT]", "").replace("[PTHQ]", "").toLowerCase().trim();
+  }
+
+  /**
+   * The public songlist is rendered HTML (no JSON API), with each artist
+   * as `<div class='content'><span class='artist-name'>...</span>...
+   * <div class='song-list'><div class='song'>...</div>...</div></div>`.
+   */
+  private parseSonglistPage(
+    html: string,
+  ): { artist: string; title: string }[] {
+    const songs: { artist: string; title: string }[] = [];
+    const artistBlocks = html.split("<div class='content'>").slice(1);
+
+    for (const block of artistBlocks) {
+      const artistMatch = block.match(/<span class='artist-name'>(.*?)<\/span>/);
+      if (!artistMatch) {
+        continue;
+      }
+      const artist = this.decodeHtmlEntities(artistMatch[1]);
+
+      for (const songMatch of block.matchAll(
+        /<div class='song'>(.*?)<\/div>/g,
+      )) {
+        songs.push({ artist, title: this.decodeHtmlEntities(songMatch[1]) });
+      }
+    }
+
+    return songs;
+  }
+
+  private decodeHtmlEntities(text: string): string {
+    return text
+      .replace(/&amp;/g, "&")
+      .replace(/&#039;/g, "'")
+      .replace(/&quot;/g, '"')
+      .replace(/&lt;/g, "<")
+      .replace(/&gt;/g, ">");
   }
 
   private songToString(song: Song) {

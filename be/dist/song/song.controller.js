@@ -85,6 +85,9 @@ let SongController = class SongController {
     triggerCloudSync() {
         return this.songSyncService.triggerSync();
     }
+    updateSelectability() {
+        return this.songSyncService.updateSelectability();
+    }
     update(id, data) {
         return this.songService.updateSong({ where: { id: Number(id) }, data });
     }
@@ -138,6 +141,12 @@ __decorate([
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", void 0)
 ], SongController.prototype, "triggerCloudSync", null);
+__decorate([
+    (0, common_1.Post)("update-selectability"),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", void 0)
+], SongController.prototype, "updateSelectability", null);
 __decorate([
     (0, common_1.Patch)(":id"),
     __param(0, (0, common_1.Param)("id")),

@@ -9,6 +9,9 @@ export declare class SongSyncService {
     handleCron(): Promise<void>;
     triggerSync(): Promise<void>;
     private runSync;
+    updateSelectability(): Promise<void>;
     private cleanSongname;
+    private parseSonglistPage;
+    private decodeHtmlEntities;
     private songToString;
 }

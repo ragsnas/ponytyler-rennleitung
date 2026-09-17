@@ -49,13 +49,67 @@ let StatsService = StatsService_1 = class StatsService {
     `);
     }
     mostWishedSongs() {
-        return Promise.resolve([]);
+        return this.prisma.$queryRaw(client_1.Prisma.sql `
+      SELECT
+        s.artist, s.name, stats."totalCount" AS "totalCount"
+      FROM "Song" s
+        INNER JOIN (
+          SELECT
+            (COALESCE(s1."songId", s2."songId")) AS "songId",
+            (COALESCE(s1."countSong1",0)+COALESCE(s2."countSong2",0)) AS "totalCount"
+          FROM (
+            SELECT
+              r."song1Id" AS "songId",
+              COUNT(r."song1Id")::int AS "countSong1"
+            FROM "Race" r
+            GROUP BY r."song1Id"
+          ) AS s1
+          LEFT OUTER JOIN (
+            SELECT
+              r."song2Id" AS "songId",
+              COUNT(r."song2Id")::int AS "countSong2"
+            FROM "Race" r
+            GROUP BY r."song2Id"
+          ) AS s2 ON (s1."songId" = s2."songId")
+        ) as stats ON (s.id = stats."songId")
+      ORDER BY stats."totalCount" DESC
+    `);
     }
     neverWishedSongs() {
-        return Promise.resolve([]);
+        return this.prisma.$queryRaw(client_1.Prisma.sql `
+      SELECT
+        s.artist, s.name
+      FROM "Song" s
+        LEFT JOIN (
+          SELECT
+            (COALESCE(s1."songId", s2."songId")) AS "songId",
+            (COALESCE(s1."countSong1",0)+COALESCE(s2."countSong2",0)) AS "totalCount"
+          FROM (
+            SELECT
+              r."song1Id" AS "songId",
+              COUNT(r."song1Id")::int AS "countSong1"
+            FROM "Race" r
+            GROUP BY r."song1Id"
+          ) AS s1
+          LEFT OUTER JOIN (
+            SELECT
+              r."song2Id" AS "songId",
+              COUNT(r."song2Id")::int AS "countSong2"
+            FROM "Race" r
+            GROUP BY r."song2Id"
+          ) AS s2 ON (s1."songId" = s2."songId")
+        ) as stats ON (s.id = stats."songId")
+      WHERE s.selectable = true AND s.deleted = false AND stats."totalCount" IS NULL
+    `);
     }
     whichBikeWonMost() {
-        return Promise.resolve(null);
+        return this.prisma.$queryRaw(client_1.Prisma.sql `
+      SELECT
+        COUNT(r."bikeWon")::int as "timesWon", r."bikeWon"
+      FROM "Race" r
+      GROUP BY r."bikeWon"
+      ORDER BY "timesWon" DESC
+    `);
     }
 };
 exports.StatsService = StatsService;

@@ -95,6 +95,11 @@ export class SongController {
     return this.songSyncService.triggerSync();
   }
 
+  @Post("update-selectability")
+  updateSelectability() {
+    return this.songSyncService.updateSelectability();
+  }
+
   @Patch(":id")
   update(@Param("id") id: string, @Body() data: Prisma.SongUpdateInput) {
     return this.songService.updateSong({ where: { id: Number(id) }, data });

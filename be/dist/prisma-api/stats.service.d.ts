@@ -5,12 +5,20 @@ export interface SongPlayCount {
     name: string;
     totalCount: number;
 }
+export interface Song {
+    artist: string;
+    name: string;
+}
+export interface BikeWonCount {
+    bikeWon: number;
+    timesWon: number;
+}
 export declare class StatsService {
     private prisma;
     constructor(prisma: PrismaService);
     private readonly logger;
     mostPlayedSongs(): Prisma.PrismaPromise<SongPlayCount[]>;
-    mostWishedSongs(): Promise<any[]>;
-    neverWishedSongs(): Promise<any[]>;
-    whichBikeWonMost(): Promise<any>;
+    mostWishedSongs(): Prisma.PrismaPromise<SongPlayCount[]>;
+    neverWishedSongs(): Prisma.PrismaPromise<Song[]>;
+    whichBikeWonMost(): Prisma.PrismaPromise<BikeWonCount[]>;
 }

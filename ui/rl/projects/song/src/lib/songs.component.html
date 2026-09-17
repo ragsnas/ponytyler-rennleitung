@@ -25,6 +25,11 @@
         <mat-icon>difference</mat-icon>
         Find Duplicates
       </button>
+      <button mat-flat-button color="secondary" (click)="updateSelectability()" [disabled]="updatingSelectability">
+        <mat-icon>checklist</mat-icon>
+        Update Selecability
+      </button>
+      <mat-spinner *ngIf="updatingSelectability" [diameter]="24"></mat-spinner>
   </ui-button-list>
   </div>
 </div>
