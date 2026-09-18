@@ -222,19 +222,37 @@ export class RaceService {
     });
   }
 
-  currentRace() {
-    return this.prisma.race.findFirst({
+  async currentRace(showId: number) {
+    console.log(`Loading current race for show ${showId}`);
+    let currentRace: Race = await this.prisma.race.findFirst({
       where: {
         raceState: {
-          notIn: [
-            RaceState.WAITING_FOR_OPPONENT,
-            RaceState.CANCELED,
-            RaceState.LISTED,
-            RaceState.DONE,
+          in: [
+            RaceState.WAITING_TO_RACE,
+            RaceState.RACING,
+            RaceState.ERROR,
+            RaceState.RACED,
+            RaceState.VIDEO_PLAYING,
           ],
         },
+        showId: {equals: showId},
       },
+      orderBy: { orderNumber: "desc" },
       include: { song1: true, song2: true },
     });
+    if(!currentRace) {
+      console.log(`No active Race found, loading next Listed Race instead`);
+      currentRace = await this.prisma.race.findFirst({
+        where: {
+          raceState: {
+            equals: RaceState.LISTED
+          },
+          showId: {equals: showId},
+        },
+        orderBy: { orderNumber: "desc" },
+        include: { song1: true, song2: true },
+      });
+    }
+    return currentRace;
   }
 }

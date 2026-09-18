@@ -101,9 +101,9 @@ export class RaceService {
     );
   }
 
-  getCurrentRace() {
+  getCurrentRace(showId: string) {
     return this.http.get<Race>(
-      environment.apiUrl + `api/race/current`
+      environment.apiUrl + `api/race/current/${showId}`
     );
   }
 }

@@ -9,7 +9,7 @@ import {
   Delete,
 } from "@nestjs/common";
 import { ShowService } from "../prisma-api/show.service";
-import { Show, Prisma } from "@prisma/client";
+import { Show, Prisma, ShowState } from "@prisma/client";
 import { RaceService } from "../prisma-api/race.service";
 
 @Controller("api/show")
@@ -70,6 +70,7 @@ export class ShowController {
     return this.showService.createShow({
       ...showData,
       date: showData.date || new Date(),
+      showState: ShowState.BEFORE_SHOW,
     });
   }
 

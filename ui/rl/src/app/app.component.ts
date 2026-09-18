@@ -18,6 +18,7 @@ export class AppComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    console.log(`Main ngOnInit!`);
     this.currentShow$ = this.showService.getAllShows().pipe(
       filter((shows: Show[]) => shows.some((show: Show) => show.active)),
       map((shows: Show[]) => shows[0])

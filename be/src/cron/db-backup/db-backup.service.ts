@@ -20,7 +20,7 @@ export class DbBackupService {
 
   constructor() {}
 
-  @Cron(CronExpression.EVERY_10_SECONDS)
+  @Cron(CronExpression.EVERY_6_HOURS)
   async hourly() {
     if (
       !isDir(`prisma/backups`) &&

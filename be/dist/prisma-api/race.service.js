@@ -195,20 +195,38 @@ let RaceService = class RaceService {
             where,
         });
     }
-    currentRace() {
-        return this.prisma.race.findFirst({
+    async currentRace(showId) {
+        console.log(`Loading current race for show ${showId}`);
+        let currentRace = await this.prisma.race.findFirst({
             where: {
                 raceState: {
-                    notIn: [
-                        race_state_enum_1.RaceState.WAITING_FOR_OPPONENT,
-                        race_state_enum_1.RaceState.CANCELED,
-                        race_state_enum_1.RaceState.LISTED,
-                        race_state_enum_1.RaceState.DONE,
+                    in: [
+                        race_state_enum_1.RaceState.WAITING_TO_RACE,
+                        race_state_enum_1.RaceState.RACING,
+                        race_state_enum_1.RaceState.ERROR,
+                        race_state_enum_1.RaceState.RACED,
+                        race_state_enum_1.RaceState.VIDEO_PLAYING,
                     ],
                 },
+                showId: { equals: showId },
             },
+            orderBy: { orderNumber: "desc" },
             include: { song1: true, song2: true },
         });
+        if (!currentRace) {
+            console.log(`No active Race found, loading next Listed Race instead`);
+            currentRace = await this.prisma.race.findFirst({
+                where: {
+                    raceState: {
+                        equals: race_state_enum_1.RaceState.LISTED
+                    },
+                    showId: { equals: showId },
+                },
+                orderBy: { orderNumber: "desc" },
+                include: { song1: true, song2: true },
+            });
+        }
+        return currentRace;
     }
 };
 exports.RaceService = RaceService;

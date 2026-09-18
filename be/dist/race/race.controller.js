@@ -72,8 +72,8 @@ let RaceController = class RaceController {
             return Math.round(numberOfRaces / (totalTime / 60));
         }));
     }
-    findCurrentRace() {
-        return this.raceService.currentRace();
+    findCurrentRace(showId) {
+        return this.raceService.currentRace(parseInt(showId));
     }
     findUpcomingRaceWithSongs() {
         return this.raceService.upcomingRaceWithSongs();
@@ -133,9 +133,10 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], RaceController.prototype, "calculateAverageRacesPerHour", null);
 __decorate([
-    (0, common_1.Get)("current"),
+    (0, common_1.Get)("current/:showId"),
+    __param(0, (0, common_1.Param)("showId")),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", []),
+    __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", void 0)
 ], RaceController.prototype, "findCurrentRace", null);
 __decorate([

@@ -1,13 +1,12 @@
 import { Component, OnInit } from "@angular/core";
-import { BackendApiModule } from "projects/backend-api/src/public-api";
 import { Race, RaceService, RaceState } from "projects/backend-api/src/lib/race.service";
 import { Show, ShowService, ShowState } from "projects/backend-api/src/lib/show.service";
 import { firstValueFrom } from "rxjs";
-import { NgIf } from "@angular/common";
+import { MatSnackBar } from "@angular/material/snack-bar";
 
 @Component({
-  selector: 'lib-state-machine',
-  templateUrl: 'state-machine.component.html'
+  selector: "lib-state-machine",
+  templateUrl: "state-machine.component.html",
 })
 export class StateMachineComponent implements OnInit {
 
@@ -18,18 +17,145 @@ export class StateMachineComponent implements OnInit {
 
   constructor(
     private raceService: RaceService,
-    private showService: ShowService
-    ) {
+    private showService: ShowService,
+    private snackBar: MatSnackBar,
+  ) {
   }
 
   ngOnInit(): void {
     this.getCurrentShowAndRace();
-    // @todo: load current Show, ShowState, Race and RaceState
-    // @todo: Listen to ShowState and RaceState Changes via mqtt
   }
 
   async getCurrentShowAndRace() {
+    console.log(`Loading current show / race`);
     this.currentShow = await firstValueFrom(this.showService.getCurrentShow());
-    this.currentRace = await  firstValueFrom(this.raceService.getCurrentRace());
+    if (this.currentShow && this.currentShow.id) {
+      console.log(`Current Show:`, this.currentShow);
+      this.currentShowState = this.currentShow.showState;
+      this.currentRace = await firstValueFrom(this.raceService.getCurrentRace(this.currentShow.id));
+    }
+    if (this.currentRace) {
+      console.log(`Current Race:`, this.currentRace);
+      this.currentRaceState = this.currentRace.raceState;
+    }
+  }
+
+  async startCountdown() {
+    if(this.currentShow && this.currentRace) {
+      this.updateRaceAndShow(
+        { ...this.currentRace, raced: true, raceState: RaceState.WAITING_TO_RACE },
+        { ...this.currentShow, showState: ShowState.RACE },
+        () => {},
+        `Error Starting Race`
+      );
+    }
+  }
+
+  async startRace() {
+    if(this.currentShow && this.currentRace) {
+      this.updateRaceAndShow(
+        { ...this.currentRace, raced: true, raceState: RaceState.RACING },
+        { ...this.currentShow, showState: ShowState.RACE },
+        () => {},
+        `Error Starting Race`
+      );
+    }
+  }
+
+  async finishRace() {
+    if(this.currentShow && this.currentRace) {
+      this.updateRaceAndShow(
+        { ...this.currentRace, raced: true, raceState: RaceState.RACED },
+        { ...this.currentShow, showState: ShowState.RACE_FINISHED },
+        () => {},
+        `Error Starting Race`
+      );
+    }
+  }
+
+  stopRace() {
+    if(this.currentShow && this.currentRace) {
+      this.updateRaceAndShow(
+        { ...this.currentRace, raced: true, raceState: RaceState.LISTED },
+        { ...this.currentShow, showState: ShowState.BEFORE_RACE },
+        () => {},
+        `Error Stopping Race`,
+      );
+    }
+  }
+
+  skipRace() {
+    if(this.currentShow && this.currentRace) {
+      this.updateRaceAndShow(
+        { ...this.currentRace, raced: true, raceState: RaceState.CANCELED },
+        { ...this.currentShow, showState: ShowState.BEFORE_RACE },
+        () => { this.getCurrentShowAndRace() },
+        `Error Skipping Race`,
+      );
+    }
+  }
+
+  setRaceDone() {
+    if(this.currentShow && this.currentRace) {
+      this.updateRaceAndShow(
+        { ...this.currentRace, raced: true, raceState: RaceState.DONE },
+        { ...this.currentShow, showState: ShowState.BEFORE_RACE },
+        () => { this.getCurrentShowAndRace() },
+        `Error setting Race Done`,
+      );
+    }
+  }
+
+  getRandomStartWord(): string {
+    // @TODO: Find Solution to generate Random Words for this!
+    return 'GO!';
+  }
+
+  private async updateRaceAndShow(
+    race: Race,
+    show: Show,
+    successFunction: () => void,
+    errorMessage: string) {
+    await this.updateShow(
+      show,
+      () => {},
+      errorMessage);
+    await this.updateRace(
+      race,
+      successFunction,
+      errorMessage);
+  }
+
+  private async updateShow(show: Show, successFunction: () => void, errorMessage: string) {
+    await this.showService.updateShow(show).subscribe({
+      next: () => {
+        this.currentShow = show;
+        this.currentShowState = show.showState;
+        successFunction();
+      },
+      error: (error) => {
+        this.snackBar.open(`${errorMessage}: ${JSON.stringify(error)}`, "OK", {
+          duration: 10000, announcementMessage: `Error`, panelClass: "error",
+        });
+      },
+    });
+  }
+
+  private async updateRace(
+    race: Race,
+    successFunction: () => void,
+    errorMessage: string) {
+    await this.raceService.updateRace(race).subscribe({
+      next: () => {
+        this.currentRace = race;
+        this.currentRaceState = race.raceState;
+        successFunction();
+      },
+      error: (error) => {
+        this.snackBar.open(`${errorMessage}: ${JSON.stringify(error)}`, "OK", {
+          duration: 10000, announcementMessage: `Error`, panelClass: "error",
+        });
+      },
+    });
   }
 }

@@ -33,6 +33,10 @@
       "backup": [
         "./dist/backup"
       ],
+      "countdown": [
+        "./dist/countdown",
+        "./dist/countdown"
+      ],
       "race-admin": [
         "dist/race-admin"
       ],

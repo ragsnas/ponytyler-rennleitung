@@ -11,6 +11,7 @@ export declare class ShowService {
         where?: Prisma.ShowWhereInput;
         orderBy?: Prisma.ShowOrderByWithRelationInput;
     }): Promise<Show[]>;
+    currentShow(): Promise<Show | null>;
     showsOrderedByActiveAndDate(): Promise<Show[]>;
     createShow(data: Prisma.ShowCreateInput): Promise<Show>;
     updateShow(params: {

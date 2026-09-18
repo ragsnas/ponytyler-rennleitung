@@ -58,24 +58,7 @@ export declare class RaceController {
         bikeWon: number;
     }[]>;
     calculateAverageRacesPerHour(): import("rxjs").Observable<number>;
-    findCurrentRace(): Prisma.Prisma__RaceClient<{
-        song1: {
-            id: number;
-            name: string;
-            artist: string;
-            selectable: boolean;
-            deleted: boolean;
-            origin: string;
-        };
-        song2: {
-            id: number;
-            name: string;
-            artist: string;
-            selectable: boolean;
-            deleted: boolean;
-            origin: string;
-        };
-    } & {
+    findCurrentRace(showId: string): Promise<{
         id: number;
         showId: number;
         orderNumber: number;
@@ -87,7 +70,7 @@ export declare class RaceController {
         person2: string | null;
         song2Id: number | null;
         bikeWon: number;
-    }, null, import("@prisma/client/runtime/client").DefaultArgs, Prisma.PrismaClientOptions>;
+    }>;
     findUpcomingRaceWithSongs(): Promise<{
         song1: {
             id: number;

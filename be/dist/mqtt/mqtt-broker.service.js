@@ -151,7 +151,8 @@ let MqttBrokerService = MqttBrokerService_1 = class MqttBrokerService {
     }
     async markCurrentRaceAsWonBy(bikeId) {
         try {
-            const race = await this.raceService.currentRace();
+            const show = await this.showService.currentShow();
+            const race = await this.raceService.currentRace(show.id);
             if (!race) {
                 this.logger.warn(`No current race found while marking Bike ${bikeId} as winner`);
                 return;

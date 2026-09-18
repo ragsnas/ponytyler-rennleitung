@@ -96,9 +96,11 @@ export class RaceController {
     );
   }
 
-  @Get("current")
-  findCurrentRace() {
-    return this.raceService.currentRace();
+  @Get("current/:showId")
+  findCurrentRace(
+    @Param("showId") showId: string,
+  ) {
+    return this.raceService.currentRace(parseInt(showId));
   }
 
   @Get("upcoming-race-with-songs")

@@ -14,6 +14,7 @@ const song_service_1 = require("./song.service");
 const prisma_service_1 = require("./prisma.service");
 const shifts_service_1 = require("./shifts.service");
 const stats_service_1 = require("./stats.service");
+const encore_song_service_1 = require("./encore-song.service");
 let PrismaApiModule = class PrismaApiModule {
 };
 exports.PrismaApiModule = PrismaApiModule;
@@ -27,6 +28,7 @@ exports.PrismaApiModule = PrismaApiModule = __decorate([
             shifts_service_1.ShiftsService,
             song_service_1.SongService,
             stats_service_1.StatsService,
+            encore_song_service_1.EncoreSongService,
         ],
         exports: [
             prisma_service_1.PrismaService,
@@ -35,6 +37,7 @@ exports.PrismaApiModule = PrismaApiModule = __decorate([
             shifts_service_1.ShiftsService,
             song_service_1.SongService,
             stats_service_1.StatsService,
+            encore_song_service_1.EncoreSongService,
         ],
     })
 ], PrismaApiModule);

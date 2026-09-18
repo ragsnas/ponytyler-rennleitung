@@ -14,6 +14,7 @@ export interface Show {
 }
 
 export enum ShowState {
+  LISTED = "LISTED",
   BEFORE_SHOW = "BEFORE_SHOW",
   BEFORE_RACE = "BEFORE_RACE",
   RACE = "RACE",

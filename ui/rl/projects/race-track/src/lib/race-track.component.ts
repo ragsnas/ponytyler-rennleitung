@@ -1,5 +1,6 @@
-import {Component, OnDestroy, OnInit} from '@angular/core';
+import { Component, Input, OnDestroy, OnInit } from "@angular/core";
 import {map, Observable, Subject, takeUntil, takeWhile, timer} from "rxjs";
+import { RaceState } from "projects/backend-api/src/lib/race.service";
 
 interface PlayerData {
   progress: number;
@@ -13,6 +14,9 @@ interface PlayerData {
   styleUrls: ['race-track.component.html']
 })
 export class RaceTrackComponent implements OnInit, OnDestroy {
+
+  @Input()
+  raceState: RaceState = RaceState.RACING;
 
   fakePlayer1Data$: Subject<PlayerData> = new Subject<PlayerData>();
   player1Progress$: Observable<number> = this.fakePlayer1Data$.pipe(map((playerData: PlayerData) => playerData.progress));

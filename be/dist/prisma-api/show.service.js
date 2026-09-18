@@ -12,6 +12,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.ShowService = void 0;
 const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("./prisma.service");
+const client_1 = require("@prisma/client");
 let ShowService = class ShowService {
     constructor(prisma) {
         this.prisma = prisma;
@@ -29,6 +30,19 @@ let ShowService = class ShowService {
             cursor,
             where,
             orderBy,
+        });
+    }
+    async currentShow() {
+        return this.prisma.show.findFirst({
+            where: {
+                active: true,
+                showState: {
+                    notIn: [
+                        client_1.ShowState.LISTED,
+                        client_1.ShowState.RACE_FINISHED
+                    ]
+                }
+            },
         });
     }
     async showsOrderedByActiveAndDate() {

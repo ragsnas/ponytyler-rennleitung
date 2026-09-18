@@ -1,5 +1,5 @@
 import { Component, Inject, LOCALE_ID, OnInit, Renderer2 } from "@angular/core";
-import { Show, ShowService } from "projects/backend-api/src/lib/show.service";
+import { Show, ShowService, ShowState } from "projects/backend-api/src/lib/show.service";
 import { Observable, of } from "rxjs";
 import { MatSnackBar } from "@angular/material/snack-bar";
 import { formatDate } from "@angular/common";
@@ -30,28 +30,48 @@ export class ShowsComponent implements OnInit {
     this.downloadBackupPossible$ = this.backupService.isDownloadPossible();
   }
 
-  toggleActive(show: Show) {
+  startShow(show: Show): void {
     this.showService.updateShow({
       ...show,
-      active: !show.active,
+      active: true,
+      showState: ShowState.BEFORE_RACE,
+      finished: false
     }).subscribe({
       next: () => {
-        console.log(`this worked`);
         this.shows$ = this.showService.getAllShows();
       },
       error: (error) => {
-        this.snackBar.open(`Error during toggling of Show Status: ${JSON.stringify(error)}`, "OK", {
+        this.snackBar.open(`Error staarting Show: ${JSON.stringify(error)}`, "OK", {
           duration: 10000, announcementMessage: `Error`, panelClass: "error",
         });
       },
     });
   }
 
-  toggleFinished(show: Show) {
+  stopShow(show: Show): void {
     this.showService.updateShow({
       ...show,
-      finished: !show.finished,
-      active: (!show.finished) ? false : show.active,
+      active: false,
+      showState: ShowState.SHOW_FINISHED,
+      finished: true
+    }).subscribe({
+      next: () => {
+        this.shows$ = this.showService.getAllShows();
+      },
+      error: (error) => {
+        this.snackBar.open(`Error staarting Show: ${JSON.stringify(error)}`, "OK", {
+          duration: 10000, announcementMessage: `Error`, panelClass: "error",
+        });
+      },
+    });
+  }
+
+  setFinished(show: Show) {
+    this.showService.updateShow({
+      ...show,
+      finished: true,
+      active: false,
+      showState: ShowState.SHOW_FINISHED
     }).subscribe({
       next: () => {
         this.shows$ = this.showService.getAllShows();

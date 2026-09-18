@@ -9,7 +9,7 @@ import { Aedes, AedesPublishPacket, Client, Subscription } from "aedes";
 import { createServer as createTcpServer, Server } from "net";
 import { createServer as createWsCapableServer } from "aedes-server-factory";
 import { Server as HttpServer } from "http";
-import { ShowState } from "@prisma/client";
+import { Race, Show, ShowState } from "@prisma/client";
 import { RaceService } from "../prisma-api/race.service";
 import { ShowService } from "../prisma-api/show.service";
 import { RaceState } from "../race/race-state.enum";
@@ -221,7 +221,8 @@ export class MqttBrokerService
 
   private async markCurrentRaceAsWonBy(bikeId: BikeId): Promise<void> {
     try {
-      const race = await this.raceService.currentRace();
+      const show: Show = await this.showService.currentShow();
+      const race: Race = await this.raceService.currentRace(show.id);
       if (!race) {
         this.logger.warn(
           `No current race found while marking Bike ${bikeId} as winner`,

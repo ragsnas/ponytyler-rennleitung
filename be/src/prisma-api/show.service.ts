@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { PrismaService } from "./prisma.service";
-import { Show, Prisma, Shift } from "@prisma/client";
+import { Show, Prisma, Shift, ShowState } from "@prisma/client";
 
 @Injectable()
 export class ShowService {
@@ -28,6 +28,20 @@ export class ShowService {
       cursor,
       where,
       orderBy,
+    });
+  }
+  
+  async currentShow(): Promise<Show | null> {
+    return this.prisma.show.findFirst({
+      where: {
+        active: true,
+        showState: {
+          notIn: [
+            ShowState.LISTED,
+            ShowState.RACE_FINISHED
+          ]
+        }
+      },
     });
   }
 

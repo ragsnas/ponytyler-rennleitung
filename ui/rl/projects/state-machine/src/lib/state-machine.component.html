@@ -2,38 +2,51 @@
   <div class="stateMachine_controlBar">
     <ng-container *ngIf="currentShow">
       <div class="showInfo">
-        <strong>{{currentShow.name}}</strong>
+        <strong>{{currentShow.name}} (#{{currentShow.id}})</strong>
+        /
+        <strong>{{currentShow.showState}}</strong>
+        <ng-container *ngIf="currentRaceState">
+          / <strong>{{currentRaceState}}</strong>
+        </ng-container>
       </div>
     </ng-container>
     <ui-button-list>
-    <button mat-flat-button color="accent" [routerLink]="'../'">
-      <mat-icon>play</mat-icon> Start Race
+    <button mat-flat-button color="accent" (click)="startCountdown()">
+      <mat-icon>play_circle</mat-icon> Start
     </button>
-    <button mat-flat-button color="accent" [routerLink]="'../'">
-      <mat-icon>next</mat-icon> Skip Race
+    <button mat-flat-button color="accent" (click)="skipRace()">
+      <mat-icon>skip_next</mat-icon> Skip
     </button>
-    <button mat-flat-button color="accent" [routerLink]="'../'">
-      <mat-icon>stop</mat-icon> Stop Race
+    <button mat-flat-button color="accent" (click)="stopRace()">
+      <mat-icon>stop_circle</mat-icon> Stop
     </button>
-    <button mat-flat-button color="accent" [routerLink]="'../'">
-      <mat-icon>refresh</mat-icon> Rerun Race
+    <button mat-flat-button color="accent" (click)="setRaceDone()">
+      <mat-icon>check_cricle</mat-icon> Done!
     </button>
     </ui-button-list>
   </div>
 </ng-container>
 
+<mat-divider></mat-divider>
+
 <ng-container *ngIf="currentRace">
   <div class="raceInfo">
     <div class="raceInfo_bike1">
-      <p>{{ currentRace.person1 }}</p>
-      <br/><p>{{ currentRace.song1?.artist }} - {{ currentRace.song1?.name }}</p>
+      <p>
+        {{ currentRace.person1 }}
+        <br/>{{ currentRace.song1?.artist }} - {{ currentRace.song1?.name }}
+      </p>
     </div>
     <div class="raceInfo_bike2">
-      <p>{{ currentRace.person2 }}</p>
-      <br/><p>{{ currentRace.song2?.artist }} - {{ currentRace.song2?.name }}</p>
+      <p>
+        {{ currentRace.person2 }}
+        <br/>{{ currentRace.song2?.artist }} - {{ currentRace.song2?.name }}
+      </p>
     </div>
   </div>
 </ng-container>
+
+<mat-divider></mat-divider>
 
 <ng-container *ngIf="currentShowState">
   <ng-container *ngIf="currentShowState === 'BEFORE_SHOW'">
@@ -46,13 +59,17 @@
     RACE!
     <ng-container *ngIf="currentRace">
       <ng-container *ngIf="currentRaceState === 'WAITING_TO_RACE'">
-        Press Play to Start Countdown
+        <lib-countdown
+          [countDownFrom]="3"
+          [startWord]="getRandomStartWord()"
+          (countDownFinished)="startRace()"></lib-countdown>
       </ng-container>
       <ng-container *ngIf="currentRaceState === 'ERROR'">
         ERROR! FEHLSTART!
       </ng-container>
       <ng-container *ngIf="currentRaceState === 'RACING'">
-        RACE PRESENTATION GOES HERE!
+        <lib-race-track></lib-race-track>
+        RACE IS RUNNING! RACE TRACK!
       </ng-container>
       <ng-container *ngIf="currentRaceState === 'RACED'">
         RACE IS OVER!

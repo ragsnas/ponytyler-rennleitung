@@ -61,6 +61,7 @@ let ShowController = class ShowController {
         return this.showService.createShow({
             ...showData,
             date: showData.date || new Date(),
+            showState: client_1.ShowState.BEFORE_SHOW,
         });
     }
     repairRacesFor(id) {

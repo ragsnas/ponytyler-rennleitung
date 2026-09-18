@@ -8,7 +8,7 @@ RUN npm install
 # here. The real value is provided via docker-compose at runtime.
 ENV DATABASE_URL="postgresql://user:password@localhost:5432/db"
 RUN npx prisma generate
-RUN npm run build
+RUN npm run start:dev
 CMD ["node", "dist/main.js"]
 EXPOSE 3000
 EXPOSE 3001

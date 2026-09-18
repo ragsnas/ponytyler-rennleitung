@@ -42,11 +42,11 @@
         <ng-container matColumnDef="actions">
           <th mat-header-cell *matHeaderCellDef>Actions</th>
           <td mat-cell *matCellDef="let element">
-            <button *ngIf="!element.active" mat-icon-button aria-label="Start Show" (click)="toggleActive(element)">
+            <button *ngIf="!element.active" mat-icon-button aria-label="Start Show" (click)="startShow(element)">
               <mat-icon>play_circle</mat-icon>
             </button>
 
-            <button *ngIf="element.active" mat-icon-button aria-label="Stop Show" (click)="toggleActive(element)">
+            <button *ngIf="element.active" mat-icon-button aria-label="Stop Show" (click)="stopShow(element)">
               <mat-icon>stop</mat-icon>
             </button>
             &nbsp;
@@ -58,10 +58,10 @@
               <mat-icon>edit</mat-icon>
             </button>
 
-            <button *ngIf="element.active" mat-icon-button aria-label="Set Show to finished" title="Set Show to finished" (click)="toggleFinished(element)">
+            <button *ngIf="element.active" mat-icon-button aria-label="Set Show to finished" title="Set Show to finished" (click)="setFinished(element)">
               <mat-icon>check_small</mat-icon>
             </button>
-            <button *ngIf="element.finished" mat-icon-button aria-label="Re-Activate Show" (click)="toggleFinished(element)">
+            <button *ngIf="element.finished" mat-icon-button aria-label="Re-Activate Show" (click)="startShow(element)">
               <mat-icon>history</mat-icon>
             </button>
 

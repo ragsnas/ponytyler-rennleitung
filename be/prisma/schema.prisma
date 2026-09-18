@@ -11,6 +11,7 @@ datasource db {
 }
 
 enum ShowState {
+  LISTED
   BEFORE_SHOW
   BEFORE_RACE
   RACE
@@ -82,20 +83,22 @@ model EncoreSong {
 }
 
 model Race {
-  id          Int      @id @default(autoincrement())
-  show        Show     @relation(name: "ShowToRace", fields: [showId], references: [id])
-  showId      Int
-  orderNumber Int
-  createdAt   DateTime
-  raced       Boolean  @default(false)
-  raceState   String   @default("LISTED")
-  person1     String?
-  song1       Song?    @relation(name: "SongForPerson1", fields: [song1Id], references: [id])
-  song1Id     Int?
-  person2     String?
-  song2       Song?    @relation(name: "SongForPerson2", fields: [song2Id], references: [id])
-  song2Id     Int?
-  bikeWon     Int      @default(0)
+  id             Int      @id @default(autoincrement())
+  show           Show     @relation(name: "ShowToRace", fields: [showId], references: [id])
+  showId         Int
+  orderNumber    Int
+  createdAt      DateTime @default(now())
+  raceStartedAt  DateTime?
+  raceFinishedAt DateTime?
+  raced          Boolean  @default(false)
+  raceState      String   @default("LISTED")
+  person1        String?
+  song1          Song?    @relation(name: "SongForPerson1", fields: [song1Id], references: [id])
+  song1Id        Int?
+  person2        String?
+  song2          Song?    @relation(name: "SongForPerson2", fields: [song2Id], references: [id])
+  song2Id        Int?
+  bikeWon        Int      @default(0)
 }
 
 enum RaceState {
