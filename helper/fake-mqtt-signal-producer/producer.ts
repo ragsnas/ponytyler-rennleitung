@@ -1,73 +1,71 @@
 import mqtt from "mqtt";
 
-enum ShowState {
-  LISTED = "LISTED",
-  BEFORE_SHOW = "BEFORE_SHOW",
-  BEFORE_RACE = "BEFORE_RACE",
-  RACE = "RACE",
-  RACE_FINISHED = "RACE_FINISHED",
-  PLAYING_VIDEO = "PLAYING_VIDEO",
-  VIDEO_FINISHED = "VIDEO_FINISHED",
-  SHOW_FINISHED = "SHOW_FINISHED",
-  BEFORE_ENCORE = "BEFORE_ENCORE",
-  PLAYING_ENCORE = "PLAYING_ENCORE",
-  ENCORE_FINISHED = "ENCORE_FINISHED"
-}
-
-export enum RaceState {
-  WAITING_FOR_OPPONENT = "WAITING_FOR_OPPONENT",
-  CANCELED = "CANCELED",
-  LISTED = "LISTED",
-  WAITING_TO_RACE = "WAITING_TO_RACE",
-  RACING = "RACING",
-  RACED = "RACED",
-  ERROR = "ERROR",
-  VIDEO_PLAYING = "VIDEO_PLAYING",
-  DONE = "DONE",
-}
-
 // Connect to your local Bun broker
 const client = mqtt.connect("mqtt://localhost:3001", {
   clientId: "fake-producer",
 });
 const INTERVAL = 2; // milliseconds
 const MAX_BIKE_ADVANCE = 120; // 5 milliseconds
-const bikeAdvanceTopic1 = "sensors/bike-1";
-const bikeAdvanceTopic2 = "sensors/bike-2";
-const stateChangeTopic = "state/change-unused-producer";
+const bikeAdvanceTopic1 = "Bike/1";
+const bikeAdvanceTopic2 = "Bike/2";
+const bikeWonTopic1 = "Bike/1/won";
+const bikeWonTopic2 = "Bike/2/won";
+const bikeResetTopic1 = "Bike/1/cmd";
+const bikeResetTopic2 = "Bike/2/cmd";
+const stateChangeTopic = "Bike/change-unused-producer";
 
 client.on("connect", () => {
   console.log("✅ Connected to broker");
-
-  let bikeAdvance1 = 0;
-  let bikeAdvance2 = 0;
 
   let sequenzCounter = 0;
   let pulseCounter1 = 0;
   let pulseCounter2 = 0;
   let timestamp = 0;
+  let fakeRaceInterval: ReturnType<typeof setTimeout> | undefined = undefined;
 
-  const interval = setInterval(() => {
 
-    if (true) {
-      timestamp++;
-      sequenzCounter++;
-      if (Math.random() > 0.33) {
-        pulseCounter1 += Math.round(Math.random() * 1.2);
-        sendBikeMessage("1", sequenzCounter, pulseCounter1, timestamp);
+  client.on("message", (p1, payload) => {
+    console.info('Received message:', p1, payload?.toString());
+    const messageObject = JSON.parse(payload?.toString() || '{}');
+    if(messageObject && messageObject.topic) {
+      console.info('Message is for topic:', messageObject.topic);
+      if(messageObject.topic === bikeResetTopic1 || messageObject.topic === bikeResetTopic2) {
+        // Start Fake Race
+        fakeRaceInterval = fakeRace();
+      } else if(messageObject.topic === bikeWonTopic1 || messageObject.topic === bikeWonTopic2) {
+        // Start Fake Race
+        clearInterval(fakeRaceInterval);
       }
-      if (Math.random() > 0.33) {
-        timestamp++;
-        pulseCounter2 += Math.round(Math.random() * 1.2);
-        sendBikeMessage("2", sequenzCounter, pulseCounter2, timestamp);
-      }
+    } else {
+      console.info('Could not convert Message:', payload);
     }
-  }, INTERVAL);
+  });
 
-  setTimeout(() => {
-    interval.close();
-    client.end();
-  }, INTERVAL * 500);
+  const fakeRace = () => {
+    if(!fakeRaceInterval) {
+      return setInterval(() => {
+        if (true) {
+          timestamp++;
+          sequenzCounter++;
+          if (Math.random() > 0.33) {
+            pulseCounter1 += Math.round(Math.random() * 1.2);
+            sendBikeMessage("1", sequenzCounter, pulseCounter1, timestamp);
+          }
+          if (Math.random() > 0.33) {
+            timestamp++;
+            pulseCounter2 += Math.round(Math.random() * 1.2);
+            sendBikeMessage("2", sequenzCounter, pulseCounter2, timestamp);
+          }
+        }
+      }, INTERVAL);
+    }
+  }
+
+
+  // setTimeout(() => {
+  //   interval.close();
+  //   client.end();
+  // }, INTERVAL * 500);
 
 //  interval._onTimeout = () => {
   //   client.end();

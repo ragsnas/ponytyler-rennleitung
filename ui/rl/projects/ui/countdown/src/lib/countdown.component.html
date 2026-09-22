@@ -1,1 +1,2 @@
-<p style="font-size: 26pt">{{ countDown }}</p>
+<p style="font-size: 26pt" *ngIf="countDown >= 1">{{ countDown }}</p>
+<p style="font-size: 26pt" *ngIf="countDown < 1">{{ startWord }}</p>

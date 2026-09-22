@@ -9,10 +9,11 @@ import { Aedes, AedesPublishPacket, Client, Subscription } from "aedes";
 import { createServer as createTcpServer, Server } from "net";
 import { createServer as createWsCapableServer } from "aedes-server-factory";
 import { Server as HttpServer } from "http";
-import { Race, Show, ShowState } from "@prisma/client";
+import { Race, RaceState, Show, ShowState } from "@prisma/client";
 import { RaceService } from "../prisma-api/race.service";
 import { ShowService } from "../prisma-api/show.service";
-import { RaceState } from "../race/race-state.enum";
+import mqtt from "mqtt";
+import os from "os";
 
 type BikeStatusMessage = {
   pulsecount: number;
@@ -65,6 +66,7 @@ export class MqttBrokerService
   private broker: Aedes | undefined;
   private server: Server | undefined;
   private wsServer: HttpServer | undefined;
+  private client: mqtt.MqttClient | undefined;
 
   private readonly bikeState: Map<BikeId, BikeState> = new Map([
     ["1", initialBikeState()],
@@ -103,6 +105,11 @@ export class MqttBrokerService
       this.wsServer!.listen(wsPort, resolve),
     );
     this.logger.log(`🚀 MQTT-over-WebSocket listening on port ${wsPort}`);
+
+    const mqttUri = `mqtt://${os.hostname()}:${port}`;
+    this.client = mqtt.connect(mqttUri, {
+      clientId: "mqtt-broker-itself",
+    });
   }
 
   async onModuleDestroy() {
@@ -215,6 +222,21 @@ export class MqttBrokerService
     ) {
       this.updatePartialBikeState(bikeId, { won: true });
       void this.markCurrentRaceAsWonBy(bikeId);
+      // @TODO: send mqtt message about bike win
+      const bikeWonTopic = `Bike/${bikeId}/won`;
+      if (this.client) {
+        this.client.publish(
+          bikeWonTopic,
+          '',
+          { qos: 1 },
+          (err) => {
+            if (err) {
+              console.error("❌ Failed to publish:", err);
+            } else {
+              console.log(`🚀 Message sent to ${bikeWonTopic}`);
+            }
+          });
+      }
       this.logger.log(`🏆 Bike ${bikeId === "1" ? "1️⃣" : "2️⃣"} won! 🎉`);
     }
   }

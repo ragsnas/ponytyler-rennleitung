@@ -27,6 +27,8 @@ export declare class RaceService {
         showId: number;
         orderNumber: number;
         createdAt: Date;
+        raceStartedAt: Date | null;
+        raceFinishedAt: Date | null;
         raced: boolean;
         raceState: string;
         person1: string | null;
@@ -57,6 +59,8 @@ export declare class RaceService {
         showId: number;
         orderNumber: number;
         createdAt: Date;
+        raceStartedAt: Date | null;
+        raceFinishedAt: Date | null;
         raced: boolean;
         raceState: string;
         person1: string | null;
@@ -86,6 +90,8 @@ export declare class RaceService {
         showId: number;
         orderNumber: number;
         createdAt: Date;
+        raceStartedAt: Date | null;
+        raceFinishedAt: Date | null;
         raced: boolean;
         raceState: string;
         person1: string | null;
@@ -98,6 +104,8 @@ export declare class RaceService {
         showId: number;
         orderNumber: number;
         createdAt: Date;
+        raceStartedAt: Date | null;
+        raceFinishedAt: Date | null;
         raced: boolean;
         raceState: string;
         person1: string | null;
@@ -113,6 +121,8 @@ export declare class RaceService {
         showId: number;
         orderNumber: number;
         createdAt: Date;
+        raceStartedAt: Date | null;
+        raceFinishedAt: Date | null;
         raced: boolean;
         raceState: string;
         person1: string | null;

@@ -23,7 +23,7 @@ class CountdownComponent implements OnInit {
 
   ngOnInit(): void {
     this.interval = setInterval(() => {
-      if (this.countDown > 0) {
+      if (this.countDown > 1) {
         this.now = new Date();
         this.currentTimeInSeconds = this.now.getSeconds();
         this.countDown--;

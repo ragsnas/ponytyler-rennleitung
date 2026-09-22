@@ -19,7 +19,8 @@ const aedes_server_factory_1 = require("aedes-server-factory");
 const client_1 = require("@prisma/client");
 const race_service_1 = require("../prisma-api/race.service");
 const show_service_1 = require("../prisma-api/show.service");
-const race_state_enum_1 = require("../race/race-state.enum");
+const mqtt_1 = require("mqtt");
+const os_1 = require("os");
 const MAX_BIKE_ADVANCE = 120;
 const ADDITIONAL_SEQUENCE_STORAGE = 4;
 const DEFAULT_MQTT_PORT = 3001;
@@ -63,6 +64,10 @@ let MqttBrokerService = MqttBrokerService_1 = class MqttBrokerService {
         this.logger.log(`🚀 MQTT Broker started and listening on port ${port}`);
         await new Promise((resolve) => this.wsServer.listen(wsPort, resolve));
         this.logger.log(`🚀 MQTT-over-WebSocket listening on port ${wsPort}`);
+        const mqttUri = `mqtt://${os_1.default.hostname()}:${port}`;
+        this.client = mqtt_1.default.connect(mqttUri, {
+            clientId: "mqtt-broker-itself",
+        });
     }
     async onModuleDestroy() {
         if (this.server) {
@@ -146,6 +151,17 @@ let MqttBrokerService = MqttBrokerService_1 = class MqttBrokerService {
                 thisBikeState.mostRecentStatus.timestamp) {
             this.updatePartialBikeState(bikeId, { won: true });
             void this.markCurrentRaceAsWonBy(bikeId);
+            const bikeWonTopic = `Bike/${bikeId}/won`;
+            if (this.client) {
+                this.client.publish(bikeWonTopic, '', { qos: 1 }, (err) => {
+                    if (err) {
+                        console.error("❌ Failed to publish:", err);
+                    }
+                    else {
+                        console.log(`🚀 Message sent to ${bikeWonTopic}`);
+                    }
+                });
+            }
             this.logger.log(`🏆 Bike ${bikeId === "1" ? "1️⃣" : "2️⃣"} won! 🎉`);
         }
     }
@@ -162,7 +178,7 @@ let MqttBrokerService = MqttBrokerService_1 = class MqttBrokerService {
                 data: {
                     showId: race.showId,
                     bikeWon: Number(bikeId),
-                    raceState: race_state_enum_1.RaceState.RACED,
+                    raceState: client_1.RaceState.RACED,
                     raced: true,
                 },
             });

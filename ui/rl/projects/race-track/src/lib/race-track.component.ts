@@ -30,35 +30,16 @@ export class RaceTrackComponent implements OnInit, OnDestroy {
   private unsubscribe$: Subject<void> = new Subject<void>();
 
   ngOnInit(): void {
-    console.log(`ng on init called`);
-    let player1Progress: number = 0;
-    let player2Progress: number = 0;
-    timer(0, 100).pipe(
-      takeUntil(this.unsubscribe$),
-      takeWhile(() => player1Progress < 100 && player2Progress < 100),
-    ).subscribe((timer) => {
-      console.log(`\nSetting Player Progress for Players`);
 
-      player1Progress = this.setPlayerProgress(this.fakePlayer1Data$, player1Progress, timer);
-      player2Progress = this.setPlayerProgress(this.fakePlayer2Data$, player2Progress, timer);
-    });
-
-  }
-
-  private setPlayerProgress(playerData$: Subject<PlayerData>, playerProgress: number, timer: number) {
-    const currentPlayerProgress = Math.random();
-    playerProgress += currentPlayerProgress;
-    console.log(`\nSetting Player Progress:`, playerProgress);
-    playerData$.next({
-      progress: playerProgress,
-      averageSpeedInKmh: currentPlayerProgress * 50,
-      timeInSeconds: timer / 1000
-    })
-    return playerProgress;
   }
 
   ngOnDestroy(): void {
     this.unsubscribe$.next();
     this.unsubscribe$.complete();
+  }
+
+  private static brokerUrl(): string {
+    const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
+    return `${protocol}://${window.location.host}/mqtt-ws`;
   }
 }
