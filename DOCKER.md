@@ -12,7 +12,7 @@ This project includes Docker Compose configurations for both development and pro
 
 ### Prerequisites
 - Docker and Docker Compose installed
-- Node.js 20+ (for local development without Docker)
+- Node.js 26+ (for local development without Docker)
 
 ### Running Development Environment
 
@@ -98,7 +98,7 @@ MQTT_PORT=3001
 ### Custom Dockerfiles
 
 #### Frontend (`ui/rl/Dockerfile.dev`)
-- Node 18 Alpine
+- Node 26 Alpine
 - Runs Angular dev server with watch mode
 - Exposes port 4200
 
@@ -108,7 +108,7 @@ MQTT_PORT=3001
 - Exposes port 80
 
 #### Backend (`be/Dockerfile` / `be/Dockerfile.prod`)
-- Node 20 Alpine
+- Node 26 Alpine
 - Development: Uses existing Dockerfile with npm install and build
 - Production: Multi-stage build, production dependencies only, Prisma schema generation
 - Hosts the embedded MQTT broker (Aedes) alongside the HTTP API — see `be/src/mqtt/README.md`

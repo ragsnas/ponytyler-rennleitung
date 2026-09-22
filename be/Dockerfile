@@ -1,6 +1,6 @@
-FROM node:20-alpine
+FROM node:26-alpine
 WORKDIR /app
-RUN apk add --no-cache python3 make g++ cairo-dev jpeg-dev pango-dev giflib-dev pixman-dev eudev-dev libusb-dev openssl
+RUN apk add --no-cache eudev-libs openssl
 COPY . .
 RUN npm install
 # prisma.config.ts requires DATABASE_URL to be resolvable; generate only
