@@ -20,7 +20,7 @@ const client_1 = require("@prisma/client");
 const race_service_1 = require("../prisma-api/race.service");
 const show_service_1 = require("../prisma-api/show.service");
 const mqtt_1 = require("mqtt");
-const os_1 = require("os");
+const os = require("os");
 const MAX_BIKE_ADVANCE = 120;
 const ADDITIONAL_SEQUENCE_STORAGE = 4;
 const DEFAULT_MQTT_PORT = 3001;
@@ -64,7 +64,7 @@ let MqttBrokerService = MqttBrokerService_1 = class MqttBrokerService {
         this.logger.log(`🚀 MQTT Broker started and listening on port ${port}`);
         await new Promise((resolve) => this.wsServer.listen(wsPort, resolve));
         this.logger.log(`🚀 MQTT-over-WebSocket listening on port ${wsPort}`);
-        const mqttUri = `mqtt://${os_1.default.hostname()}:${port}`;
+        const mqttUri = `mqtt://${os.hostname()}:${port}`;
         this.client = mqtt_1.default.connect(mqttUri, {
             clientId: "mqtt-broker-itself",
         });

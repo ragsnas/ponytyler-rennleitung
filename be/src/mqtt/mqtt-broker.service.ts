@@ -13,7 +13,7 @@ import { Race, RaceState, Show, ShowState } from "@prisma/client";
 import { RaceService } from "../prisma-api/race.service";
 import { ShowService } from "../prisma-api/show.service";
 import mqtt from "mqtt";
-import os from "os";
+import * as os from "os";
 
 type BikeStatusMessage = {
   pulsecount: number;
