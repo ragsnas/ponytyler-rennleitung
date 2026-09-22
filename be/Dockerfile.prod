@@ -3,7 +3,7 @@ WORKDIR /app
 RUN apk add --no-cache python3 make g++ cairo-dev jpeg-dev pango-dev giflib-dev pixman-dev eudev-dev libusb-dev openssl
 COPY package*.json ./
 RUN npm ci
-COPY ..
+COPY . .
 # prisma.config.ts requires DATABASE_URL to be resolvable; generate only
 # needs the schema, not a reachable database, so a placeholder is enough
 # here. The real value is provided at runtime.
