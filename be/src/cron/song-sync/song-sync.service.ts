@@ -4,6 +4,7 @@ import { HttpService } from "@nestjs/axios";
 import { Origin, SongService } from "../../prisma-api/song.service";
 import { Song } from "@prisma/client";
 import { firstValueFrom } from "rxjs";
+import { equal } from "node:assert";
 
 @Injectable()
 export class SongSyncService {
@@ -55,21 +56,32 @@ export class SongSyncService {
         songsFromCloud.data.forEach((song) => {
           const fullCloudSongName = `${song.artist} - ${song.title}`;
 
-          if (
-            !localSongs.some(
-              (localSong: Song) =>
-                this.cleanSongname(this.songToString(localSong)) ===
-                this.cleanSongname(fullCloudSongName),
-            )
-          ) {
+          const localSongMatch = localSongs.find(
+            (localSong: Song) =>
+              this.cleanSongname(this.songToString(localSong)) ===
+              this.cleanSongname(fullCloudSongName),
+          )
+          if (!localSongMatch) {
             this.logger.log("Need to create Song:" + JSON.stringify(song));
             this.songService
               .createSong({
                 name: song.title,
                 artist: song.artist,
-                selectable: true,
+                selectable: song.status === "listed",
                 deleted: false,
                 origin: Origin.FROM_CLOUD_SYNC,
+              })
+              .then((createdSong: Song) => {
+                this.logger.log("Song Created:" + JSON.stringify(createdSong));
+              });
+          } else {
+            this.songService
+              .updateSong({
+                where: { id: localSongMatch.id },
+                data: {
+                  ...localSongMatch,
+                  selectable: song.status === "listed"
+                }
               })
               .then((song: Song) => {
                 this.logger.log("Song Created:" + JSON.stringify(song));
