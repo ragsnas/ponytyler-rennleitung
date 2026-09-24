@@ -1,7 +1,5 @@
 node_modules
 dist
-coverage
-.nyc_output
 .git
 *.log
 .env
