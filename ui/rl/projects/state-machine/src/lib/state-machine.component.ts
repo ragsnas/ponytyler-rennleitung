@@ -6,10 +6,16 @@ import { firstValueFrom, Subscription } from "rxjs";
 import { MatSnackBar } from "@angular/material/snack-bar";
 
 const RACE_STATE_CHANGE_TOPIC = "RaceStateChange";
+const SHOW_STATE_CHANGE_TOPIC = "ShowStateChange";
 
 interface RaceStateChangeMessage {
   raceId: string;
   state: RaceState;
+}
+
+interface ShowStateChangeMessage {
+  showId: string;
+  state: ShowState;
 }
 
 @Component({
@@ -47,18 +53,27 @@ export class StateMachineComponent implements OnInit, OnDestroy {
   }
 
   handleMqttMessage(message: MqttBrokerMessage): void {
-    if (message.topic !== RACE_STATE_CHANGE_TOPIC) {
-      return;
-    }
-    const raceStateChange: RaceStateChangeMessage = JSON.parse(message.payload);
-    if (this.currentRace?.id && raceStateChange.raceId === this.currentRace.id) {
-      this.reloadCurrentRace();
+    if (message.topic === RACE_STATE_CHANGE_TOPIC) {
+      const raceStateChange: RaceStateChangeMessage = JSON.parse(message.payload);
+      if (this.currentRace?.id && raceStateChange.raceId === this.currentRace.id) {
+        this.reloadCurrentRace();
+      }
+    } else if (message.topic === SHOW_STATE_CHANGE_TOPIC) {
+      const showStateChange: ShowStateChangeMessage = JSON.parse(message.payload);
+      if (this.currentShow?.id && showStateChange.showId === this.currentShow.id) {
+        this.reloadCurrentShow();
+      }
     }
   }
 
   private async reloadCurrentRace() {
     this.currentRace = await firstValueFrom(this.raceService.getRace(this.currentRace?.id));
     this.currentRaceState = this.currentRace.raceState;
+  }
+
+  private async reloadCurrentShow() {
+    this.currentShow = await firstValueFrom(this.showService.getShow(this.currentShow!.id!));
+    this.currentShowState = this.currentShow.showState;
   }
 
   private static brokerUrl(): string {

@@ -20,7 +20,7 @@ describe('StateMachineComponent', () => {
   const currentRace: Race = { id: 'race-1', showId: 'show-1', person1: 'A', person2: 'B', orderNumber: '0', bikeWon: 0, raceState: RaceState.RACING };
 
   beforeEach(async () => {
-    showService = jasmine.createSpyObj('ShowService', ['getCurrentShow', 'updateShow']);
+    showService = jasmine.createSpyObj('ShowService', ['getCurrentShow', 'getShow', 'updateShow']);
     showService.getCurrentShow.and.returnValue(of(currentShow));
 
     raceService = jasmine.createSpyObj('RaceService', ['getCurrentRace', 'getRace', 'updateRace']);
@@ -105,5 +105,38 @@ describe('StateMachineComponent', () => {
     });
 
     expect(raceService.getRace).not.toHaveBeenCalled();
+  });
+
+  it('reloads the current show when a ShowStateChange message matches the current show id', async () => {
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const reloadedShow: Show = { ...currentShow, showState: ShowState.RACE };
+    showService.getShow.and.returnValue(of(reloadedShow));
+
+    messages$.next({
+      topic: 'ShowStateChange',
+      payload: JSON.stringify({ showId: 'show-1', state: ShowState.RACE }),
+      receivedAt: new Date(),
+    });
+    await fixture.whenStable();
+
+    expect(showService.getShow).toHaveBeenCalledWith('show-1');
+    expect(component.currentShow).toEqual(reloadedShow);
+    expect(component.currentShowState).toEqual(ShowState.RACE);
+  });
+
+  it('does not reload when the ShowStateChange message is for a different show', async () => {
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    messages$.next({
+      topic: 'ShowStateChange',
+      payload: JSON.stringify({ showId: 'some-other-show', state: ShowState.RACE }),
+      receivedAt: new Date(),
+    });
+
+    expect(showService.getShow).not.toHaveBeenCalled();
+    expect(component.currentShow).toEqual(currentShow);
   });
 });
