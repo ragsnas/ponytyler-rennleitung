@@ -31,9 +31,11 @@ client.on("connect", () => {
       console.info('Message is for topic:', messageObject.topic);
       if(messageObject.topic === bikeResetTopic1 || messageObject.topic === bikeResetTopic2) {
         // Start Fake Race
+        console.log(`▶ Starting fake race`);
         fakeRaceInterval = fakeRace();
       } else if(messageObject.topic === bikeWonTopic1 || messageObject.topic === bikeWonTopic2) {
         // Start Fake Race
+        console.log(`🏁 Stopping fake race`);
         clearInterval(fakeRaceInterval);
       }
     } else {
