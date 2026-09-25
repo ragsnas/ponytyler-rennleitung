@@ -177,6 +177,37 @@
     </table>
   </ng-container>
 
+  <ng-container *ngIf="encoreSongs$ | async as encoreSongs">
+    <h3>Encore Songs</h3>
+    <ng-container *ngIf="encoreSongs.length <= 0">
+      <p>No Encore Songs yet</p>
+    </ng-container>
+    <ng-container *ngIf="encoreSongs.length > 0">
+
+      <table mat-table [dataSource]="encoreSongs">
+
+        <ng-container matColumnDef="order">
+          <th mat-header-cell *matHeaderCellDef>
+            <mat-icon>tag</mat-icon>
+          </th>
+          <td mat-cell *matCellDef="let element">
+            {{ element.order + 1 }}
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="song">
+          <th mat-header-cell *matHeaderCellDef>Song</th>
+          <td mat-cell *matCellDef="let element" class="song-column">
+            {{ element.song?.artist }}<br />{{ element.song?.name }}
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="['order', 'song']"></tr>
+        <tr mat-row *matRowDef="let row; columns: ['order', 'song'];"></tr>
+      </table>
+    </ng-container>
+  </ng-container>
+
   <ng-container>
     <ui-button-list>
       <button mat-flat-button color="accent" [routerLink]="'../'">

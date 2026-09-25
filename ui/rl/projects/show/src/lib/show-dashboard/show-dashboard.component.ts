@@ -3,6 +3,7 @@ import { ActivatedRoute, ParamMap, Router } from "@angular/router";
 import { Race, RaceService, RaceState } from "projects/backend-api/src/lib/race.service";
 import { StatisticsService } from "projects/backend-api/src/lib/statistics.service";
 import { Show, ShowService, ShowState } from "projects/backend-api/src/lib/show.service";
+import { EncoreSong, EncoreSongService } from "projects/backend-api/src/lib/encore-song.service";
 import {
   BehaviorSubject,
   combineLatest,
@@ -88,6 +89,7 @@ export class ShowDashboardComponent implements OnInit, OnDestroy {
   show: Show | undefined;
   races$: BehaviorSubject<RaceWithSongPlayedInfo[]> = new BehaviorSubject<RaceWithSongPlayedInfo[]>([]);
   finishedRaces$: BehaviorSubject<Race[]> = new BehaviorSubject<Race[]>([]);
+  encoreSongs$: BehaviorSubject<EncoreSong[]> = new BehaviorSubject<EncoreSong[]>([]);
   firstRaceWaitingToRaceId: string | undefined;
   lastRaceWaitingToRaceId: string | undefined;
   refreshing: boolean = false;
@@ -104,6 +106,7 @@ export class ShowDashboardComponent implements OnInit, OnDestroy {
   constructor(
     private showService: ShowService,
     private raceService: RaceService,
+    private encoreSongService: EncoreSongService,
     private statisticsService: StatisticsService,
     private route: ActivatedRoute,
     private router: Router,
@@ -138,11 +141,13 @@ export class ShowDashboardComponent implements OnInit, OnDestroy {
           switchMap(() => combineLatest([
             this.showService.getShow(showId),
             this.raceService.getAllRacesForShow(showId),
+            this.encoreSongService.getEncoreSongsForShow(showId),
           ])));
       }),
     ).subscribe({
-      next: ([show, races]) => {
+      next: ([show, races, encoreSongs]) => {
         this.show = show;
+        this.encoreSongs$.next(encoreSongs);
         const finishedRaces = races.filter(race => race.raceState === RaceState.RACED);
         const racesWaitingToRace = races.filter(race => race.raceState === RaceState.LISTED);
         this.lastRaceWaitingToRaceId = racesWaitingToRace[racesWaitingToRace.length - 1]?.id;

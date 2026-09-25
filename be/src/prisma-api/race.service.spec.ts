@@ -13,11 +13,13 @@ describe("RaceService", () => {
   let service: RaceService;
   let findUniqueMock: jest.Mock;
   let updateMock: jest.Mock;
+  let findManyMock: jest.Mock;
   let mqttClient: { publish: jest.Mock };
 
   beforeEach(async () => {
     findUniqueMock = jest.fn();
     updateMock = jest.fn();
+    findManyMock = jest.fn().mockResolvedValue([]);
     mqttClient = { publish: jest.fn() };
     (mqtt.connect as jest.Mock).mockReturnValue(mqttClient);
 
@@ -27,7 +29,11 @@ describe("RaceService", () => {
         {
           provide: PrismaService,
           useValue: {
-            race: { findUnique: findUniqueMock, update: updateMock },
+            race: {
+              findUnique: findUniqueMock,
+              update: updateMock,
+              findMany: findManyMock,
+            },
           },
         },
         { provide: ConfigService, useValue: { get: jest.fn() } },
@@ -85,6 +91,85 @@ describe("RaceService", () => {
       });
 
       expect(mqttClient.publish).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("updateRace - single active race enforcement", () => {
+    const ALLOWED_INACTIVE_STATES = [
+      RaceState.CANCELED,
+      RaceState.LISTED,
+      RaceState.DONE,
+      RaceState.WAITING_FOR_OPPONENT,
+    ];
+
+    it("resets other races with a state outside CANCELED/LISTED/DONE/WAITING_FOR_OPPONENT to LISTED when this race becomes active", async () => {
+      findUniqueMock.mockResolvedValue({ id: 1, raceState: RaceState.LISTED });
+      updateMock.mockResolvedValueOnce({ id: 1, raceState: RaceState.RACING });
+      findManyMock.mockResolvedValue([
+        { id: 2, raceState: RaceState.WAITING_TO_RACE },
+        { id: 3, raceState: RaceState.RACED },
+      ]);
+      updateMock.mockResolvedValueOnce({ id: 2, raceState: RaceState.LISTED });
+      updateMock.mockResolvedValueOnce({ id: 3, raceState: RaceState.LISTED });
+
+      await service.updateRace({
+        where: { id: 1 },
+        data: { raceState: RaceState.RACING },
+      });
+
+      expect(findManyMock).toHaveBeenCalledWith({
+        where: {
+          id: { not: 1 },
+          raceState: { notIn: ALLOWED_INACTIVE_STATES },
+        },
+      });
+      expect(updateMock).toHaveBeenCalledWith({
+        where: { id: 2 },
+        data: { raceState: RaceState.LISTED },
+      });
+      expect(updateMock).toHaveBeenCalledWith({
+        where: { id: 3 },
+        data: { raceState: RaceState.LISTED },
+      });
+      expect(mqttClient.publish).toHaveBeenCalledWith(
+        "RaceStateChange",
+        JSON.stringify({ raceId: 2, state: RaceState.LISTED }),
+      );
+      expect(mqttClient.publish).toHaveBeenCalledWith(
+        "RaceStateChange",
+        JSON.stringify({ raceId: 3, state: RaceState.LISTED }),
+      );
+    });
+
+    it.each(ALLOWED_INACTIVE_STATES)(
+      "does not query for other races when this race is set to %s",
+      async (allowedState) => {
+        findUniqueMock.mockResolvedValue({
+          id: 1,
+          raceState: RaceState.RACING,
+        });
+        updateMock.mockResolvedValue({ id: 1, raceState: allowedState });
+
+        await service.updateRace({
+          where: { id: 1 },
+          data: { raceState: allowedState },
+        });
+
+        expect(findManyMock).not.toHaveBeenCalled();
+      },
+    );
+
+    it("does nothing extra when there are no other active races", async () => {
+      findUniqueMock.mockResolvedValue({ id: 1, raceState: RaceState.LISTED });
+      updateMock.mockResolvedValue({ id: 1, raceState: RaceState.RACING });
+      findManyMock.mockResolvedValue([]);
+
+      await service.updateRace({
+        where: { id: 1 },
+        data: { raceState: RaceState.RACING },
+      });
+
+      expect(updateMock).toHaveBeenCalledTimes(1);
     });
   });
 });

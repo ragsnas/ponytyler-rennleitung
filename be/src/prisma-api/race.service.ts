@@ -146,8 +146,40 @@ export class RaceService {
       this.publishRaceStateChange(updatedRace);
     }
 
+    if (this.isActiveRaceState(updatedRace.raceState as RaceState)) {
+      await this.resetOtherActiveRaces(updatedRace.id);
+    }
+
     return updatedRace;
   }
+
+  private isActiveRaceState(raceState: RaceState): boolean {
+    return !RaceService.ALLOWED_INACTIVE_RACE_STATES.includes(raceState);
+  }
+
+  private async resetOtherActiveRaces(excludeId: number) {
+    const otherActiveRaces = await this.prisma.race.findMany({
+      where: {
+        id: { not: excludeId },
+        raceState: { notIn: RaceService.ALLOWED_INACTIVE_RACE_STATES },
+      },
+    });
+
+    for (const race of otherActiveRaces) {
+      const resetRace = await this.prisma.race.update({
+        where: { id: race.id },
+        data: { raceState: RaceState.LISTED },
+      });
+      this.publishRaceStateChange(resetRace);
+    }
+  }
+
+  private static readonly ALLOWED_INACTIVE_RACE_STATES = [
+    RaceState.CANCELED,
+    RaceState.LISTED,
+    RaceState.DONE,
+    RaceState.WAITING_FOR_OPPONENT,
+  ];
 
   private publishRaceStateChange(race: Race) {
     this.mqttClient.publish(

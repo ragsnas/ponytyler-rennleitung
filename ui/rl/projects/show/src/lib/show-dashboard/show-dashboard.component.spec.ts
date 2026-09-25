@@ -12,12 +12,15 @@ import { ShowDashboardComponent } from './show-dashboard.component';
 import { ShowService, ShowState } from 'projects/backend-api/src/lib/show.service';
 import { Race, RaceService, RaceState } from 'projects/backend-api/src/lib/race.service';
 import { StatisticsService } from 'projects/backend-api/src/lib/statistics.service';
+import { EncoreSong, EncoreSongService } from 'projects/backend-api/src/lib/encore-song.service';
+import { Origin } from 'projects/backend-api/src/lib/song.service';
 
 describe('ShowDashboardComponent', () => {
   let component: ShowDashboardComponent;
   let fixture: ComponentFixture<ShowDashboardComponent>;
   let showService: jasmine.SpyObj<ShowService>;
   let raceService: jasmine.SpyObj<RaceService>;
+  let encoreSongService: jasmine.SpyObj<EncoreSongService>;
 
   beforeEach(async () => {
     showService = jasmine.createSpyObj('ShowService', ['getShow', 'deleteShow', 'updateShow']);
@@ -31,6 +34,9 @@ describe('ShowDashboardComponent', () => {
     const statisticsService = jasmine.createSpyObj('StatisticsService', ['isListFull']);
     statisticsService.isListFull.and.returnValue(of(false));
 
+    encoreSongService = jasmine.createSpyObj('EncoreSongService', ['getEncoreSongsForShow']);
+    encoreSongService.getEncoreSongsForShow.and.returnValue(of([]));
+
     await TestBed.configureTestingModule({
       declarations: [ShowDashboardComponent],
       imports: [CommonModule, MatTableModule, MatButtonModule],
@@ -39,6 +45,7 @@ describe('ShowDashboardComponent', () => {
         { provide: ShowService, useValue: showService },
         { provide: RaceService, useValue: raceService },
         { provide: StatisticsService, useValue: statisticsService },
+        { provide: EncoreSongService, useValue: encoreSongService },
         { provide: MatSnackBar, useValue: jasmine.createSpyObj('MatSnackBar', ['open']) },
         { provide: MatDialog, useValue: jasmine.createSpyObj('MatDialog', ['open']) },
         { provide: Router, useValue: jasmine.createSpyObj('Router', ['navigate']) },
@@ -171,5 +178,35 @@ describe('ShowDashboardComponent', () => {
     button?.click();
 
     expect(component.startRace).toHaveBeenCalled();
+  });
+
+  it('loads the encore songs for the show', () => {
+    fixture.detectChanges();
+
+    expect(encoreSongService.getEncoreSongsForShow).toHaveBeenCalledWith('show-1');
+  });
+
+  it('publishes the loaded encore songs on encoreSongs$', () => {
+    const encoreSongs: EncoreSong[] = [
+      { id: 1, showId: 'show-1', order: 0, song: { id: 1, name: 'Song A', artist: 'Artist A', deleted: false, selectable: true, origin: Origin.LEGACY } },
+    ];
+    encoreSongService.getEncoreSongsForShow.and.returnValue(of(encoreSongs));
+
+    fixture.detectChanges();
+
+    expect(component.encoreSongs$.value).toEqual(encoreSongs);
+  });
+
+  it('renders the loaded encore songs in the template', () => {
+    const encoreSongs: EncoreSong[] = [
+      { id: 1, showId: 'show-1', order: 0, song: { id: 1, name: 'Song A', artist: 'Artist A', deleted: false, selectable: true, origin: Origin.LEGACY } },
+    ];
+    encoreSongService.getEncoreSongsForShow.and.returnValue(of(encoreSongs));
+
+    fixture.detectChanges();
+
+    const compiled = fixture.nativeElement as HTMLElement;
+    expect(compiled.textContent).toContain('Artist A');
+    expect(compiled.textContent).toContain('Song A');
   });
 });
