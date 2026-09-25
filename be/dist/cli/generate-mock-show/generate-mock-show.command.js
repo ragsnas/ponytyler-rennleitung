@@ -29,7 +29,6 @@ let GenerateMockShowCommand = GenerateMockShowCommand_1 = class GenerateMockShow
         this.logger = new common_1.Logger(GenerateMockShowCommand_1.name);
     }
     async run() {
-        await this.syncSongs();
         const show = await this.createShowWithRandomTitle();
         this.logger.log(`Created show "${show.name}" (#${show.id})`);
         const songs = await this.songService.songs({
@@ -52,20 +51,6 @@ let GenerateMockShowCommand = GenerateMockShowCommand_1 = class GenerateMockShow
             this.logger.log(`Created race #${race.id}: ${race.person1} vs ${race.person2}`);
         }
         this.logger.log(`Done: created show "${show.name}" with ${RACE_COUNT} races.`);
-    }
-    async syncSongs() {
-        try {
-            await this.songSyncService.triggerSync();
-        }
-        catch (error) {
-            this.logger.warn(`Song sync could not be triggered, continuing with existing songs: ${error}`);
-        }
-        try {
-            await this.songSyncService.updateSelectability();
-        }
-        catch (error) {
-            this.logger.warn(`Updating song selectability failed: ${error}`);
-        }
     }
     async createShowWithRandomTitle() {
         let lastError;

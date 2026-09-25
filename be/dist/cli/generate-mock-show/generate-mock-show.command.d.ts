@@ -10,7 +10,6 @@ export declare class GenerateMockShowCommand {
     private readonly logger;
     constructor(songSyncService: SongSyncService, songService: SongService, showService: ShowService, raceService: RaceService);
     run(): Promise<void>;
-    private syncSongs;
     private createShowWithRandomTitle;
     private isUniqueConstraintError;
     private pickTwoDistinctSongs;
