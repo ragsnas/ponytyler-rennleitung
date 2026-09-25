@@ -90,7 +90,34 @@ export class ShowService {
       this.publishShowStateChange(updatedShow);
     }
 
+    if (this.isActiveState(updatedShow.showState)) {
+      await this.resetOtherActiveShows(updatedShow.id);
+    }
+
     return updatedShow;
+  }
+
+  private isActiveState(showState: ShowState): boolean {
+    return (
+      showState !== ShowState.LISTED && showState !== ShowState.SHOW_FINISHED
+    );
+  }
+
+  private async resetOtherActiveShows(excludeId: number) {
+    const otherActiveShows = await this.prisma.show.findMany({
+      where: {
+        id: { not: excludeId },
+        showState: { notIn: [ShowState.LISTED, ShowState.SHOW_FINISHED] },
+      },
+    });
+
+    for (const show of otherActiveShows) {
+      const resetShow = await this.prisma.show.update({
+        where: { id: show.id },
+        data: { showState: ShowState.LISTED },
+      });
+      this.publishShowStateChange(resetShow);
+    }
   }
 
   private publishShowStateChange(show: Show) {
