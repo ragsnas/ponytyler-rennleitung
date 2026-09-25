@@ -13,7 +13,7 @@ const TEST_MQTT_WS_PORT = 18831;
 describe("MqttBrokerService", () => {
   let service: MqttBrokerService;
   let raceService: { currentRace: jest.Mock; updateRace: jest.Mock };
-  let showService: { updateShow: jest.Mock };
+  let showService: { currentShow: jest.Mock; updateShow: jest.Mock };
 
   beforeEach(async () => {
     raceService = {
@@ -21,6 +21,7 @@ describe("MqttBrokerService", () => {
       updateRace: jest.fn().mockResolvedValue(undefined),
     };
     showService = {
+      currentShow: jest.fn().mockResolvedValue({ id: 7 }),
       updateShow: jest.fn().mockResolvedValue(undefined),
     };
 

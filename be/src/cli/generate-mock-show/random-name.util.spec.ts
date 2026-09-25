@@ -8,8 +8,8 @@ describe("random-name.util", () => {
   });
 
   describe("generateShowTitle", () => {
-    it("returns a 'The <Adjective> <Noun>' formatted string", () => {
-      expect(generateShowTitle()).toMatch(/^The [A-Za-z]+ [A-Za-z]+$/);
+    it("returns a '<Venue>, <City>' formatted string", () => {
+      expect(generateShowTitle()).toMatch(/^.+, .+$/);
     });
 
     it("picks words at the given random index deterministically", () => {
@@ -30,8 +30,8 @@ describe("random-name.util", () => {
   });
 
   describe("generatePersonName", () => {
-    it("returns a 'First Last' formatted string", () => {
-      expect(generatePersonName()).toMatch(/^[A-Za-z]+ [A-Za-z]+$/);
+    it("returns a non-empty first name", () => {
+      expect(generatePersonName().length).toBeGreaterThan(0);
     });
 
     it("varies across calls", () => {
