@@ -12,7 +12,7 @@ const bikeWonTopic1 = "Bike/1/won";
 const bikeWonTopic2 = "Bike/2/won";
 const bikeResetTopic1 = "Bike/1/cmd";
 const bikeResetTopic2 = "Bike/2/cmd";
-const stateChangeTopic = "Bike/change-unused-producer";
+const raceStateChange = "Race/StateChange";
 
 client.on("connect", () => {
   console.log("✅ Connected to broker");
@@ -62,17 +62,6 @@ client.on("connect", () => {
       }, INTERVAL);
     }
   }
-
-
-  // setTimeout(() => {
-  //   interval.close();
-  //   client.end();
-  // }, INTERVAL * 500);
-
-//  interval._onTimeout = () => {
-  //   client.end();
-  // }
-
 });
 
 function sendBikeMessage(bikeId: "1" | "2", sequenzCounter: number, pulseCounter: number, timestamp: number) {

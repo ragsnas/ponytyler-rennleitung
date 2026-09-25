@@ -1,4 +1,5 @@
 import { Module } from "@nestjs/common";
+import { ConfigModule } from "@nestjs/config";
 import { ShowService } from "./show.service";
 import { RaceService } from "./race.service";
 import { SongService } from "./song.service";
@@ -8,7 +9,7 @@ import { StatsService } from "./stats.service";
 import { EncoreSongService } from "./encore-song.service";
 
 @Module({
-  imports: [],
+  imports: [ConfigModule],
   providers: [
     PrismaService,
     RaceService,

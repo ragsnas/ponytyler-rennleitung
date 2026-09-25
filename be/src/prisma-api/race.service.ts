@@ -1,11 +1,29 @@
 import { Injectable } from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
 import { PrismaService } from "./prisma.service";
 import { Prisma, Race } from "@prisma/client";
 import { RaceState } from "../race/race-state.enum";
+import mqtt from "mqtt";
+import * as os from "os";
+
+const DEFAULT_MQTT_PORT = 3001;
+const RACE_STATE_CHANGE_TOPIC = "RaceStateChange";
 
 @Injectable()
 export class RaceService {
-  constructor(private prisma: PrismaService) {}
+  private readonly mqttClient: mqtt.MqttClient;
+
+  constructor(
+    private prisma: PrismaService,
+    private configService: ConfigService,
+  ) {
+    const port = Number(
+      this.configService.get("MQTT_PORT") ?? DEFAULT_MQTT_PORT,
+    );
+    this.mqttClient = mqtt.connect(`mqtt://${os.hostname()}:${port}`, {
+      clientId: "race-service",
+    });
+  }
 
   async race(
     raceWhereUniqueInput: Prisma.RaceWhereUniqueInput,
@@ -99,7 +117,8 @@ export class RaceService {
     data: Prisma.RaceUncheckedUpdateInput;
   }): Promise<Race> {
     const { where, data } = params;
-    return this.prisma.race.update({
+    const existingRace = await this.prisma.race.findUnique({ where });
+    const updatedRace = await this.prisma.race.update({
       data: {
         person1: data.person1,
         song1: data.song1Id
@@ -122,6 +141,19 @@ export class RaceService {
       },
       where,
     });
+
+    if (existingRace && existingRace.raceState !== updatedRace.raceState) {
+      this.publishRaceStateChange(updatedRace);
+    }
+
+    return updatedRace;
+  }
+
+  private publishRaceStateChange(race: Race) {
+    this.mqttClient.publish(
+      RACE_STATE_CHANGE_TOPIC,
+      JSON.stringify({ raceId: race.id, state: race.raceState }),
+    );
   }
 
   async repairOrder(showId: string) {
