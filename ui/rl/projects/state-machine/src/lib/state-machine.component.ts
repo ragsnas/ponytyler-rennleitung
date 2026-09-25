@@ -1,29 +1,69 @@
-import { Component, OnInit } from "@angular/core";
+import { Component, OnDestroy, OnInit } from "@angular/core";
 import { Race, RaceService, RaceState } from "projects/backend-api/src/lib/race.service";
 import { Show, ShowService, ShowState } from "projects/backend-api/src/lib/show.service";
-import { firstValueFrom } from "rxjs";
+import { MqttBrokerMessage, MqttBrokerService } from "projects/mqtt-broker/src/lib/mqtt-broker.service";
+import { firstValueFrom, Subscription } from "rxjs";
 import { MatSnackBar } from "@angular/material/snack-bar";
+
+const RACE_STATE_CHANGE_TOPIC = "RaceStateChange";
+
+interface RaceStateChangeMessage {
+  raceId: string;
+  state: RaceState;
+}
 
 @Component({
   selector: "lib-state-machine",
   templateUrl: "state-machine.component.html",
+  providers: [MqttBrokerService],
 })
-export class StateMachineComponent implements OnInit {
+export class StateMachineComponent implements OnInit, OnDestroy {
 
   public currentRace: Race | undefined;
   public currentRaceState: RaceState | undefined;
   public currentShow: Show | undefined;
   public currentShowState: ShowState | undefined;
 
+  private mqttSubscription: Subscription | undefined;
+
   constructor(
     private raceService: RaceService,
     private showService: ShowService,
     private snackBar: MatSnackBar,
+    private mqttBrokerService: MqttBrokerService,
   ) {
   }
 
   ngOnInit(): void {
     this.getCurrentShowAndRace();
+    this.mqttSubscription = this.mqttBrokerService.messages$.subscribe(
+      (message) => this.handleMqttMessage(message)
+    );
+    this.mqttBrokerService.connect(StateMachineComponent.brokerUrl());
+  }
+
+  ngOnDestroy(): void {
+    this.mqttSubscription?.unsubscribe();
+  }
+
+  handleMqttMessage(message: MqttBrokerMessage): void {
+    if (message.topic !== RACE_STATE_CHANGE_TOPIC) {
+      return;
+    }
+    const raceStateChange: RaceStateChangeMessage = JSON.parse(message.payload);
+    if (this.currentRace?.id && raceStateChange.raceId === this.currentRace.id) {
+      this.reloadCurrentRace();
+    }
+  }
+
+  private async reloadCurrentRace() {
+    this.currentRace = await firstValueFrom(this.raceService.getRace(this.currentRace?.id));
+    this.currentRaceState = this.currentRace.raceState;
+  }
+
+  private static brokerUrl(): string {
+    const protocol = window.location.protocol === "https:" ? "wss" : "ws";
+    return `${protocol}://${window.location.host}/mqtt-ws`;
   }
 
   async getCurrentShowAndRace() {
