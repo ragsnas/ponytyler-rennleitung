@@ -1,8 +1,11 @@
+import { ConfigService } from "@nestjs/config";
 import { PrismaService } from "./prisma.service";
 import { Show, Prisma } from "@prisma/client";
 export declare class ShowService {
     private prisma;
-    constructor(prisma: PrismaService);
+    private configService;
+    private readonly mqttClient;
+    constructor(prisma: PrismaService, configService: ConfigService);
     show(ShowWhereUniqueInput: Prisma.ShowWhereUniqueInput): Promise<Show | null>;
     shows(params: {
         skip?: number;
@@ -18,6 +21,9 @@ export declare class ShowService {
         where: Prisma.ShowWhereUniqueInput;
         data: Prisma.ShowUpdateInput;
     }): Promise<Show>;
+    private isActiveState;
+    private resetOtherActiveShows;
+    private publishShowStateChange;
     deleteShowWithRacesAndShifts(id: string): Promise<[Prisma.BatchPayload, Prisma.BatchPayload, Prisma.BatchPayload, {
         id: number;
         name: string;

@@ -8,14 +8,25 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
+var RaceService_1;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.RaceService = void 0;
 const common_1 = require("@nestjs/common");
+const config_1 = require("@nestjs/config");
 const prisma_service_1 = require("./prisma.service");
 const race_state_enum_1 = require("../race/race-state.enum");
-let RaceService = class RaceService {
-    constructor(prisma) {
+const mqtt_1 = require("mqtt");
+const os = require("os");
+const DEFAULT_MQTT_PORT = 3001;
+const RACE_STATE_CHANGE_TOPIC = "RaceStateChange";
+let RaceService = RaceService_1 = class RaceService {
+    constructor(prisma, configService) {
         this.prisma = prisma;
+        this.configService = configService;
+        const port = Number(this.configService.get("MQTT_PORT") ?? DEFAULT_MQTT_PORT);
+        this.mqttClient = mqtt_1.default.connect(`mqtt://${os.hostname()}:${port}`, {
+            clientId: "race-service",
+        });
     }
     async race(raceWhereUniqueInput) {
         return this.prisma.race.findUnique({
@@ -91,7 +102,8 @@ let RaceService = class RaceService {
     }
     async updateRace(params) {
         const { where, data } = params;
-        return this.prisma.race.update({
+        const existingRace = await this.prisma.race.findUnique({ where });
+        const updatedRace = await this.prisma.race.update({
             data: {
                 person1: data.person1,
                 song1: data.song1Id
@@ -114,6 +126,34 @@ let RaceService = class RaceService {
             },
             where,
         });
+        if (existingRace && existingRace.raceState !== updatedRace.raceState) {
+            this.publishRaceStateChange(updatedRace);
+        }
+        if (this.isActiveRaceState(updatedRace.raceState)) {
+            await this.resetOtherActiveRaces(updatedRace.id);
+        }
+        return updatedRace;
+    }
+    isActiveRaceState(raceState) {
+        return !RaceService_1.ALLOWED_INACTIVE_RACE_STATES.includes(raceState);
+    }
+    async resetOtherActiveRaces(excludeId) {
+        const otherActiveRaces = await this.prisma.race.findMany({
+            where: {
+                id: { not: excludeId },
+                raceState: { notIn: RaceService_1.ALLOWED_INACTIVE_RACE_STATES },
+            },
+        });
+        for (const race of otherActiveRaces) {
+            const resetRace = await this.prisma.race.update({
+                where: { id: race.id },
+                data: { raceState: race_state_enum_1.RaceState.LISTED },
+            });
+            this.publishRaceStateChange(resetRace);
+        }
+    }
+    publishRaceStateChange(race) {
+        this.mqttClient.publish(RACE_STATE_CHANGE_TOPIC, JSON.stringify({ raceId: race.id, state: race.raceState }));
     }
     async repairOrder(showId) {
         console.log(`Repairing Order`);
@@ -230,8 +270,15 @@ let RaceService = class RaceService {
     }
 };
 exports.RaceService = RaceService;
-exports.RaceService = RaceService = __decorate([
+RaceService.ALLOWED_INACTIVE_RACE_STATES = [
+    race_state_enum_1.RaceState.CANCELED,
+    race_state_enum_1.RaceState.LISTED,
+    race_state_enum_1.RaceState.DONE,
+    race_state_enum_1.RaceState.WAITING_FOR_OPPONENT,
+];
+exports.RaceService = RaceService = RaceService_1 = __decorate([
     (0, common_1.Injectable)(),
-    __metadata("design:paramtypes", [prisma_service_1.PrismaService])
+    __metadata("design:paramtypes", [prisma_service_1.PrismaService,
+        config_1.ConfigService])
 ], RaceService);
 //# sourceMappingURL=race.service.js.map

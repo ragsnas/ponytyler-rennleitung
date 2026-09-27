@@ -1,8 +1,11 @@
+import { ConfigService } from "@nestjs/config";
 import { PrismaService } from "./prisma.service";
 import { Prisma, Race } from "@prisma/client";
 export declare class RaceService {
     private prisma;
-    constructor(prisma: PrismaService);
+    private configService;
+    private readonly mqttClient;
+    constructor(prisma: PrismaService, configService: ConfigService);
     race(raceWhereUniqueInput: Prisma.RaceWhereUniqueInput): Promise<Race | null>;
     raceWithSongs(raceId: string): Promise<Race | null>;
     upcomingRaceWithSongs(): Promise<{
@@ -81,6 +84,10 @@ export declare class RaceService {
         where: Prisma.RaceWhereUniqueInput;
         data: Prisma.RaceUncheckedUpdateInput;
     }): Promise<Race>;
+    private isActiveRaceState;
+    private resetOtherActiveRaces;
+    private static readonly ALLOWED_INACTIVE_RACE_STATES;
+    private publishRaceStateChange;
     repairOrder(showId: string): Promise<any[]>;
     moveRacePosition(params: {
         raceToMoveId: string;

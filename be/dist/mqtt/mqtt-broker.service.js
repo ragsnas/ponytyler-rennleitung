@@ -70,6 +70,9 @@ let MqttBrokerService = MqttBrokerService_1 = class MqttBrokerService {
         });
     }
     async onModuleDestroy() {
+        if (this.client) {
+            await new Promise((resolve) => this.client.end(true, {}, () => resolve()));
+        }
         if (this.server) {
             await new Promise((resolve) => this.server.close(() => resolve()));
         }

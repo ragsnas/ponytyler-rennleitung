@@ -11,11 +11,21 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ShowService = void 0;
 const common_1 = require("@nestjs/common");
+const config_1 = require("@nestjs/config");
 const prisma_service_1 = require("./prisma.service");
 const client_1 = require("@prisma/client");
+const mqtt_1 = require("mqtt");
+const os = require("os");
+const DEFAULT_MQTT_PORT = 3001;
+const SHOW_STATE_CHANGE_TOPIC = "ShowStateChange";
 let ShowService = class ShowService {
-    constructor(prisma) {
+    constructor(prisma, configService) {
         this.prisma = prisma;
+        this.configService = configService;
+        const port = Number(this.configService.get("MQTT_PORT") ?? DEFAULT_MQTT_PORT);
+        this.mqttClient = mqtt_1.default.connect(`mqtt://${os.hostname()}:${port}`, {
+            clientId: "show-service",
+        });
     }
     async show(ShowWhereUniqueInput) {
         return this.prisma.show.findUnique({
@@ -57,10 +67,39 @@ let ShowService = class ShowService {
     }
     async updateShow(params) {
         const { where, data } = params;
-        return this.prisma.show.update({
+        const existingShow = await this.prisma.show.findUnique({ where });
+        const updatedShow = await this.prisma.show.update({
             data,
             where,
         });
+        if (existingShow && existingShow.showState !== updatedShow.showState) {
+            this.publishShowStateChange(updatedShow);
+        }
+        if (this.isActiveState(updatedShow.showState)) {
+            await this.resetOtherActiveShows(updatedShow.id);
+        }
+        return updatedShow;
+    }
+    isActiveState(showState) {
+        return (showState !== client_1.ShowState.LISTED && showState !== client_1.ShowState.SHOW_FINISHED);
+    }
+    async resetOtherActiveShows(excludeId) {
+        const otherActiveShows = await this.prisma.show.findMany({
+            where: {
+                id: { not: excludeId },
+                showState: { notIn: [client_1.ShowState.LISTED, client_1.ShowState.SHOW_FINISHED] },
+            },
+        });
+        for (const show of otherActiveShows) {
+            const resetShow = await this.prisma.show.update({
+                where: { id: show.id },
+                data: { showState: client_1.ShowState.LISTED },
+            });
+            this.publishShowStateChange(resetShow);
+        }
+    }
+    publishShowStateChange(show) {
+        this.mqttClient.publish(SHOW_STATE_CHANGE_TOPIC, JSON.stringify({ showId: show.id, state: show.showState }));
     }
     async deleteShowWithRacesAndShifts(id) {
         const deleteRaces = this.prisma.race.deleteMany({
@@ -103,6 +142,7 @@ let ShowService = class ShowService {
 exports.ShowService = ShowService;
 exports.ShowService = ShowService = __decorate([
     (0, common_1.Injectable)(),
-    __metadata("design:paramtypes", [prisma_service_1.PrismaService])
+    __metadata("design:paramtypes", [prisma_service_1.PrismaService,
+        config_1.ConfigService])
 ], ShowService);
 //# sourceMappingURL=show.service.js.map
