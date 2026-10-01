@@ -20,7 +20,7 @@ export class ShowService {
       this.configService.get("MQTT_PORT") ?? DEFAULT_MQTT_PORT,
     );
     this.mqttClient = mqtt.connect(`mqtt://${os.hostname()}:${port}`, {
-      clientId: "show-service",
+      clientId: "be-show-service",
     });
   }
 
@@ -123,7 +123,7 @@ export class ShowService {
   private publishShowStateChange(show: Show) {
     this.mqttClient.publish(
       SHOW_STATE_CHANGE_TOPIC,
-      JSON.stringify({ showId: show.id, state: show.showState }),
+      JSON.stringify({ showId: show.id.toString(), state: show.showState }),
     );
   }
 

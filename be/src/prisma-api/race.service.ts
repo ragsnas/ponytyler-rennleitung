@@ -21,7 +21,7 @@ export class RaceService {
       this.configService.get("MQTT_PORT") ?? DEFAULT_MQTT_PORT,
     );
     this.mqttClient = mqtt.connect(`mqtt://${os.hostname()}:${port}`, {
-      clientId: "race-service",
+      clientId: "be-race-service",
     });
   }
 
@@ -143,6 +143,7 @@ export class RaceService {
     });
 
     if (existingRace && existingRace.raceState !== updatedRace.raceState) {
+      console.log(`Race State Changed:`, updatedRace.raceState);
       this.publishRaceStateChange(updatedRace);
     }
 
@@ -184,7 +185,7 @@ export class RaceService {
   private publishRaceStateChange(race: Race) {
     this.mqttClient.publish(
       RACE_STATE_CHANGE_TOPIC,
-      JSON.stringify({ raceId: race.id, state: race.raceState }),
+      JSON.stringify({ raceId: race.id.toString(), state: race.raceState }),
     );
   }
 

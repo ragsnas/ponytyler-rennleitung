@@ -28,7 +28,7 @@ interface BikeState {
   won: boolean | undefined;
 }
 
-type BikeId = "1" | "2";
+type BikeId = "1" | "2" | "3";
 
 const MAX_BIKE_ADVANCE = 120; // 5 milliseconds
 const ADDITIONAL_SEQUENCE_STORAGE = 4;
@@ -37,6 +37,8 @@ const DEFAULT_MQTT_WS_PORT = 3002;
 
 const BIKE_STATUS_TOPIC = /^Bike\/[1-2]{1}$/i;
 const BIKE_CMD_TOPIC = /^Bike\/[1-2]{1}\/cmd$/i;
+const RACE_STATE_CHANGE_TOPIC = /^RaceStateChange$/i;
+const SHOW_STATE_CHANGE_TOPIC = /^ShowStateChange$/i;
 
 function initialBikeState(): BikeState {
   return {
@@ -144,6 +146,7 @@ export class MqttBrokerService
     broker.on(
       "publish",
       (packet: AedesPublishPacket, client: Client | null) => {
+        console.log(`Handling publish`);
         this.handlePublish(packet, client);
       },
     );
@@ -174,6 +177,14 @@ export class MqttBrokerService
       this.logger.log(
         `📝 Client ${client ? client.id : "unknown"} published command for Bike ${bikeId}: ${payloadText}`,
       );
+    } else if (payloadObject && RACE_STATE_CHANGE_TOPIC.test(topic)) {
+      this.logger.log(
+        `📝 RaceStateChange:`, payloadObject
+      );
+    } else if (payloadObject && SHOW_STATE_CHANGE_TOPIC.test(topic)) {
+      this.logger.log(
+        `📝 ShowStateChange:`, payloadObject
+      );
     } else {
       this.logger.log(
         `📝 Client ${client ? client.id : "unknown"} published unrecognizable message [topic=${topic}]: ${payloadText}`,
@@ -182,6 +193,7 @@ export class MqttBrokerService
   }
 
   private handleBikeStatus(bikeId: BikeId, payloadObject: BikeStatusMessage) {
+    console.log(`Handling bike status for bike ${bikeId}`, payloadObject);
     if (payloadObject.pulsecount <= MAX_BIKE_ADVANCE) {
       this.addBikeState(bikeId, payloadObject);
       return;
@@ -192,6 +204,46 @@ export class MqttBrokerService
       this.logger.log(
         `🏁 Bike ${bikeId} finished: ${JSON.stringify(payloadObject)}`,
       );
+      if (!this.bikeState.get(this.theOtherBike(bikeId)).finished) {
+        setTimeout(() => {
+          this.logger.log(`Analyzing Bike ${bikeId}:`);
+          const bike1State = this.bikeState.get("1");
+          const bike2State = this.bikeState.get("2");
+          let winnerBikeId = null;
+          if (bike1State.finished && !bike2State.finished
+            || bike1State.finishObservedAtSequenz < bike2State.finishObservedAtSequenz) {
+            winnerBikeId = "2"
+            this.updatePartialBikeState("2", { won: true });
+            void this.markCurrentRaceAsWonBy("2");
+          } else if (!bike1State.finished && bike2State.finished
+            || bike1State.finishObservedAtSequenz > bike2State.finishObservedAtSequenz) {
+            winnerBikeId = "1"
+            this.updatePartialBikeState("1", { won: true });
+            void this.markCurrentRaceAsWonBy("1");
+          } else {
+            this.updatePartialBikeState("1", { won: true });
+            this.updatePartialBikeState("2", { won: true });
+            void this.markCurrentRaceAsWonBy("3");
+            winnerBikeId = "3"
+          }
+
+          const bikeWonTopic = `Bike/${winnerBikeId}/won`;
+          if (this.client) {
+            this.client.publish(
+              bikeWonTopic,
+              '',
+              { qos: 1 },
+              (err) => {
+                if (err) {
+                  console.error("❌ Failed to publish:", err);
+                } else {
+                  console.log(`🚀 Message sent to ${bikeWonTopic}`);
+                }
+              });
+          }
+          this.logger.log(`🏆 Bike ${winnerBikeId === "1" ? "1️⃣" : "2️⃣"} won! 🎉`);
+        }, 1000)
+      }
       thisBikeState = this.updatePartialBikeState(bikeId, {
         finishObservedAtSequenz: payloadObject.sequenz,
         finished: true,
@@ -202,45 +254,10 @@ export class MqttBrokerService
       thisBikeState.finishObservedAtSequenz! + ADDITIONAL_SEQUENCE_STORAGE;
     if (payloadObject.sequenz < maxSequenzToRecord) {
       this.logger.log(
-        `📝 Adding additional state (seq ${maxSequenzToRecord}) for Bike ${bikeId}`,
+        `📝 Adding additional state (seq ${payloadObject.sequenz}) for Bike ${bikeId}`,
       );
       this.addBikeState(bikeId, payloadObject);
       return;
-    }
-
-    if (thisBikeState.won) {
-      return;
-    }
-    const otherId: BikeId = bikeId === "1" ? "2" : "1";
-    const otherBikeState = this.bikeState.get(otherId)!;
-    if (otherBikeState.won) {
-      return;
-    }
-
-    this.logger.log(`Analyzing Bike ${bikeId}:`);
-    if (
-      !otherBikeState.finished ||
-      otherBikeState.mostRecentStatus.timestamp >
-        thisBikeState.mostRecentStatus.timestamp
-    ) {
-      this.updatePartialBikeState(bikeId, { won: true });
-      void this.markCurrentRaceAsWonBy(bikeId);
-      // @TODO: send mqtt message about bike win
-      const bikeWonTopic = `Bike/${bikeId}/won`;
-      if (this.client) {
-        this.client.publish(
-          bikeWonTopic,
-          '',
-          { qos: 1 },
-          (err) => {
-            if (err) {
-              console.error("❌ Failed to publish:", err);
-            } else {
-              console.log(`🚀 Message sent to ${bikeWonTopic}`);
-            }
-          });
-      }
-      this.logger.log(`🏆 Bike ${bikeId === "1" ? "1️⃣" : "2️⃣"} won! 🎉`);
     }
   }
 
@@ -260,6 +277,7 @@ export class MqttBrokerService
         data: {
           showId: race.showId,
           bikeWon: Number(bikeId),
+          raceFinishedAt: new Date().toISOString(),
           raceState: RaceState.RACED,
           raced: true,
         },
@@ -320,5 +338,9 @@ export class MqttBrokerService
     }
     this.bikeStates.set(bikeId, bikeStatusMessages);
     this.bikeState.set(bikeId, bikeStateForThisBike);
+  }
+
+  private theOtherBike(bikeId: BikeId) {
+    return bikeId == "1" ? "2" : "1";
   }
 }

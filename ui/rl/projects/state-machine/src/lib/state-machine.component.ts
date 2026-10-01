@@ -63,6 +63,8 @@ export class StateMachineComponent implements OnInit, OnDestroy {
       if (this.currentShow?.id && showStateChange.showId === this.currentShow.id) {
         this.reloadCurrentShow();
       }
+    } else {
+      console.log(`State Machine received unknown Topic: ${message.topic}`, message.payload);
     }
   }
 
@@ -109,7 +111,7 @@ export class StateMachineComponent implements OnInit, OnDestroy {
   async startRace() {
     if(this.currentShow && this.currentRace) {
       this.updateRaceAndShow(
-        { ...this.currentRace, raced: true, raceState: RaceState.RACING },
+        { ...this.currentRace, raced: true, raceState: RaceState.RACING, raceStartedAt: new Date() },
         { ...this.currentShow, showState: ShowState.RACE },
         () => {},
         `Error Starting Race`

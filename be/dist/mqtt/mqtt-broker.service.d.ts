@@ -24,4 +24,5 @@ export declare class MqttBrokerService implements OnApplicationBootstrap, OnModu
     private isBikeStatusPayload;
     private updatePartialBikeState;
     private addBikeState;
+    private theOtherBike;
 }

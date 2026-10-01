@@ -25,7 +25,7 @@ let RaceService = RaceService_1 = class RaceService {
         this.configService = configService;
         const port = Number(this.configService.get("MQTT_PORT") ?? DEFAULT_MQTT_PORT);
         this.mqttClient = mqtt_1.default.connect(`mqtt://${os.hostname()}:${port}`, {
-            clientId: "race-service",
+            clientId: "be-race-service",
         });
     }
     async race(raceWhereUniqueInput) {
@@ -127,6 +127,7 @@ let RaceService = RaceService_1 = class RaceService {
             where,
         });
         if (existingRace && existingRace.raceState !== updatedRace.raceState) {
+            console.log(`Race State Changed:`, updatedRace.raceState);
             this.publishRaceStateChange(updatedRace);
         }
         if (this.isActiveRaceState(updatedRace.raceState)) {
@@ -153,7 +154,7 @@ let RaceService = RaceService_1 = class RaceService {
         }
     }
     publishRaceStateChange(race) {
-        this.mqttClient.publish(RACE_STATE_CHANGE_TOPIC, JSON.stringify({ raceId: race.id, state: race.raceState }));
+        this.mqttClient.publish(RACE_STATE_CHANGE_TOPIC, JSON.stringify({ raceId: race.id.toString(), state: race.raceState }));
     }
     async repairOrder(showId) {
         console.log(`Repairing Order`);

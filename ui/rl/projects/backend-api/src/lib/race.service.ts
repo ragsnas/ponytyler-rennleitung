@@ -17,6 +17,8 @@ export interface Race {
   orderNumber: string;
   raced?: boolean;
   raceState?: RaceState;
+  raceStartedAt?: Date | string;
+  raceFinishedAt?: Date | string;
   bikeWon: number;
 }
 

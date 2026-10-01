@@ -24,7 +24,7 @@ let ShowService = class ShowService {
         this.configService = configService;
         const port = Number(this.configService.get("MQTT_PORT") ?? DEFAULT_MQTT_PORT);
         this.mqttClient = mqtt_1.default.connect(`mqtt://${os.hostname()}:${port}`, {
-            clientId: "show-service",
+            clientId: "be-show-service",
         });
     }
     async show(ShowWhereUniqueInput) {
@@ -99,7 +99,7 @@ let ShowService = class ShowService {
         }
     }
     publishShowStateChange(show) {
-        this.mqttClient.publish(SHOW_STATE_CHANGE_TOPIC, JSON.stringify({ showId: show.id, state: show.showState }));
+        this.mqttClient.publish(SHOW_STATE_CHANGE_TOPIC, JSON.stringify({ showId: show.id.toString(), state: show.showState }));
     }
     async deleteShowWithRacesAndShifts(id) {
         const deleteRaces = this.prisma.race.deleteMany({

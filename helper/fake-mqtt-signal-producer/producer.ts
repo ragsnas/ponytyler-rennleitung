@@ -6,13 +6,12 @@ const client = mqtt.connect("mqtt://localhost:3001", {
 });
 const INTERVAL = 2; // milliseconds
 const MAX_BIKE_ADVANCE = 120; // 5 milliseconds
-const bikeAdvanceTopic1 = "Bike/1";
-const bikeAdvanceTopic2 = "Bike/2";
 const bikeWonTopic1 = "Bike/1/won";
 const bikeWonTopic2 = "Bike/2/won";
+const bikeWonTopic3 = "Bike/3/won";
 const bikeResetTopic1 = "Bike/1/cmd";
 const bikeResetTopic2 = "Bike/2/cmd";
-const raceStateChange = "Race/StateChange";
+const raceStateChange = "RaceStateChange";
 
 client.on("connect", () => {
   console.log("✅ Connected to broker");
@@ -22,31 +21,52 @@ client.on("connect", () => {
   let pulseCounter2 = 0;
   let timestamp = 0;
   let fakeRaceInterval: ReturnType<typeof setTimeout> | undefined = undefined;
+  let raceRunning = false;
 
-
-  client.on("message", (p1, payload) => {
-    console.info('Received message:', p1, payload?.toString());
-    const messageObject = JSON.parse(payload?.toString() || '{}');
-    if(messageObject && messageObject.topic) {
-      console.info('Message is for topic:', messageObject.topic);
-      if(messageObject.topic === bikeResetTopic1 || messageObject.topic === bikeResetTopic2) {
-        // Start Fake Race
-        console.log(`▶ Starting fake race`);
-        fakeRaceInterval = fakeRace();
-      } else if(messageObject.topic === bikeWonTopic1 || messageObject.topic === bikeWonTopic2) {
-        // Start Fake Race
-        console.log(`🏁 Stopping fake race`);
-        clearInterval(fakeRaceInterval);
+  client.subscribe(
+    [bikeResetTopic1, bikeResetTopic2,
+      bikeWonTopic1, bikeWonTopic2, bikeWonTopic3,
+      raceStateChange],
+    (err) => {
+      if (err) {
+        console.error("❌ Failed to subscribe:", err);
+      } else {
+        console.log("📡 Subscribed to bike command/won topics");
       }
-    } else {
-      console.info('Could not convert Message:', payload);
+    },
+  );
+
+  client.on("message", (topic, payload) => {
+    console.info('Received message:', topic, payload?.toString());
+    if (topic === bikeResetTopic1 || topic === bikeResetTopic2) {
+      // Start Fake Race
+      console.log(`▶ Bike Reset!`);
+      fakeRaceInterval = fakeRace();
+      raceRunning = true;
+    } else if (topic === raceStateChange && JSON.parse(payload.toString() || '{}')?.state === 'RACING') {
+      console.log(`Race Starts!`);
+      sendMessage(
+        `Bike/1/cmd`,
+        JSON.stringify({
+          "reset" : true
+        }));
+      sendMessage(
+        `Bike/2/cmd`,
+        JSON.stringify({
+          "reset" : true
+        }));
+    } else if (topic === bikeWonTopic1 || topic === bikeWonTopic2 || topic === bikeWonTopic3) {
+      // Start Fake Race
+      console.log(`🏁 Stopping fake race`);
+      raceRunning = false;
+      clearInterval(fakeRaceInterval);
     }
   });
 
   const fakeRace = () => {
     if(!fakeRaceInterval) {
       return setInterval(() => {
-        if (true) {
+        if (raceRunning) {
           timestamp++;
           sequenzCounter++;
           if (Math.random() > 0.33) {
