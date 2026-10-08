@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, OnModuleDestroy } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { PrismaService } from "./prisma.service";
 import { Prisma, Race } from "@prisma/client";
@@ -10,7 +10,7 @@ const DEFAULT_MQTT_PORT = 3001;
 const RACE_STATE_CHANGE_TOPIC = "RaceStateChange";
 
 @Injectable()
-export class RaceService {
+export class RaceService implements OnModuleDestroy {
   private readonly mqttClient: mqtt.MqttClient;
 
   constructor(
@@ -23,6 +23,10 @@ export class RaceService {
     this.mqttClient = mqtt.connect(`mqtt://${os.hostname()}:${port}`, {
       clientId: "be-race-service",
     });
+  }
+
+  onModuleDestroy() {
+    this.mqttClient.end();
   }
 
   async race(

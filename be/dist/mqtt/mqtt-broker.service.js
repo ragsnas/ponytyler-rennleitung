@@ -94,7 +94,6 @@ let MqttBrokerService = MqttBrokerService_1 = class MqttBrokerService {
             this.logger.log(`📝 Client ${client ? client.id : "unknown"} subscribed to: ${subscriptions.map((s) => s.topic).join(", ")}`);
         });
         broker.on("publish", (packet, client) => {
-            console.log(`Handling publish`);
             this.handlePublish(packet, client);
         });
     }
@@ -117,7 +116,7 @@ let MqttBrokerService = MqttBrokerService_1 = class MqttBrokerService {
             }
         }
         else if (payloadObject && BIKE_CMD_TOPIC.test(topic)) {
-            const bikeId = topic.substr(5);
+            const bikeId = topic.substring(5);
             this.logger.log(`📝 Client ${client ? client.id : "unknown"} published command for Bike ${bikeId}: ${payloadText}`);
         }
         else if (payloadObject && RACE_STATE_CHANGE_TOPIC.test(topic)) {
@@ -131,7 +130,6 @@ let MqttBrokerService = MqttBrokerService_1 = class MqttBrokerService {
         }
     }
     handleBikeStatus(bikeId, payloadObject) {
-        console.log(`Handling bike status for bike ${bikeId}`, payloadObject);
         if (payloadObject.pulsecount <= MAX_BIKE_ADVANCE) {
             this.addBikeState(bikeId, payloadObject);
             return;

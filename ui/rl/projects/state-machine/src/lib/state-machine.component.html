@@ -23,6 +23,9 @@
     <button mat-flat-button color="accent" (click)="setRaceDone()">
       <mat-icon>check_cricle</mat-icon> Done!
     </button>
+    <button mat-flat-button color="accent" (click)="setRaceDone()">
+      <mat-icon>check_cricle</mat-icon> Done!
+    </button>
     </ui-button-list>
   </div>
 </ng-container>
@@ -68,12 +71,14 @@
         ERROR! FEHLSTART!
       </ng-container>
       <ng-container *ngIf="currentRaceState === 'RACING'">
-        <lib-race-track></lib-race-track>
+        <lib-race-track
+          [bike1]="bike1$ | async"
+          [bike2]="bike2$ | async"
+          [raceState]="currentRaceState" />
         RACE IS RUNNING! RACE TRACK!
       </ng-container>
       <ng-container *ngIf="currentRaceState === 'RACED'">
         RACE IS OVER!
-
       </ng-container>
     </ng-container>
   </ng-container>

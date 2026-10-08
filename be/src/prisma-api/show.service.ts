@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, OnModuleDestroy } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { PrismaService } from "./prisma.service";
 import { Show, Prisma, Shift, ShowState } from "@prisma/client";
@@ -9,7 +9,7 @@ const DEFAULT_MQTT_PORT = 3001;
 const SHOW_STATE_CHANGE_TOPIC = "ShowStateChange";
 
 @Injectable()
-export class ShowService {
+export class ShowService implements OnModuleDestroy {
   private readonly mqttClient: mqtt.MqttClient;
 
   constructor(
@@ -22,6 +22,10 @@ export class ShowService {
     this.mqttClient = mqtt.connect(`mqtt://${os.hostname()}:${port}`, {
       clientId: "be-show-service",
     });
+  }
+
+  onModuleDestroy() {
+    this.mqttClient.end();
   }
 
   async show(

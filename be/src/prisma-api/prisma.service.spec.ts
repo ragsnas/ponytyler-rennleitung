@@ -1,10 +1,12 @@
 import { PrismaService } from "./prisma.service";
 
 const connectMock = jest.fn();
+const disconnectMock = jest.fn();
 
 jest.mock("@prisma/client", () => ({
   PrismaClient: class {
     $connect = connectMock;
+    $disconnect = disconnectMock;
   },
 }));
 
@@ -17,6 +19,7 @@ describe("PrismaService", () => {
 
   beforeEach(() => {
     connectMock.mockClear();
+    disconnectMock.mockClear();
     service = new PrismaService();
   });
 
@@ -25,6 +28,14 @@ describe("PrismaService", () => {
       await service.onModuleInit();
 
       expect(connectMock).toHaveBeenCalled();
+    });
+  });
+
+  describe("onModuleDestroy", () => {
+    it("disconnects from the database", async () => {
+      await service.onModuleDestroy();
+
+      expect(disconnectMock).toHaveBeenCalled();
     });
   });
 });

@@ -14,13 +14,13 @@ describe("ShowService", () => {
   let findUniqueMock: jest.Mock;
   let updateMock: jest.Mock;
   let findManyMock: jest.Mock;
-  let mqttClient: { publish: jest.Mock };
+  let mqttClient: { publish: jest.Mock; end: jest.Mock };
 
   beforeEach(async () => {
     findUniqueMock = jest.fn();
     updateMock = jest.fn();
     findManyMock = jest.fn().mockResolvedValue([]);
-    mqttClient = { publish: jest.fn() };
+    mqttClient = { publish: jest.fn(), end: jest.fn() };
     (mqtt.connect as jest.Mock).mockReturnValue(mqttClient);
 
     const module: TestingModule = await Test.createTestingModule({
@@ -48,6 +48,12 @@ describe("ShowService", () => {
       expect.stringMatching(/^mqtt:\/\//),
       expect.objectContaining({ clientId: expect.any(String) }),
     );
+  });
+
+  it("closes the mqtt client when the module is destroyed", () => {
+    service.onModuleDestroy();
+
+    expect(mqttClient.end).toHaveBeenCalled();
   });
 
   describe("updateShow", () => {

@@ -4,8 +4,8 @@ import mqtt from "mqtt";
 const client = mqtt.connect("mqtt://localhost:3001", {
   clientId: "fake-producer",
 });
-const INTERVAL = 2; // milliseconds
-const MAX_BIKE_ADVANCE = 120; // 5 milliseconds
+const INTERVAL = 10; // milliseconds
+const MAX_BIKE_ADVANCE = 120;
 const bikeWonTopic1 = "Bike/1/won";
 const bikeWonTopic2 = "Bike/2/won";
 const bikeWonTopic3 = "Bike/3/won";
@@ -65,19 +65,15 @@ client.on("connect", () => {
 
   const fakeRace = () => {
     if(!fakeRaceInterval) {
+      const startTimestamp = new Date().getTime();
       return setInterval(() => {
         if (raceRunning) {
-          timestamp++;
+          timestamp = new Date().getTime() - startTimestamp;
           sequenzCounter++;
-          if (Math.random() > 0.33) {
-            pulseCounter1 += Math.round(Math.random() * 1.2);
-            sendBikeMessage("1", sequenzCounter, pulseCounter1, timestamp);
-          }
-          if (Math.random() > 0.33) {
-            timestamp++;
-            pulseCounter2 += Math.round(Math.random() * 1.2);
-            sendBikeMessage("2", sequenzCounter, pulseCounter2, timestamp);
-          }
+          pulseCounter1 += Math.round(Math.random() * 4);
+          sendBikeMessage("1", sequenzCounter, pulseCounter1, timestamp);
+          pulseCounter2 += Math.round(Math.random() * 4);
+          sendBikeMessage("2", sequenzCounter, pulseCounter2, timestamp);
         }
       }, INTERVAL);
     }

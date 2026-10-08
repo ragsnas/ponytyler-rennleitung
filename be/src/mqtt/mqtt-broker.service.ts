@@ -146,7 +146,6 @@ export class MqttBrokerService
     broker.on(
       "publish",
       (packet: AedesPublishPacket, client: Client | null) => {
-        console.log(`Handling publish`);
         this.handlePublish(packet, client);
       },
     );
@@ -173,7 +172,7 @@ export class MqttBrokerService
         this.handleBikeStatus(bikeId, payloadObject as BikeStatusMessage);
       }
     } else if (payloadObject && BIKE_CMD_TOPIC.test(topic)) {
-      const bikeId = topic.substr(5);
+      const bikeId = topic.substring(5);
       this.logger.log(
         `📝 Client ${client ? client.id : "unknown"} published command for Bike ${bikeId}: ${payloadText}`,
       );
@@ -193,7 +192,6 @@ export class MqttBrokerService
   }
 
   private handleBikeStatus(bikeId: BikeId, payloadObject: BikeStatusMessage) {
-    console.log(`Handling bike status for bike ${bikeId}`, payloadObject);
     if (payloadObject.pulsecount <= MAX_BIKE_ADVANCE) {
       this.addBikeState(bikeId, payloadObject);
       return;

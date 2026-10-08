@@ -80,6 +80,27 @@ describe('StateMachineComponent', () => {
     expect(component.currentRaceState).toEqual(RaceState.RACED);
   });
 
+  it('reloads the current race when the backend returns a numeric id but the message carries it as string', async () => {
+    const numericIdRace = { ...currentRace, id: 60 as unknown as string };
+    component.currentRace = numericIdRace;
+    fixture.detectChanges();
+    await fixture.whenStable();
+    component.currentRace = numericIdRace;
+
+    const reloadedRace: Race = { ...numericIdRace, raceState: RaceState.RACED };
+    raceService.getRace.and.returnValue(of(reloadedRace));
+
+    messages$.next({
+      topic: 'RaceStateChange',
+      payload: JSON.stringify({ raceId: '60', state: RaceState.RACED }),
+      receivedAt: new Date(),
+    });
+    await fixture.whenStable();
+
+    expect(raceService.getRace).toHaveBeenCalled();
+    expect(component.currentRaceState).toEqual(RaceState.RACED);
+  });
+
   it('does not reload when the RaceStateChange message is for a different race', async () => {
     fixture.detectChanges();
     await fixture.whenStable();
