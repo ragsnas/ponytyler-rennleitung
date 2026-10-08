@@ -1,0 +1,24 @@
+{
+  "name": "mqtt-broker",
+  "version": "0.0.1",
+  "peerDependencies": {
+    "@angular/common": "^14.2.0",
+    "@angular/core": "^14.2.0"
+  },
+  "dependencies": {
+    "tslib": "^2.3.0"
+  },
+  "module": "fesm2022/mqtt-broker.mjs",
+  "typings": "types/mqtt-broker.d.ts",
+  "exports": {
+    "./package.json": {
+      "default": "./package.json"
+    },
+    ".": {
+      "types": "./types/mqtt-broker.d.ts",
+      "default": "./fesm2022/mqtt-broker.mjs"
+    }
+  },
+  "sideEffects": false,
+  "type": "module"
+}

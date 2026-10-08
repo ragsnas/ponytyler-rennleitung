@@ -1,0 +1,24 @@
+{
+  "name": "@ui/message",
+  "version": "0.0.1",
+  "peerDependencies": {
+    "@angular/common": "^14.2.0",
+    "@angular/core": "^14.2.0"
+  },
+  "dependencies": {
+    "tslib": "^2.3.0"
+  },
+  "module": "fesm2022/ui-message.mjs",
+  "typings": "types/ui-message.d.ts",
+  "exports": {
+    "./package.json": {
+      "default": "./package.json"
+    },
+    ".": {
+      "types": "./types/ui-message.d.ts",
+      "default": "./fesm2022/ui-message.mjs"
+    }
+  },
+  "sideEffects": false,
+  "type": "module"
+}
