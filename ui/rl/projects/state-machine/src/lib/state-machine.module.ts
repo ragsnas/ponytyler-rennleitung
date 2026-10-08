@@ -5,7 +5,7 @@ import { CommonModule } from "@angular/common";
 import { BackendApiModule } from "projects/backend-api/src/public-api";
 import { RaceTrackModule } from "projects/race-track/src/public-api";
 import { CountdownModule } from "projects/ui/countdown/src/public-api";
-import { MatButton } from "@angular/material/button";
+import { MatButton, MatMiniFabButton } from "@angular/material/button";
 import { MatIcon } from "@angular/material/icon";
 import { ButtonListModule } from 'projects/ui/button-list/src/lib/button-list.module';
 import { MatDividerModule } from "@angular/material/divider";
@@ -25,6 +25,7 @@ const routes: Routes = [
     RouterModule.forChild(routes),
     MatButton,
     MatIcon,
+    MatMiniFabButton,
     ButtonListModule,
     MatDividerModule
   ],

@@ -11,20 +11,28 @@
       </div>
     </ng-container>
     <ui-button-list>
-    <button mat-flat-button color="accent" (click)="startCountdown()">
-      <mat-icon>play_circle</mat-icon> Start
+    <button
+      [disabled]="['RACING', 'WAITING_TO_RACE'].some(currentRaceState)"
+      mat-mini-fab color="accent" (click)="startCountdown()">
+      <mat-icon>play_circle</mat-icon>
     </button>
-    <button mat-flat-button color="accent" (click)="skipRace()">
-      <mat-icon>skip_next</mat-icon> Skip
+    <button mat-mini-fab color="accent" (click)="skipRace()">
+      <mat-icon>skip_next</mat-icon>
     </button>
-    <button mat-flat-button color="accent" (click)="stopRace()">
-      <mat-icon>stop_circle</mat-icon> Stop
+    <button
+      [disabled]="!['RACING', 'WAITING_TO_RACE'].some(currentRaceState)"
+      mat-mini-fab color="accent" (click)="stopRace()">
+      <mat-icon>stop_circle</mat-icon>
     </button>
-    <button mat-flat-button color="accent" (click)="setRaceDone()">
-      <mat-icon>check_cricle</mat-icon> Done!
+    <button
+      [disabled]="currentShowState !== 'RACE_FINISHED'"
+      mat-mini-fab extended color="accent" (click)="setRaceDone()">
+      <mat-icon>lyrics</mat-icon>
     </button>
-    <button mat-flat-button color="accent" (click)="setRaceDone()">
-      <mat-icon>check_cricle</mat-icon> Done!
+    <button
+      [disabled]="!['PLAYING_VIDEO', 'VIDEO_FINISHED'].some(currentShowState)"
+      mat-mini-fab color="accent" (click)="setRaceDone()">
+      <mat-icon>check_cricle</mat-icon>
     </button>
     </ui-button-list>
   </div>
