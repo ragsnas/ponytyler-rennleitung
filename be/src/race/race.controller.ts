@@ -97,9 +97,7 @@ export class RaceController {
   }
 
   @Get("current/:showId")
-  findCurrentRace(
-    @Param("showId") showId: string,
-  ) {
+  findCurrentRace(@Param("showId") showId: string) {
     return this.raceService.currentRace(parseInt(showId));
   }
 

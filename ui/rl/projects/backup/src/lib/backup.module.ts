@@ -2,7 +2,8 @@ import { NgModule } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { UploadDialogComponent } from "./upload/upload-dialog.component";
 import { MatFormField, MatLabel } from "@angular/material/form-field";
-import { DropzoneMaterialModule } from "@ngx-dropzone/material";
+import { MatDropzone } from "@ngx-dropzone/material";
+import { FileInputDirective } from "@ngx-dropzone/cdk";
 import { MatIcon } from "@angular/material/icon";
 import { ReactiveFormsModule } from "@angular/forms";
 
@@ -14,7 +15,8 @@ import { ReactiveFormsModule } from "@angular/forms";
     MatIcon,
     MatFormField,
     MatLabel,
-    DropzoneMaterialModule,
+    MatDropzone,
+    FileInputDirective,
     ReactiveFormsModule,
   ],
   exports: []

@@ -95,7 +95,7 @@ export class MqttBrokerService
 
     this.broker = await Aedes.createBroker();
     this.server = createTcpServer(this.broker.handle);
-    this.wsServer = createWsCapableServer(this.broker, {
+    this.wsServer = createWsCapableServer(this.drainingHandler(this.broker), {
       ws: true,
     }) as HttpServer;
     this.registerBrokerListeners(this.broker);
@@ -114,9 +114,38 @@ export class MqttBrokerService
     });
   }
 
+  /**
+   * aedes reads each 'readable' event with a single `conn.read(null)` and never
+   * drains the rest. Since Node 26 that call returns only the first buffered
+   * chunk, so when `ws` delivers several frames in one tick (e.g. an MQTT packet
+   * split across WebSocket frames) the remaining data is never read, no further
+   * 'readable' event fires, and the client hangs. Make `read(null)` return
+   * everything that is buffered, as it did before.
+   */
+  private drainingHandler(broker: Aedes): Aedes {
+    const handle: Aedes["handle"] = (conn, req) => {
+      const read = conn.read.bind(conn);
+      conn.read = (size?: number | null) => {
+        if (size !== null && size !== undefined) {
+          return read(size);
+        }
+        const chunks: Buffer[] = [];
+        let chunk: Buffer | null;
+        while ((chunk = read()) !== null) {
+          chunks.push(chunk);
+        }
+        return chunks.length > 0 ? Buffer.concat(chunks) : null;
+      };
+      return broker.handle(conn, req);
+    };
+    return { handle } as Aedes;
+  }
+
   async onModuleDestroy() {
     if (this.client) {
-      await new Promise<void>((resolve) => this.client!.end(true, {}, () => resolve()));
+      await new Promise<void>((resolve) =>
+        this.client!.end(true, {}, () => resolve()),
+      );
     }
     if (this.server) {
       await new Promise<void>((resolve) => this.server!.close(() => resolve()));
@@ -177,13 +206,9 @@ export class MqttBrokerService
         `📝 Client ${client ? client.id : "unknown"} published command for Bike ${bikeId}: ${payloadText}`,
       );
     } else if (payloadObject && RACE_STATE_CHANGE_TOPIC.test(topic)) {
-      this.logger.log(
-        `📝 RaceStateChange:`, payloadObject
-      );
+      this.logger.log(`📝 RaceStateChange:`, payloadObject);
     } else if (payloadObject && SHOW_STATE_CHANGE_TOPIC.test(topic)) {
-      this.logger.log(
-        `📝 ShowStateChange:`, payloadObject
-      );
+      this.logger.log(`📝 ShowStateChange:`, payloadObject);
     } else {
       this.logger.log(
         `📝 Client ${client ? client.id : "unknown"} published unrecognizable message [topic=${topic}]: ${payloadText}`,
@@ -208,39 +233,43 @@ export class MqttBrokerService
           const bike1State = this.bikeState.get("1");
           const bike2State = this.bikeState.get("2");
           let winnerBikeId = null;
-          if (bike1State.finished && !bike2State.finished
-            || bike1State.finishObservedAtSequenz < bike2State.finishObservedAtSequenz) {
-            winnerBikeId = "2"
-            this.updatePartialBikeState("2", { won: true });
-            void this.markCurrentRaceAsWonBy("2");
-          } else if (!bike1State.finished && bike2State.finished
-            || bike1State.finishObservedAtSequenz > bike2State.finishObservedAtSequenz) {
-            winnerBikeId = "1"
+          if (
+            (bike1State.finished && !bike2State.finished) ||
+            bike1State.finishObservedAtSequenz <
+              bike2State.finishObservedAtSequenz
+          ) {
+            winnerBikeId = "1";
             this.updatePartialBikeState("1", { won: true });
             void this.markCurrentRaceAsWonBy("1");
+          } else if (
+            (!bike1State.finished && bike2State.finished) ||
+            bike1State.finishObservedAtSequenz >
+              bike2State.finishObservedAtSequenz
+          ) {
+            winnerBikeId = "2";
+            this.updatePartialBikeState("2", { won: true });
+            void this.markCurrentRaceAsWonBy("2");
           } else {
             this.updatePartialBikeState("1", { won: true });
             this.updatePartialBikeState("2", { won: true });
             void this.markCurrentRaceAsWonBy("3");
-            winnerBikeId = "3"
+            winnerBikeId = "3";
           }
 
           const bikeWonTopic = `Bike/${winnerBikeId}/won`;
           if (this.client) {
-            this.client.publish(
-              bikeWonTopic,
-              '',
-              { qos: 1 },
-              (err) => {
-                if (err) {
-                  console.error("❌ Failed to publish:", err);
-                } else {
-                  console.log(`🚀 Message sent to ${bikeWonTopic}`);
-                }
-              });
+            this.client.publish(bikeWonTopic, "", { qos: 1 }, (err) => {
+              if (err) {
+                console.error("❌ Failed to publish:", err);
+              } else {
+                console.log(`🚀 Message sent to ${bikeWonTopic}`);
+              }
+            });
           }
-          this.logger.log(`🏆 Bike ${winnerBikeId === "1" ? "1️⃣" : "2️⃣"} won! 🎉`);
-        }, 1000)
+          this.logger.log(
+            `🏆 Bike ${winnerBikeId === "1" ? "1️⃣" : "2️⃣"} won! 🎉`,
+          );
+        }, 1000);
       }
       thisBikeState = this.updatePartialBikeState(bikeId, {
         finishObservedAtSequenz: payloadObject.sequenz,

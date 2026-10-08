@@ -1,4 +1,4 @@
-import {Component, Inject} from '@angular/core';
+import {Component, Inject, ChangeDetectionStrategy} from '@angular/core';
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
 
 export interface DialogData {
@@ -9,9 +9,11 @@ export interface DialogData {
 }
 
 @Component({
-  selector: 'lib-yes-no-dialog',
-  templateUrl: 'yes-no-dialog.component.html',
-  styles: []
+    selector: 'lib-yes-no-dialog',
+    templateUrl: 'yes-no-dialog.component.html',
+    styles: [],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class YesNoDialogComponent {
 

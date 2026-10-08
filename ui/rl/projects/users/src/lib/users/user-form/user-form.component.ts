@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit } from "@angular/core";
+import { Component, OnDestroy, OnInit, ChangeDetectionStrategy } from "@angular/core";
 import {
   AbstractControl,
   ControlValueAccessor,
@@ -11,16 +11,18 @@ import { User } from "projects/backend-api/src/lib/user.service";
 import { Subscription } from "rxjs";
 
 @Component({
-  selector: 'user-form',
-  templateUrl: "user-form.component.html",
-  styleUrls: ["user-form.component.scss"],
-  providers: [
-    {
-      provide: NG_VALUE_ACCESSOR,
-      multi:true,
-      useExisting: UserFormComponent
-    }
-  ]
+    selector: 'user-form',
+    templateUrl: "user-form.component.html",
+    styleUrls: ["user-form.component.scss"],
+    providers: [
+        {
+            provide: NG_VALUE_ACCESSOR,
+            multi: true,
+            useExisting: UserFormComponent
+        }
+    ],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class UserFormComponent implements ControlValueAccessor, OnInit, OnDestroy {
 

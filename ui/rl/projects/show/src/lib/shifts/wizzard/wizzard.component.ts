@@ -1,4 +1,4 @@
-import { Component, OnInit } from "@angular/core";
+import { Component, OnInit, ChangeDetectionStrategy } from "@angular/core";
 import { ActivatedRoute, Router, RouterOutlet } from "@angular/router";
 import { Show, ShowService } from "projects/backend-api/src/lib/show.service";
 import { Shift, ShiftService } from "projects/backend-api/src/lib/shift.service";
@@ -6,13 +6,13 @@ import { MatSnackBar } from "@angular/material/snack-bar";
 import { Observable } from "rxjs";
 
 @Component({
-  selector: 'lib-wizzard',
-  standalone: true,
-  imports: [
-    RouterOutlet,
-  ],
-  templateUrl: './wizzard.component.html',
-  styleUrl: './wizzard.component.css'
+    selector: 'lib-wizzard',
+    imports: [
+        RouterOutlet,
+    ],
+    templateUrl: './wizzard.component.html',
+    changeDetection: ChangeDetectionStrategy.Eager,
+    styleUrl: './wizzard.component.css'
 })
 export class WizzardComponent implements OnInit {
   showId: string | undefined;

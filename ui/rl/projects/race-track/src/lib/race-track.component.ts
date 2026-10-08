@@ -9,10 +9,11 @@ export interface BikeData {
 }
 
 @Component({
-  selector: 'lib-race-track',
-  templateUrl: 'race-track.component.html',
-  styleUrls: ['race-track.component.html'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+    selector: 'lib-race-track',
+    templateUrl: 'race-track.component.html',
+    styleUrls: ['race-track.component.scss'],
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: false
 })
 export class RaceTrackComponent {
 

@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit } from "@angular/core";
+import { Component, OnDestroy, OnInit, ChangeDetectionStrategy } from "@angular/core";
 import { ActivatedRoute, ParamMap, Router } from "@angular/router";
 import { Race, RaceService, RaceState } from "projects/backend-api/src/lib/race.service";
 import { StatisticsService } from "projects/backend-api/src/lib/statistics.service";
@@ -81,9 +81,11 @@ function sortRacesForList() {
 }
 
 @Component({
-  selector: "lib-show-dashboard",
-  templateUrl: "./show-dashboard.component.html",
-  styleUrls: ["./show-dashboard.component.scss"],
+    selector: "lib-show-dashboard",
+    templateUrl: "./show-dashboard.component.html",
+    styleUrls: ["./show-dashboard.component.scss"],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class ShowDashboardComponent implements OnInit, OnDestroy {
   show: Show | undefined;

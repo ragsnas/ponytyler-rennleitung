@@ -73,8 +73,8 @@ let SongSyncService = SongSyncService_1 = class SongSyncService {
                             where: { id: localSongMatch.id },
                             data: {
                                 ...localSongMatch,
-                                selectable: song.status === "listed"
-                            }
+                                selectable: song.status === "listed",
+                            },
                         })
                             .then((song) => {
                             this.logger.log("Song Created:" + JSON.stringify(song));

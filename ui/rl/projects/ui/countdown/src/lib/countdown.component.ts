@@ -1,8 +1,10 @@
-import { Component, EventEmitter, Input, OnInit, Output } from "@angular/core";
+import { Component, EventEmitter, Input, OnInit, Output, ChangeDetectionStrategy } from "@angular/core";
 
 @Component({
-  selector: "lib-countdown",
-  templateUrl: "./countdown.component.html",
+    selector: "lib-countdown",
+    templateUrl: "./countdown.component.html",
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 class CountdownComponent implements OnInit {
 

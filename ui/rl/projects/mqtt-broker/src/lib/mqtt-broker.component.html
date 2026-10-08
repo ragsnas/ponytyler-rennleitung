@@ -2,11 +2,14 @@
 
 <p class="connection-status">Status: {{ connected ? 'Connected' : 'Disconnected' }}</p>
 
-<ul class="messages" *ngIf="messages.length > 0; else noMessages">
-  <li *ngFor="let message of messages">
-    <span class="topic">{{ message.topic }}</span>: <span class="payload">{{ message.payload }}</span>
-  </li>
-</ul>
-<ng-template #noMessages>
+@if (messages.length > 0) {
+  <ul class="messages">
+    @for (message of messages; track message) {
+      <li>
+        <span class="topic">{{ message.topic }}</span>: <span class="payload">{{ message.payload }}</span>
+      </li>
+    }
+  </ul>
+} @else {
   <p>No messages received yet.</p>
-</ng-template>
+}

@@ -4,7 +4,6 @@ import { HttpService } from "@nestjs/axios";
 import { Origin, SongService } from "../../prisma-api/song.service";
 import { Song } from "@prisma/client";
 import { firstValueFrom } from "rxjs";
-import { equal } from "node:assert";
 
 @Injectable()
 export class SongSyncService {
@@ -60,7 +59,7 @@ export class SongSyncService {
             (localSong: Song) =>
               this.cleanSongname(this.songToString(localSong)) ===
               this.cleanSongname(fullCloudSongName),
-          )
+          );
           if (!localSongMatch) {
             this.logger.log("Need to create Song:" + JSON.stringify(song));
             this.songService
@@ -80,8 +79,8 @@ export class SongSyncService {
                 where: { id: localSongMatch.id },
                 data: {
                   ...localSongMatch,
-                  selectable: song.status === "listed"
-                }
+                  selectable: song.status === "listed",
+                },
               })
               .then((song: Song) => {
                 this.logger.log("Song Created:" + JSON.stringify(song));
@@ -143,14 +142,14 @@ export class SongSyncService {
    * as `<div class='content'><span class='artist-name'>...</span>...
    * <div class='song-list'><div class='song'>...</div>...</div></div>`.
    */
-  private parseSonglistPage(
-    html: string,
-  ): { artist: string; title: string }[] {
+  private parseSonglistPage(html: string): { artist: string; title: string }[] {
     const songs: { artist: string; title: string }[] = [];
     const artistBlocks = html.split("<div class='content'>").slice(1);
 
     for (const block of artistBlocks) {
-      const artistMatch = block.match(/<span class='artist-name'>(.*?)<\/span>/);
+      const artistMatch = block.match(
+        /<span class='artist-name'>(.*?)<\/span>/,
+      );
       if (!artistMatch) {
         continue;
       }

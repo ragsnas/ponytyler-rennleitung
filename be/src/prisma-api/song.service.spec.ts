@@ -83,9 +83,7 @@ describe("SongService", () => {
       const updated = { id: 1, name: "New Name" };
       updateMock.mockResolvedValue(updated);
 
-      await expect(service.updateSong({ where, data })).resolves.toBe(
-        updated,
-      );
+      await expect(service.updateSong({ where, data })).resolves.toBe(updated);
       expect(updateMock).toHaveBeenCalledWith({ data, where });
     });
   });
@@ -103,9 +101,7 @@ describe("SongService", () => {
 
   describe("syncWithSingleSourceOfTruth", () => {
     it("resolves to false", async () => {
-      await expect(service.syncWithSingleSourceOfTruth()).resolves.toBe(
-        false,
-      );
+      await expect(service.syncWithSingleSourceOfTruth()).resolves.toBe(false);
     });
   });
 });

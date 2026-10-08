@@ -1,13 +1,15 @@
-import {Component, OnInit} from '@angular/core';
+import {Component, OnInit, ChangeDetectionStrategy} from '@angular/core';
 import {FormControl, FormGroup, Validators} from '@angular/forms';
 import {ActivatedRoute, Router} from '@angular/router';
 import {Show, ShowService} from 'projects/backend-api/src/lib/show.service';
 import {MatSnackBar} from "@angular/material/snack-bar";
 
 @Component({
-  selector: 'lib-edit-show',
-  templateUrl: './edit-show.component.html',
-  styleUrls: ['./edit-show.component.scss'],
+    selector: 'lib-edit-show',
+    templateUrl: './edit-show.component.html',
+    styleUrls: ['./edit-show.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class EditShowComponent implements OnInit {
   public form: FormGroup = new FormGroup({

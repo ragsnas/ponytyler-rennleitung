@@ -1,13 +1,15 @@
-import {Component} from '@angular/core';
+import {Component, ChangeDetectionStrategy} from '@angular/core';
 import {Origin, Song, SongService} from 'projects/backend-api/src/lib/song.service';
 import {HttpErrorResponse} from '@angular/common/http';
 import {MatSnackBar} from '@angular/material/snack-bar';
 import {Observable} from 'rxjs';
 
 @Component({
-  selector: 'lib-song-sync',
-  templateUrl: './song-sync.component.html',
-  styleUrls: ['./song-sync.component.css'],
+    selector: 'lib-song-sync',
+    templateUrl: './song-sync.component.html',
+    styleUrls: ['./song-sync.component.css'],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class SongSyncComponent {
   filesToSync: string[] = [];

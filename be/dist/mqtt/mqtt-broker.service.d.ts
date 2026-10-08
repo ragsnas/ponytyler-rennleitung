@@ -16,6 +16,7 @@ export declare class MqttBrokerService implements OnApplicationBootstrap, OnModu
     private readonly bikeStates;
     constructor(configService: ConfigService, raceService: RaceService, showService: ShowService);
     onApplicationBootstrap(): Promise<void>;
+    private drainingHandler;
     onModuleDestroy(): Promise<void>;
     private registerBrokerListeners;
     private handlePublish;

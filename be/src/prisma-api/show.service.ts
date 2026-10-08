@@ -52,17 +52,14 @@ export class ShowService implements OnModuleDestroy {
       orderBy,
     });
   }
-  
+
   async currentShow(): Promise<Show | null> {
     return this.prisma.show.findFirst({
       where: {
         active: true,
         showState: {
-          notIn: [
-            ShowState.LISTED,
-            ShowState.RACE_FINISHED
-          ]
-        }
+          notIn: [ShowState.LISTED, ShowState.RACE_FINISHED],
+        },
       },
     });
   }

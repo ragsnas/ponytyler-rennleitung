@@ -83,7 +83,7 @@ describe('AppComponent', () => {
     expect(healthWarningElement()).not.toBeNull();
 
     healthServiceSpy.checkHealth.and.returnValue(of(new HttpResponse<{ status: string }>({ status: 200, body: { status: 'ok' } })));
-    tick(60000);
+    tick(5000);
     fixture.detectChanges();
 
     expect(healthWarningElement()).toBeNull();
@@ -91,15 +91,15 @@ describe('AppComponent', () => {
     discardPeriodicTasks();
   }));
 
-  it('polls the health check every 60 seconds', fakeAsync(() => {
+  it('polls the health check every 5 seconds', fakeAsync(() => {
     fixture.detectChanges();
     tick();
     expect(healthServiceSpy.checkHealth).toHaveBeenCalledTimes(1);
 
-    tick(60000);
+    tick(5000);
     expect(healthServiceSpy.checkHealth).toHaveBeenCalledTimes(2);
 
-    tick(60000);
+    tick(5000);
     expect(healthServiceSpy.checkHealth).toHaveBeenCalledTimes(3);
 
     discardPeriodicTasks();

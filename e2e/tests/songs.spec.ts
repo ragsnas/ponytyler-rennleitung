@@ -5,13 +5,11 @@ import { test, expect, Page, Locator, BrowserContext } from '@playwright/test';
  * song directly, syncing songs from local files ("DJ Notebook" upload),
  * finding/merging duplicate songs, syncing songs from the real cloud
  * songlist (https://songlist.ponytyler.de, the same site the app itself
- * integrates with - see be/src/cron/song-sync/song-sync.service.ts), and
- * syncing songs' selectability against that same cloud songlist.
+ * integrates with - see be/src/cron/song-sync/song-sync.service.ts).
+ * Syncing songs' selectability lives in song-selectability.spec.ts, since it
+ * mutates every song globally.
  *
- * Ordering matters here: "syncs songs selectability" flips the selectable
- * flag on every local song that isn't found on the real cloud list (which
- * includes every fabricated song this file creates), so it runs last to
- * avoid invalidating assumptions made by the tests before it. "finds and
+ * Ordering matters here: "finds and
  * merges duplicate songs" runs before the cloud sync so the duplicate
  * detection (an O(n^2) scan over all selectable songs) isn't slowed down by
  * however many songs the real cloud list happens to contain.
@@ -153,28 +151,5 @@ test.describe.serial('Songs', () => {
     await page.goto('/song', { waitUntil: 'networkidle' });
     const cloudOriginIcons = page.locator('tr[mat-row] mat-icon', { hasText: 'cloud' });
     await expect(cloudOriginIcons.first()).toBeVisible({ timeout: 30000 });
-  });
-
-  test('syncs songs selectability against the cloud songlist', async ({ request }) => {
-    const name = `E2E Selectability Song ${uniqueSuffix}`;
-    // Guaranteed absent from the real cloud list by virtue of the timestamp.
-    const artist = `E2E Selectability Artist ${uniqueSuffix}`;
-
-    const response = await request.post(`${BACKEND_URL}/api/song`, {
-      data: { name, artist, selectable: true },
-    });
-    expect(response.status()).toBe(201);
-
-    await page.goto('/song', { waitUntil: 'networkidle' });
-    const row = rowByText(page, name);
-    await expect(row).toBeVisible({ timeout: 10000 });
-    await expect(row).toContainText('check-box');
-
-    await page.locator('button:has-text("Update Selecability")').click();
-    await expect(page.getByText('Selectability updated.')).toBeVisible({ timeout: 30000 });
-    await dismissSuccessSnackBar(page);
-
-    // Not present on the real cloud list, so the sync should have blocked it.
-    await expect(row).toContainText('block', { timeout: 10000 });
   });
 });

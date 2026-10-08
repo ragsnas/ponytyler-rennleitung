@@ -1,8 +1,12 @@
-<h2 *ngIf="title">
-  {{  title ? title : 'Yes Or No?'  }}
-</h2>
+@if (title) {
+  <h2>
+    {{  title ? title : 'Yes Or No?'  }}
+  </h2>
+}
 <mat-dialog-content>
-<p *ngIf="text">{{ text }}</p>
+  @if (text) {
+    <p>{{ text }}</p>
+  }
 </mat-dialog-content>
 <mat-dialog-actions>
   <ui-button-list>

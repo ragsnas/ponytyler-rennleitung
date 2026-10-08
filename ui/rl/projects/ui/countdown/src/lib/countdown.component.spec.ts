@@ -8,7 +8,7 @@ describe('CountdownComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [CountdownComponent]
+      declarations: [CountdownComponent]
     })
     .compileComponents();
 

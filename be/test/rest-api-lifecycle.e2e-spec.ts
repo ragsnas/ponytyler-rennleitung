@@ -16,7 +16,7 @@
  */
 import { Test, TestingModule } from "@nestjs/testing";
 import { INestApplication } from "@nestjs/common";
-import * as request from "supertest";
+import request from "supertest";
 import { ShowModule } from "../src/show/show.module";
 import { RaceModule } from "../src/race/race.module";
 import { SongModule } from "../src/song/song.module";

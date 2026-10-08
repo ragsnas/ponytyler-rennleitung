@@ -1,13 +1,13 @@
-<h2>{{ show?.name }} / {{ show?.date | date: "YYYY-MM-dd HH:mm" }} ({{ show?.duration }} Minutes)</h2>
+<h2>{{ show?.name }} / {{ $safeNavigationMigration(show?.date) | date: "yyyy-MM-dd HH:mm" }} ({{ show?.duration }} Minutes)</h2>
 
-<ng-container *ngIf="isListFull">
+@if (isListFull) {
   <lib-message type="warn">
     The List exceeds the Number of Races calculated to be raceable within the defined duration,
     based on the average Number of Songs raced per Hour in past races.
   </lib-message>
-</ng-container>
+}
 
-<ng-container *ngIf="races$ | async as races">
+@if (races$ | async; as races) {
   <div class="refresh-bar"
     style="display: flex;flex-direction: row;justify-content: space-between;align-items:flex-start;align-self:flex-start;gap: 15px;">
     <ui-button-list style="flex-basis: auto;margin-top: 0;" id="show-dashboard-button-list-top">
@@ -41,17 +41,16 @@
         </button>
       </div>
       <mat-progress-bar mode="determinate" value="{{secondsRemainingPercentage$ | async}}"></mat-progress-bar>
-      <span class="last-updated" *ngIf="lastUpdated">Last updated: {{ lastUpdated | date: "HH:mm:ss" }}</span>
+      @if (lastUpdated) {
+        <span class="last-updated">Last updated: {{ lastUpdated | date: "HH:mm:ss" }}</span>
+      }
     </div>
   </div>
-
-  <ng-container *ngIf="races.length <= 0">
+  @if (races.length <= 0) {
     <p>No Races yet</p>
-  </ng-container>
-  <ng-container *ngIf="races.length > 0">
-
+  }
+  @if (races.length > 0) {
     <table mat-table [dataSource]="races">
-
       <ng-container matColumnDef="orderNumber">
         <th mat-header-cell *matHeaderCellDef>
           <mat-icon>tag</mat-icon>
@@ -59,13 +58,20 @@
         <td mat-cell *matCellDef="let element" title="#{{ element.id }}">
           {{ element.orderNumber + 1 }}
           <br/>
-          <mat-icon *ngIf="element.raceState === 'RACED'">done</mat-icon>
-          <mat-icon *ngIf="element.raceState === 'CANCELED'">delete</mat-icon>
-          <mat-icon *ngIf="element.raceState === 'LISTED'">schedule</mat-icon>
-          <mat-icon *ngIf="element.raceState === 'WAITING_FOR_OPPONENT'">assignment</mat-icon>
+          @if (element.raceState === 'RACED') {
+            <mat-icon>done</mat-icon>
+          }
+          @if (element.raceState === 'CANCELED') {
+            <mat-icon>delete</mat-icon>
+          }
+          @if (element.raceState === 'LISTED') {
+            <mat-icon>schedule</mat-icon>
+          }
+          @if (element.raceState === 'WAITING_FOR_OPPONENT') {
+            <mat-icon>assignment</mat-icon>
+          }
         </td>
       </ng-container>
-
       <ng-container matColumnDef="song1">
         <th mat-header-cell *matHeaderCellDef>Black Bike</th>
         <td mat-cell
@@ -80,19 +86,26 @@
           <strong>{{ element.person1 }}</strong>
           <br />
           {{ element.song1?.artist }}<br />{{ element.song1?.name }}
-          <span class="song-already-played-info" *ngIf="element.raceState !== 'RACED' && element.song1AlreadyPlayed">Please choose a different Song <mat-icon>warning</mat-icon></span>
-          <mat-icon *ngIf="element.raceState === 'RACED' && element.bikeWon === 2" class="bike-has-lost">thumb_down
-          </mat-icon>
-          <mat-icon *ngIf="element.raceState === 'RACED' && (element.bikeWon === 1 || element.bikeWon === 3)"
-            class="bike-has-won">thumb_up
-          </mat-icon>
-          <button *ngIf="element.raceState === 'LISTED'" class="bike-won-button" mat-icon-button
-            (click)="bikeWon(1, element)">
-            <mat-icon class="bike-won">sports_score</mat-icon>
-          </button>
+          @if (element.raceState !== 'RACED' && element.song1AlreadyPlayed) {
+            <span class="song-already-played-info">Please choose a different Song <mat-icon>warning</mat-icon></span>
+          }
+          @if (element.raceState === 'RACED' && element.bikeWon === 2) {
+            <mat-icon class="bike-has-lost">thumb_down
+            </mat-icon>
+          }
+          @if (element.raceState === 'RACED' && (element.bikeWon === 1 || element.bikeWon === 3)) {
+            <mat-icon
+              class="bike-has-won">thumb_up
+            </mat-icon>
+          }
+          @if (element.raceState === 'LISTED') {
+            <button class="bike-won-button" mat-icon-button
+              (click)="bikeWon(1, element)">
+              <mat-icon class="bike-won">sports_score</mat-icon>
+            </button>
+          }
         </td>
       </ng-container>
-
       <ng-container matColumnDef="song2">
         <th mat-header-cell *matHeaderCellDef>White Bike</th>
         <td mat-cell
@@ -107,64 +120,82 @@
           <strong>{{ element.person2 }}</strong>
           <br />
           {{ element.song2?.artist }}<br />{{ element.song2?.name }}
-          <span class="song-already-played-info" *ngIf="element.raceState !== 'RACED' && element.song2AlreadyPlayed">Please choose a different Song <mat-icon>warning</mat-icon></span>
-          <mat-icon *ngIf="element.raceState === 'RACED' && element.bikeWon === 1" class="bike-has-lost">thumb_down
-          </mat-icon>
-          <mat-icon *ngIf="element.raceState === 'RACED' && (element.bikeWon === 2 || element.bikeWon === 3)"
-            class="bike-has-won">thumb_up
-          </mat-icon>
-          <button *ngIf="element.raceState === 'LISTED'" class="bike-won-button" mat-icon-button
-            (click)="bikeWon(2, element)">
-            <mat-icon class="bike-won">sports_score</mat-icon>
-          </button>
+          @if (element.raceState !== 'RACED' && element.song2AlreadyPlayed) {
+            <span class="song-already-played-info">Please choose a different Song <mat-icon>warning</mat-icon></span>
+          }
+          @if (element.raceState === 'RACED' && element.bikeWon === 1) {
+            <mat-icon class="bike-has-lost">thumb_down
+            </mat-icon>
+          }
+          @if (element.raceState === 'RACED' && (element.bikeWon === 2 || element.bikeWon === 3)) {
+            <mat-icon
+              class="bike-has-won">thumb_up
+            </mat-icon>
+          }
+          @if (element.raceState === 'LISTED') {
+            <button class="bike-won-button" mat-icon-button
+              (click)="bikeWon(2, element)">
+              <mat-icon class="bike-won">sports_score</mat-icon>
+            </button>
+          }
         </td>
       </ng-container>
-
       <ng-container matColumnDef="actions">
         <th mat-header-cell *matHeaderCellDef>Actions</th>
         <td mat-cell *matCellDef="let element">
-          <button *ngIf="element.raceState === 'LISTED'" mat-icon-button aria-label="Start Race"
-            (click)="startRace(element)" [disabled]="refreshing">
-            <mat-icon>play_arrow</mat-icon>
-          </button>
-          <button *ngIf="element.raceState === 'LISTED'" mat-icon-button aria-label="Songs Beide"
-            (click)="markRaceAsPlayBoth(element)" [disabled]="refreshing">
-            <mat-icon matBadge="2" matBadgeColor="accent" matBadgeSize="small">sports_score</mat-icon>
-          </button>
+          @if (element.raceState === 'LISTED') {
+            <button mat-icon-button aria-label="Start Race"
+              (click)="startRace(element)" [disabled]="refreshing">
+              <mat-icon>play_arrow</mat-icon>
+            </button>
+          }
+          @if (element.raceState === 'LISTED') {
+            <button mat-icon-button aria-label="Songs Beide"
+              (click)="markRaceAsPlayBoth(element)" [disabled]="refreshing">
+              <mat-icon matBadge="2" matBadgeColor="accent" matBadgeSize="small">sports_score</mat-icon>
+            </button>
+          }
           <button mat-icon-button aria-label="Edit Race" [routerLink]="'race/' +element.id" [disabled]="refreshing">
             <mat-icon>edit</mat-icon>
           </button>
-          <button
-            *ngIf="element.raceState === 'LISTED' && !isRaceFirstWaitingToRace(element)"
-            mat-icon-button
-            aria-label="Move Race Up"
-            (click)="moveRaceUp(element, 'up')"
-            [disabled]="refreshing">
-            <mat-icon>arrow_upward</mat-icon>
-          </button>
-          <button
-            *ngIf="element.raceState === 'LISTED' && !isRaceLastWaitingToRace(element)"
-            mat-icon-button aria-label="Move Race Down"
-            (click)="moveRaceUp(element, 'down')"
-            [disabled]="refreshing">
-            <mat-icon>arrow_downward</mat-icon>
-          </button>
-          <button *ngIf="element.raceState === 'RACED' || element.raceState === 'CANCELED'" mat-icon-button
-            aria-label="Return Race" (click)="markRaceAsNotRaced(element)">
-            <mat-icon>history</mat-icon>
-          </button>
-          <button *ngIf="element.raceState !== 'CANCELED'" mat-icon-button aria-label="Cancel Race"
-            (click)="markRaceAsCanceled(element)">
-            <mat-icon>delete</mat-icon>
-          </button>
-          <button *ngIf="element.raceState === 'WAITING_FOR_OPPONENT'" mat-icon-button aria-label="Merge Races"
-            (click)="mergeTopWaitingForOpponentRaces(element)">
-            <mat-icon>merge</mat-icon>
-          </button>
+          @if (element.raceState === 'LISTED' && !isRaceFirstWaitingToRace(element)) {
+            <button
+              mat-icon-button
+              aria-label="Move Race Up"
+              (click)="moveRaceUp(element, 'up')"
+              [disabled]="refreshing">
+              <mat-icon>arrow_upward</mat-icon>
+            </button>
+          }
+          @if (element.raceState === 'LISTED' && !isRaceLastWaitingToRace(element)) {
+            <button
+              mat-icon-button aria-label="Move Race Down"
+              (click)="moveRaceUp(element, 'down')"
+              [disabled]="refreshing">
+              <mat-icon>arrow_downward</mat-icon>
+            </button>
+          }
+          @if (element.raceState === 'RACED' || element.raceState === 'CANCELED') {
+            <button mat-icon-button
+              aria-label="Return Race" (click)="markRaceAsNotRaced(element)">
+              <mat-icon>history</mat-icon>
+            </button>
+          }
+          @if (element.raceState !== 'CANCELED') {
+            <button mat-icon-button aria-label="Cancel Race"
+              (click)="markRaceAsCanceled(element)">
+              <mat-icon>delete</mat-icon>
+            </button>
+          }
+          @if (element.raceState === 'WAITING_FOR_OPPONENT') {
+            <button mat-icon-button aria-label="Merge Races"
+              (click)="mergeTopWaitingForOpponentRaces(element)">
+              <mat-icon>merge</mat-icon>
+            </button>
+          }
           <p>RaceState: {{ element.raceState }}</p>
         </td>
       </ng-container>
-
       <tr mat-header-row *matHeaderRowDef="['orderNumber', 'song1', 'song2', 'actions']"></tr>
       <tr mat-row *matRowDef="let row; columns: ['orderNumber', 'song1', 'song2', 'actions'];" [ngClass]="{
               'race-state-listed': row.raceState === 'LISTED',
@@ -175,17 +206,14 @@
               'race-state-canceled': row.raceState === 'CANCELED'
               }"></tr>
     </table>
-  </ng-container>
-
-  <ng-container *ngIf="encoreSongs$ | async as encoreSongs">
+  }
+  @if (encoreSongs$ | async; as encoreSongs) {
     <h3>Encore Songs</h3>
-    <ng-container *ngIf="encoreSongs.length <= 0">
+    @if (encoreSongs.length <= 0) {
       <p>No Encore Songs yet</p>
-    </ng-container>
-    <ng-container *ngIf="encoreSongs.length > 0">
-
+    }
+    @if (encoreSongs.length > 0) {
       <table mat-table [dataSource]="encoreSongs">
-
         <ng-container matColumnDef="order">
           <th mat-header-cell *matHeaderCellDef>
             <mat-icon>tag</mat-icon>
@@ -194,20 +222,17 @@
             {{ element.order + 1 }}
           </td>
         </ng-container>
-
         <ng-container matColumnDef="song">
           <th mat-header-cell *matHeaderCellDef>Song</th>
           <td mat-cell *matCellDef="let element" class="song-column">
             {{ element.song?.artist }}<br />{{ element.song?.name }}
           </td>
         </ng-container>
-
         <tr mat-header-row *matHeaderRowDef="['order', 'song']"></tr>
         <tr mat-row *matRowDef="let row; columns: ['order', 'song'];"></tr>
       </table>
-    </ng-container>
-  </ng-container>
-
+    }
+  }
   <ng-container>
     <ui-button-list>
       <button mat-flat-button color="accent" [routerLink]="'../'">
@@ -216,6 +241,5 @@
       <button (click)="deleteShow()" mat-flat-button color="warn">Delete Show</button>
     </ui-button-list>
   </ng-container>
-
-</ng-container>
+}
 

@@ -1,4 +1,4 @@
-import {Component, forwardRef, Input, OnDestroy, OnInit} from '@angular/core';
+import {Component, forwardRef, Input, OnDestroy, OnInit, ChangeDetectionStrategy} from '@angular/core';
 import {
   AbstractControl,
   ControlValueAccessor,
@@ -18,21 +18,23 @@ export interface SongWithRaceInfo extends Song {
 }
 
 @Component({
-  selector: 'lib-song-auto-complete',
-  templateUrl: './input.component.html',
-  styleUrls: ['./input.component.scss'],
-  providers: [
-    {
-      provide: NG_VALUE_ACCESSOR,
-      multi: true,
-      useExisting: forwardRef(() => InputComponent),
-    },
-    {
-      provide: NG_VALIDATORS,
-      multi: true,
-      useExisting: forwardRef(() => InputComponent),
-    },
-  ],
+    selector: 'lib-song-auto-complete',
+    templateUrl: './input.component.html',
+    styleUrls: ['./input.component.scss'],
+    providers: [
+        {
+            provide: NG_VALUE_ACCESSOR,
+            multi: true,
+            useExisting: forwardRef(() => InputComponent),
+        },
+        {
+            provide: NG_VALIDATORS,
+            multi: true,
+            useExisting: forwardRef(() => InputComponent),
+        },
+    ],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class InputComponent implements OnInit, OnDestroy, ControlValueAccessor, Validator {
   @Input()

@@ -304,19 +304,19 @@ export class RaceService implements OnModuleDestroy {
             RaceState.VIDEO_PLAYING,
           ],
         },
-        showId: {equals: showId},
+        showId: { equals: showId },
       },
       orderBy: { orderNumber: "desc" },
       include: { song1: true, song2: true },
     });
-    if(!currentRace) {
+    if (!currentRace) {
       console.log(`No active Race found, loading next Listed Race instead`);
       currentRace = await this.prisma.race.findFirst({
         where: {
           raceState: {
-            equals: RaceState.LISTED
+            equals: RaceState.LISTED,
           },
-          showId: {equals: showId},
+          showId: { equals: showId },
         },
         orderBy: { orderNumber: "desc" },
         include: { song1: true, song2: true },

@@ -58,7 +58,7 @@ let MqttBrokerService = MqttBrokerService_1 = class MqttBrokerService {
         const wsPort = Number(this.configService.get("MQTT_WS_PORT") ?? DEFAULT_MQTT_WS_PORT);
         this.broker = await aedes_1.Aedes.createBroker();
         this.server = (0, net_1.createServer)(this.broker.handle);
-        this.wsServer = (0, aedes_server_factory_1.createServer)(this.broker, {
+        this.wsServer = (0, aedes_server_factory_1.createServer)(this.drainingHandler(this.broker), {
             ws: true,
         });
         this.registerBrokerListeners(this.broker);
@@ -70,6 +70,24 @@ let MqttBrokerService = MqttBrokerService_1 = class MqttBrokerService {
         this.client = mqtt_1.default.connect(mqttUri, {
             clientId: "mqtt-broker-itself",
         });
+    }
+    drainingHandler(broker) {
+        const handle = (conn, req) => {
+            const read = conn.read.bind(conn);
+            conn.read = (size) => {
+                if (size !== null && size !== undefined) {
+                    return read(size);
+                }
+                const chunks = [];
+                let chunk;
+                while ((chunk = read()) !== null) {
+                    chunks.push(chunk);
+                }
+                return chunks.length > 0 ? Buffer.concat(chunks) : null;
+            };
+            return broker.handle(conn, req);
+        };
+        return { handle };
     }
     async onModuleDestroy() {
         if (this.client) {
@@ -143,17 +161,19 @@ let MqttBrokerService = MqttBrokerService_1 = class MqttBrokerService {
                     const bike1State = this.bikeState.get("1");
                     const bike2State = this.bikeState.get("2");
                     let winnerBikeId = null;
-                    if (bike1State.finished && !bike2State.finished
-                        || bike1State.finishObservedAtSequenz < bike2State.finishObservedAtSequenz) {
-                        winnerBikeId = "2";
-                        this.updatePartialBikeState("2", { won: true });
-                        void this.markCurrentRaceAsWonBy("2");
-                    }
-                    else if (!bike1State.finished && bike2State.finished
-                        || bike1State.finishObservedAtSequenz > bike2State.finishObservedAtSequenz) {
+                    if ((bike1State.finished && !bike2State.finished) ||
+                        bike1State.finishObservedAtSequenz <
+                            bike2State.finishObservedAtSequenz) {
                         winnerBikeId = "1";
                         this.updatePartialBikeState("1", { won: true });
                         void this.markCurrentRaceAsWonBy("1");
+                    }
+                    else if ((!bike1State.finished && bike2State.finished) ||
+                        bike1State.finishObservedAtSequenz >
+                            bike2State.finishObservedAtSequenz) {
+                        winnerBikeId = "2";
+                        this.updatePartialBikeState("2", { won: true });
+                        void this.markCurrentRaceAsWonBy("2");
                     }
                     else {
                         this.updatePartialBikeState("1", { won: true });
@@ -163,7 +183,7 @@ let MqttBrokerService = MqttBrokerService_1 = class MqttBrokerService {
                     }
                     const bikeWonTopic = `Bike/${winnerBikeId}/won`;
                     if (this.client) {
-                        this.client.publish(bikeWonTopic, '', { qos: 1 }, (err) => {
+                        this.client.publish(bikeWonTopic, "", { qos: 1 }, (err) => {
                             if (err) {
                                 console.error("❌ Failed to publish:", err);
                             }

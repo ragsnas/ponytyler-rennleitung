@@ -1,3 +1,5 @@
+import { NO_ERRORS_SCHEMA } from '@angular/core';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { UploadDialogComponent } from './upload-dialog.component';
@@ -8,7 +10,12 @@ describe('UploadComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [UploadDialogComponent]
+      declarations: [UploadDialogComponent],
+      schemas: [NO_ERRORS_SCHEMA],
+      providers: [
+        { provide: MatDialogRef, useValue: { close: jasmine.createSpy('close') } },
+        { provide: MAT_DIALOG_DATA, useValue: {} }
+      ]
     })
     .compileComponents();
 

@@ -71,7 +71,7 @@ describe("ShowService", () => {
 
       expect(mqttClient.publish).toHaveBeenCalledWith(
         "ShowStateChange",
-        JSON.stringify({ showId: 1, state: ShowState.RACE }),
+        JSON.stringify({ showId: "1", state: ShowState.RACE }),
       );
     });
 
@@ -132,11 +132,11 @@ describe("ShowService", () => {
       });
       expect(mqttClient.publish).toHaveBeenCalledWith(
         "ShowStateChange",
-        JSON.stringify({ showId: 2, state: ShowState.LISTED }),
+        JSON.stringify({ showId: "2", state: ShowState.LISTED }),
       );
       expect(mqttClient.publish).toHaveBeenCalledWith(
         "ShowStateChange",
-        JSON.stringify({ showId: 3, state: ShowState.LISTED }),
+        JSON.stringify({ showId: "3", state: ShowState.LISTED }),
       );
     });
 
@@ -154,7 +154,10 @@ describe("ShowService", () => {
 
     it("does not query for other shows when this show is set to SHOW_FINISHED", async () => {
       findUniqueMock.mockResolvedValue({ id: 1, showState: ShowState.RACE });
-      updateMock.mockResolvedValue({ id: 1, showState: ShowState.SHOW_FINISHED });
+      updateMock.mockResolvedValue({
+        id: 1,
+        showState: ShowState.SHOW_FINISHED,
+      });
 
       await service.updateShow({
         where: { id: 1 },

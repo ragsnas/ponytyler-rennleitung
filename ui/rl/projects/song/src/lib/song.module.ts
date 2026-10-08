@@ -1,5 +1,5 @@
 import { CommonModule } from "@angular/common";
-import { provideHttpClient, withInterceptorsFromDi } from "@angular/common/http";
+import { provideHttpClient, withInterceptorsFromDi, withXhr } from "@angular/common/http";
 import { NgModule } from "@angular/core";
 import { FormsModule, ReactiveFormsModule } from "@angular/forms";
 import { MatButtonModule } from "@angular/material/button";
@@ -64,7 +64,7 @@ const routes: Routes = [
     MatSelectModule,
     MatSliderModule,
     MatChipsModule],
-  providers: [SongService, provideHttpClient(withInterceptorsFromDi())],
+  providers: [SongService, provideHttpClient(withXhr(), withInterceptorsFromDi())],
 })
 export class SongModule {
 }

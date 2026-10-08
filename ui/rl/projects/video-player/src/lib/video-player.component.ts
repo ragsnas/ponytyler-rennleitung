@@ -1,14 +1,15 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 
 @Component({
-  selector: 'lib-video-player',
-  template: `
+    selector: 'lib-video-player',
+    template: `
     <p>
       video-player works!
     </p>
   `,
-  styles: [
-  ]
+    styles: [],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class VideoPlayerComponent {
 }

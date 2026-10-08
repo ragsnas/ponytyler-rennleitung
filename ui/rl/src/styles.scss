@@ -1,6 +1,7 @@
 @use '@angular/material' as mat;
 @use './../m3-theme' as m3-theme;
-@include mat.core();
+@include mat.elevation-classes();
+@include mat.app-background();
 
 /* You can add global styles to this file, and also import other style files */
 @import 'material-icons/iconfont/material-icons.css';
@@ -8,9 +9,6 @@
 
 html {
   // Apply the light theme by default
-  @include mat.core-base(m3-theme.$light-theme);
-  @include mat.core-theme(m3-theme.$light-theme);
-  @include mat.core-color(m3-theme.$light-theme);
   @include mat.button-theme(m3-theme.$light-theme);
 }
 

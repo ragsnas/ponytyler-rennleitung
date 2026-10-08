@@ -1,12 +1,14 @@
-import { Component } from "@angular/core";
+import { Component, ChangeDetectionStrategy } from "@angular/core";
 import { Shift } from "../../../../../../../backend-api/src/lib/shift.service";
 import { FormBuilder, FormControl, FormGroup } from "@angular/forms";
 import { WizzardService } from "../../wizzard.service";
 
 @Component({
-  selector: "lib-choose-shifts",
-  templateUrl: "./choose-shifts.component.html",
-  styleUrl: "./choose-shifts.component.css",
+    selector: "lib-choose-shifts",
+    templateUrl: "./choose-shifts.component.html",
+    styleUrl: "./choose-shifts.component.css",
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class ChooseShiftsComponent {
   shifts: Shift[] = [];

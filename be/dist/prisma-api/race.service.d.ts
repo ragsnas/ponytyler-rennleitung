@@ -1,11 +1,13 @@
+import { OnModuleDestroy } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { PrismaService } from "./prisma.service";
 import { Prisma, Race } from "@prisma/client";
-export declare class RaceService {
+export declare class RaceService implements OnModuleDestroy {
     private prisma;
     private configService;
     private readonly mqttClient;
     constructor(prisma: PrismaService, configService: ConfigService);
+    onModuleDestroy(): void;
     race(raceWhereUniqueInput: Prisma.RaceWhereUniqueInput): Promise<Race | null>;
     raceWithSongs(raceId: string): Promise<Race | null>;
     upcomingRaceWithSongs(): Promise<{

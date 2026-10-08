@@ -1,4 +1,4 @@
-import { Component } from "@angular/core";
+import { Component, ChangeDetectionStrategy } from "@angular/core";
 import { FormArray, FormControl, FormGroup, Validators } from "@angular/forms";
 import { ActivatedRoute, Router } from "@angular/router";
 import { ShowService } from "projects/backend-api/src/lib/show.service";
@@ -6,9 +6,11 @@ import { MatSnackBar } from "@angular/material/snack-bar";
 import { ShiftRole } from "projects/backend-api/src/lib/shift.service";
 
 @Component({
-  selector: "lib-create-show",
-  templateUrl: "./create-show.component.html",
-  styleUrls: ["./create-show.component.scss"],
+    selector: "lib-create-show",
+    templateUrl: "./create-show.component.html",
+    styleUrls: ["./create-show.component.scss"],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class CreateShowComponent {
   public shiftsFormArray: FormArray<FormArray> = new FormArray<FormArray>([]);

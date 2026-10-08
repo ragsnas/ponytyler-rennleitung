@@ -3,32 +3,38 @@
   "compileOnSave": false,
   "compilerOptions": {
     "paths": {
+      "projects/*": [
+        "./projects/*"
+      ],
+      "src/*": [
+        "./src/*"
+      ],
       "@cron/song-sync": [
-        "dist/cron/song-sync"
+        "./dist/cron/song-sync"
       ],
       "@ui/button-list": [
-        "dist/ui/button-list"
+        "./dist/ui/button-list"
       ],
       "@ui/message": [
-        "dist/ui/message"
+        "./dist/ui/message"
       ],
       "@ui/song-sync-origin": [
-        "dist/ui/song-sync-origin"
+        "./dist/ui/song-sync-origin"
       ],
       "@ui/yes-no-dialog": [
-        "dist/ui/yes-no-dialog"
+        "./dist/ui/yes-no-dialog"
       ],
       "@utilities/form-control-pipe": [
-        "dist/utilities/form-control-pipe"
+        "./dist/utilities/form-control-pipe"
       ],
       "audio-player": [
-        "dist/audio-player"
+        "./dist/audio-player"
       ],
       "auth": [
-        "dist/auth"
+        "./dist/auth"
       ],
       "backend-api": [
-        "dist/backend-api"
+        "./dist/backend-api"
       ],
       "backup": [
         "./dist/backup"
@@ -38,22 +44,22 @@
         "./dist/countdown"
       ],
       "race-admin": [
-        "dist/race-admin"
+        "./dist/race-admin"
       ],
       "race-track": [
-        "dist/race-track"
+        "./dist/race-track"
       ],
       "mqtt-broker": [
-        "dist/mqtt-broker"
+        "./dist/mqtt-broker"
       ],
       "show": [
-        "dist/show"
+        "./dist/show"
       ],
       "song": [
-        "dist/song"
+        "./dist/song"
       ],
       "song-search": [
-        "dist/song-search"
+        "./dist/song-search"
       ],
       "state-machine": [
         "./dist/state-machine"
@@ -65,13 +71,12 @@
         "./dist/users"
       ],
       "video-player": [
-        "dist/video-player"
+        "./dist/video-player"
       ],
       "views": [
-        "dist/views"
+        "./dist/views"
       ]
     },
-    "baseUrl": "./",
     "outDir": "./dist/out-tsc",
     "skipLibCheck": true,
     "esModuleInterop": true,
@@ -84,14 +89,10 @@
     "sourceMap": true,
     "declaration": false,
     "experimentalDecorators": true,
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "importHelpers": true,
     "target": "ES2022",
-    "module": "ES2020",
-    "lib": [
-      "ES2020",
-      "dom"
-    ]
+    "module": "ES2020"
   },
   "angularCompilerOptions": {
     "enableI18nLegacyMessageIdFormat": false,

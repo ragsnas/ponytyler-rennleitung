@@ -1,32 +1,33 @@
-<ng-container *ngIf="show$ | async as show">
+@if (show$ | async; as show) {
   <h2>Updating Race for Show: {{show.name}}</h2>
-</ng-container>
-<div *ngIf="form" [formGroup]="form">
+}
+@if (form) {
+  <div [formGroup]="form">
     <div>
-        <mat-form-field appearance="outline">
-            <mat-label>Black Bike Rider</mat-label>
-            <input matInput placeholder="i.e. Gylcan or Oman or Paul or ..." formControlName="person1">
-        </mat-form-field>
+      <mat-form-field appearance="outline">
+        <mat-label>Black Bike Rider</mat-label>
+        <input matInput placeholder="i.e. Gylcan or Oman or Paul or ..." formControlName="person1">
+      </mat-form-field>
     </div>
     <div>
-        <lib-song-auto-complete
-          [showId]="showId"
-          label="Song for Black Bike"
-          formControlName="song1"></lib-song-auto-complete>
+      <lib-song-auto-complete
+        [showId]="showId"
+        label="Song for Black Bike"
+      formControlName="song1"></lib-song-auto-complete>
     </div>
     <hr>
-    <div>
+      <div>
         <mat-form-field appearance="outline">
-            <mat-label>White Bike Rider</mat-label>
-            <input matInput placeholder="i.e. Olga or Steve or ..." formControlName="person2">
+          <mat-label>White Bike Rider</mat-label>
+          <input matInput placeholder="i.e. Olga or Steve or ..." formControlName="person2">
         </mat-form-field>
-    </div>
-    <div>
+      </div>
+      <div>
         <lib-song-auto-complete
           [showId]="showId"
           label="Song for White Bike"
-          formControlName="song2"></lib-song-auto-complete>
+        formControlName="song2"></lib-song-auto-complete>
+      </div>
+      <button mat-flat-button color="primary" (click)="updateRace()" [disabled]="form.invalid">Speichern</button>
     </div>
-
-    <button mat-flat-button color="primary" (click)="updateRace()" [disabled]="form.invalid">Speichern</button>
-</div>
+  }

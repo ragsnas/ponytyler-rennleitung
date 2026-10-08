@@ -1,4 +1,4 @@
-import { provideHttpClient, withInterceptorsFromDi } from "@angular/common/http";
+import { provideHttpClient, withInterceptorsFromDi, withXhr } from "@angular/common/http";
 import { NgModule } from "@angular/core";
 import { RaceService } from "./race.service";
 import { ShowService } from "./show.service";
@@ -18,7 +18,7 @@ import { HealthService } from "./health.service";
     StatisticsService,
     BackupService,
     HealthService,
-    provideHttpClient(withInterceptorsFromDi()),
+    provideHttpClient(withXhr(), withInterceptorsFromDi()),
   ],
 })
 export class BackendApiModule {

@@ -71,7 +71,7 @@ describe("RaceService", () => {
 
       expect(mqttClient.publish).toHaveBeenCalledWith(
         "RaceStateChange",
-        JSON.stringify({ raceId: 1, state: RaceState.RACING }),
+        JSON.stringify({ raceId: "1", state: RaceState.RACING }),
       );
     });
 
@@ -139,11 +139,11 @@ describe("RaceService", () => {
       });
       expect(mqttClient.publish).toHaveBeenCalledWith(
         "RaceStateChange",
-        JSON.stringify({ raceId: 2, state: RaceState.LISTED }),
+        JSON.stringify({ raceId: "2", state: RaceState.LISTED }),
       );
       expect(mqttClient.publish).toHaveBeenCalledWith(
         "RaceStateChange",
-        JSON.stringify({ raceId: 3, state: RaceState.LISTED }),
+        JSON.stringify({ raceId: "3", state: RaceState.LISTED }),
       );
     });
 

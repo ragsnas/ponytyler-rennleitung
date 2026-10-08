@@ -1,11 +1,13 @@
+import { OnModuleDestroy } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { PrismaService } from "./prisma.service";
 import { Show, Prisma } from "@prisma/client";
-export declare class ShowService {
+export declare class ShowService implements OnModuleDestroy {
     private prisma;
     private configService;
     private readonly mqttClient;
     constructor(prisma: PrismaService, configService: ConfigService);
+    onModuleDestroy(): void;
     show(ShowWhereUniqueInput: Prisma.ShowWhereUniqueInput): Promise<Show | null>;
     shows(params: {
         skip?: number;

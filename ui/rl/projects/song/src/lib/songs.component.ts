@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { FormControl, FormGroup } from '@angular/forms';
 import {
   BehaviorSubject,
@@ -12,9 +12,11 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { Song, SongService } from '../../../backend-api/src/lib/song.service';
 
 @Component({
-  selector: 'lib-song-songs',
-  templateUrl: './songs.component.html',
-  styleUrls: ['./songs.component.scss'],
+    selector: 'lib-song-songs',
+    templateUrl: './songs.component.html',
+    styleUrls: ['./songs.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class SongsComponent implements OnInit {
   songs$: BehaviorSubject<Song[]> = new BehaviorSubject<Song[]>([]);

@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Race, RaceService } from 'projects/backend-api/src/lib/race.service';
 import { Show, ShowService } from 'projects/backend-api/src/lib/show.service';
@@ -6,9 +6,11 @@ import { BehaviorSubject } from 'rxjs';
 import {MatSnackBar} from "@angular/material/snack-bar";
 
 @Component({
-  selector: 'lib-show-director-dashboard',
-  templateUrl: './director-dashboard.component.html',
-  styleUrls: ['./director-dashboard.component.scss'],
+    selector: 'lib-show-director-dashboard',
+    templateUrl: './director-dashboard.component.html',
+    styleUrls: ['./director-dashboard.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class DirectorDashboardComponent implements OnInit {
   show: Show | undefined;

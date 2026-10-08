@@ -1,13 +1,15 @@
-import { Component } from "@angular/core";
+import { Component, ChangeDetectionStrategy } from "@angular/core";
 import { FormControl, FormGroup } from "@angular/forms";
 import { User, UserService } from "projects/backend-api/src/lib/user.service";
 import { ActivatedRoute, Router } from "@angular/router";
 
 
 @Component({
-  selector: 'lib-create-user',
-  templateUrl: './create-user.component.html',
-  styleUrl: './create-user.component.css'
+    selector: 'lib-create-user',
+    templateUrl: './create-user.component.html',
+    styleUrl: './create-user.component.css',
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class CreateUserComponent {
 

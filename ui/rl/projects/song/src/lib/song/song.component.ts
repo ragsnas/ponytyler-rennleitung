@@ -1,10 +1,12 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, ChangeDetectionStrategy } from '@angular/core';
 import { Song } from '../../../../backend-api/src/lib/song.service';
 
 @Component({
-  selector: 'lib-song-song',
-  templateUrl: './song.component.html',
-  styleUrls: ['./song.component.scss'],
+    selector: 'lib-song-song',
+    templateUrl: './song.component.html',
+    styleUrls: ['./song.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class SongComponent {
   @Input()

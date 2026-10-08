@@ -18,6 +18,15 @@ export default defineConfig({
   projects: [
     {
       name: 'chromium',
+      testIgnore: /song-selectability\.spec\.ts/,
+      use: { ...devices['Desktop Chrome'] },
+    },
+    {
+      // Specs that mutate state shared with every other spec (e.g. flipping
+      // the selectable flag on all songs) run only after everything else.
+      name: 'global-mutations',
+      testMatch: /song-selectability\.spec\.ts/,
+      dependencies: ['chromium'],
       use: { ...devices['Desktop Chrome'] },
     },
   ],

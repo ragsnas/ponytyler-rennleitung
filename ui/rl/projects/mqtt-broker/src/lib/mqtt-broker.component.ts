@@ -1,14 +1,16 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { MqttBrokerMessage, MqttBrokerService } from './mqtt-broker.service';
 
 const MAX_DISPLAYED_MESSAGES = 200;
 
 @Component({
-  selector: 'lib-mqtt-broker',
-  templateUrl: './mqtt-broker.component.html',
-  styleUrls: ['./mqtt-broker.component.scss'],
-  providers: [MqttBrokerService],
+    selector: 'lib-mqtt-broker',
+    templateUrl: './mqtt-broker.component.html',
+    styleUrls: ['./mqtt-broker.component.scss'],
+    providers: [MqttBrokerService],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class MqttBrokerComponent implements OnInit, OnDestroy {
   connected = false;

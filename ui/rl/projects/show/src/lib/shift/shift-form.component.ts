@@ -1,9 +1,11 @@
-import { Component, Input } from "@angular/core";
+import { Component, Input, ChangeDetectionStrategy } from "@angular/core";
 import { FormArray, FormGroup } from "@angular/forms";
 
 @Component({
-  selector: "shift-from",
-  templateUrl: "./shift-form.component.html",
+    selector: "shift-from",
+    templateUrl: "./shift-form.component.html",
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class ShiftFormComponent {
   @Input() shift!: FormArray;

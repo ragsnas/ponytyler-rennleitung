@@ -1,4 +1,4 @@
-import {Component, OnInit} from '@angular/core';
+import {Component, OnInit, ChangeDetectionStrategy} from '@angular/core';
 import {FormControl, FormGroup} from '@angular/forms';
 import {ActivatedRoute, Router} from '@angular/router';
 import {Song, SongService} from 'projects/song/src/public-api';
@@ -9,9 +9,11 @@ import {Show, ShowService} from 'projects/backend-api/src/lib/show.service';
 import {Observable} from 'rxjs';
 
 @Component({
-  selector: 'lib-create-race',
-  templateUrl: './create-race.component.html',
-  styleUrls: ['./create-race.component.scss']
+    selector: 'lib-create-race',
+    templateUrl: './create-race.component.html',
+    styleUrls: ['./create-race.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class CreateRaceComponent implements OnInit {
 

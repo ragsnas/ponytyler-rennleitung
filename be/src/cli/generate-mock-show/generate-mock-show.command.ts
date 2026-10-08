@@ -62,13 +62,17 @@ export class GenerateMockShowCommand {
     try {
       await this.songSyncService.triggerSync();
     } catch (error) {
-      this.logger.warn(`Song sync failed, continuing with existing songs: ${error}`);
+      this.logger.warn(
+        `Song sync failed, continuing with existing songs: ${error}`,
+      );
     }
 
     try {
       await this.songSyncService.updateSelectability();
     } catch (error) {
-      this.logger.warn(`Updating song selectability failed, continuing: ${error}`);
+      this.logger.warn(
+        `Updating song selectability failed, continuing: ${error}`,
+      );
     }
   }
 

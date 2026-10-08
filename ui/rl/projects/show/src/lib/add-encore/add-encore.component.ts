@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { FormControl, FormGroup } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Song } from 'projects/song/src/public-api';
@@ -8,9 +8,11 @@ import { Show, ShowService } from 'projects/backend-api/src/lib/show.service';
 import { Observable } from 'rxjs';
 
 @Component({
-  selector: 'lib-add-encore',
-  templateUrl: './add-encore.component.html',
-  styleUrls: ['./add-encore.component.scss'],
+    selector: 'lib-add-encore',
+    templateUrl: './add-encore.component.html',
+    styleUrls: ['./add-encore.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class AddEncoreComponent implements OnInit {
 

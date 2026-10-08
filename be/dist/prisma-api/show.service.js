@@ -27,6 +27,9 @@ let ShowService = class ShowService {
             clientId: "be-show-service",
         });
     }
+    onModuleDestroy() {
+        this.mqttClient.end();
+    }
     async show(ShowWhereUniqueInput) {
         return this.prisma.show.findUnique({
             where: ShowWhereUniqueInput,
@@ -47,11 +50,8 @@ let ShowService = class ShowService {
             where: {
                 active: true,
                 showState: {
-                    notIn: [
-                        client_1.ShowState.LISTED,
-                        client_1.ShowState.RACE_FINISHED
-                    ]
-                }
+                    notIn: [client_1.ShowState.LISTED, client_1.ShowState.RACE_FINISHED],
+                },
             },
         });
     }

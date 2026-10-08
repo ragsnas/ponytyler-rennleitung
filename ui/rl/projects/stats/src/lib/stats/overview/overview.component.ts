@@ -1,11 +1,11 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 
 @Component({
-  selector: 'lib-overview',
-  standalone: true,
-  imports: [],
-  templateUrl: './overview.component.html',
-  styleUrl: './overview.component.css'
+    selector: 'lib-overview',
+    imports: [],
+    templateUrl: './overview.component.html',
+    changeDetection: ChangeDetectionStrategy.Eager,
+    styleUrl: './overview.component.css'
 })
 export class OverviewComponent {
 

@@ -45,7 +45,9 @@ describe("EncoreSongService", () => {
     });
 
     it("assigns the next order number after the highest existing encore song for that show", async () => {
-      findManyMock.mockResolvedValue([{ id: 2, showId: 5, songId: 11, order: 3 }]);
+      findManyMock.mockResolvedValue([
+        { id: 2, showId: 5, songId: 11, order: 3 },
+      ]);
       createMock.mockResolvedValue({ id: 3, showId: 5, songId: 12, order: 4 });
 
       await service.createEncoreSong({ showId: 5, songId: 12 });

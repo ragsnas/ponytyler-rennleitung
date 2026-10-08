@@ -1,31 +1,26 @@
 <h2>Upcomming Races</h2>
 
-<ng-container *ngIf="upcommingRaces$">
-  <ng-container *ngIf="upcommingRaces$ | async as upcommingRaces">
-    <ng-container *ngIf="upcommingRaces.length <= 0" >
+@if (upcommingRaces$) {
+  @if (upcommingRaces$ | async; as upcommingRaces) {
+    @if (upcommingRaces.length <= 0) {
       <p>No Races yet</p>
-    </ng-container>
-    <ng-container *ngIf="upcommingRaces.length > 0" >
-
+    }
+    @if (upcommingRaces.length > 0) {
       <table mat-table [dataSource]="upcommingRaces">
-
         <ng-container matColumnDef="person1">
           <td mat-cell *matCellDef="let element">
             <div class="person person1">{{element.person1}}</div>
             <div class="song song1">{{element.song1?.artist}} - {{element.song1?.name}}</div>
           </td>
         </ng-container>
-
         <ng-container matColumnDef="person2">
           <td mat-cell *matCellDef="let element">
             <div class="person person2">{{element.person2}}</div>
             <div class="song song2">{{element.song2?.artist}} - {{element.song2?.name}}</div>
           </td>
         </ng-container>
-
         <tr mat-row *matRowDef="let row; columns: ['person1', 'person2'];"></tr>
       </table>
-    </ng-container>
-  </ng-container>
-
-</ng-container>
+    }
+  }
+}

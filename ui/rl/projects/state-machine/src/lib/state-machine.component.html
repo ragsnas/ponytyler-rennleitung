@@ -1,46 +1,46 @@
 <ng-container>
   <div class="stateMachine_controlBar">
-    <ng-container *ngIf="currentShow">
+    @if (currentShow) {
       <div class="showInfo">
         <strong>{{currentShow.name}} (#{{currentShow.id}})</strong>
         /
         <strong>{{currentShow.showState}}</strong>
-        <ng-container *ngIf="currentRaceState">
+        @if (currentRaceState) {
           / <strong>{{currentRaceState}}</strong>
-        </ng-container>
+        }
       </div>
-    </ng-container>
+    }
     <ui-button-list>
-    <button
-      [disabled]="['RACING', 'WAITING_TO_RACE'].some(currentRaceState)"
-      mat-mini-fab color="accent" (click)="startCountdown()">
-      <mat-icon>play_circle</mat-icon>
-    </button>
-    <button mat-mini-fab color="accent" (click)="skipRace()">
-      <mat-icon>skip_next</mat-icon>
-    </button>
-    <button
-      [disabled]="!['RACING', 'WAITING_TO_RACE'].some(currentRaceState)"
-      mat-mini-fab color="accent" (click)="stopRace()">
-      <mat-icon>stop_circle</mat-icon>
-    </button>
-    <button
-      [disabled]="currentShowState !== 'RACE_FINISHED'"
-      mat-mini-fab extended color="accent" (click)="setRaceDone()">
-      <mat-icon>lyrics</mat-icon>
-    </button>
-    <button
-      [disabled]="!['PLAYING_VIDEO', 'VIDEO_FINISHED'].some(currentShowState)"
-      mat-mini-fab color="accent" (click)="setRaceDone()">
-      <mat-icon>check_cricle</mat-icon>
-    </button>
+      <button
+        [disabled]="['RACING', 'WAITING_TO_RACE'].includes(currentRaceState!)"
+        mat-mini-fab color="accent" (click)="startCountdown()">
+        <mat-icon>play_circle</mat-icon>
+      </button>
+      <button mat-mini-fab color="accent" (click)="skipRace()">
+        <mat-icon>skip_next</mat-icon>
+      </button>
+      <button
+        [disabled]="!['RACING', 'WAITING_TO_RACE'].includes(currentRaceState!)"
+        mat-mini-fab color="accent" (click)="stopRace()">
+        <mat-icon>stop_circle</mat-icon>
+      </button>
+      <button
+        [disabled]="currentShowState !== 'RACE_FINISHED'"
+        mat-mini-fab extended color="accent" (click)="setRaceDone()">
+        <mat-icon>lyrics</mat-icon>
+      </button>
+      <button
+        [disabled]="!['PLAYING_VIDEO', 'VIDEO_FINISHED'].includes(currentShowState!)"
+        mat-mini-fab color="accent" (click)="setRaceDone()">
+        <mat-icon>check_cricle</mat-icon>
+      </button>
     </ui-button-list>
   </div>
 </ng-container>
 
 <mat-divider></mat-divider>
 
-<ng-container *ngIf="currentRace">
+@if (currentRace) {
   <div class="raceInfo">
     <div class="raceInfo_bike1">
       <p>
@@ -55,60 +55,60 @@
       </p>
     </div>
   </div>
-</ng-container>
+}
 
 <mat-divider></mat-divider>
 
-<ng-container *ngIf="currentShowState">
-  <ng-container *ngIf="currentShowState === 'BEFORE_SHOW'">
+@if (currentShowState) {
+  @if (currentShowState === 'BEFORE_SHOW') {
     <p>Waiting for Show to begin</p>
-  </ng-container>
-  <ng-container *ngIf="currentShowState === 'BEFORE_RACE'">
+  }
+  @if (currentShowState === 'BEFORE_RACE') {
     <p>Waiting for Race to Start</p>
-  </ng-container>
-  <ng-container *ngIf="currentShowState === 'RACE'">
+  }
+  @if (currentShowState === 'RACE') {
     RACE!
-    <ng-container *ngIf="currentRace">
-      <ng-container *ngIf="currentRaceState === 'WAITING_TO_RACE'">
+    @if (currentRace) {
+      @if (currentRaceState === 'WAITING_TO_RACE') {
         <lib-countdown
           [countDownFrom]="3"
           [startWord]="getRandomStartWord()"
-          (countDownFinished)="startRace()"></lib-countdown>
-      </ng-container>
-      <ng-container *ngIf="currentRaceState === 'ERROR'">
+        (countDownFinished)="startRace()"></lib-countdown>
+      }
+      @if (currentRaceState === 'ERROR') {
         ERROR! FEHLSTART!
-      </ng-container>
-      <ng-container *ngIf="currentRaceState === 'RACING'">
+      }
+      @if (currentRaceState === 'RACING') {
         <lib-race-track
           [bike1]="bike1$ | async"
           [bike2]="bike2$ | async"
           [raceState]="currentRaceState" />
         RACE IS RUNNING! RACE TRACK!
-      </ng-container>
-      <ng-container *ngIf="currentRaceState === 'RACED'">
+      }
+      @if (currentRaceState === 'RACED') {
         RACE IS OVER!
-      </ng-container>
-    </ng-container>
-  </ng-container>
-  <ng-container *ngIf="currentShowState === 'RACE_FINISHED'">
+      }
+    }
+  }
+  @if (currentShowState === 'RACE_FINISHED') {
     Celebrate the winner!
-  </ng-container>
-  <ng-container *ngIf="currentShowState === 'PLAYING_VIDEO'">
+  }
+  @if (currentShowState === 'PLAYING_VIDEO') {
     VIDEO IS PLAYING NOW
-  </ng-container>
-  <ng-container *ngIf="currentShowState === 'VIDEO_FINISHED'">
+  }
+  @if (currentShowState === 'VIDEO_FINISHED') {
     VIDEO FINISHED!
-  </ng-container>
-  <ng-container *ngIf="currentShowState === 'BEFORE_ENCORE'">
+  }
+  @if (currentShowState === 'BEFORE_ENCORE') {
     Goodbye! :wink:
-  </ng-container>
-  <ng-container *ngIf="currentShowState === 'PLAYING_ENCORE'">
+  }
+  @if (currentShowState === 'PLAYING_ENCORE') {
     ENCORE!!!
-  </ng-container>
-  <ng-container *ngIf="currentShowState === 'ENCORE_FINISHED'">
+  }
+  @if (currentShowState === 'ENCORE_FINISHED') {
     The Show is over! Go Home!
-  </ng-container>
-  <ng-container *ngIf="currentShowState === 'SHOW_FINISHED'">
+  }
+  @if (currentShowState === 'SHOW_FINISHED') {
     The Show is now actually over! Go Home!
-  </ng-container>
-</ng-container>
+  }
+}

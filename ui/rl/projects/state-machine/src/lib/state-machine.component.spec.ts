@@ -160,4 +160,59 @@ describe('StateMachineComponent', () => {
     expect(showService.getShow).not.toHaveBeenCalled();
     expect(component.currentShow).toEqual(currentShow);
   });
+
+  describe('control buttons', () => {
+    const START = 0;
+    const STOP = 2;
+    const RACE_DONE = 3;
+    const VIDEO_DONE = 4;
+
+    async function render(raceState: RaceState | undefined, showState: ShowState | undefined) {
+      fixture.detectChanges();
+      await fixture.whenStable();
+      component.currentRaceState = raceState;
+      component.currentShowState = showState;
+      fixture.detectChanges();
+      return Array.from<HTMLButtonElement>(fixture.nativeElement.querySelectorAll('button'));
+    }
+
+    it('enables start and disables stop while no race is running', async () => {
+      const buttons = await render(RaceState.LISTED, ShowState.BEFORE_RACE);
+
+      expect(buttons[START].disabled).toBeFalse();
+      expect(buttons[STOP].disabled).toBeTrue();
+    });
+
+    for (const raceState of [RaceState.RACING, RaceState.WAITING_TO_RACE]) {
+      it(`disables start and enables stop while the race is ${raceState}`, async () => {
+        const buttons = await render(raceState, ShowState.RACE);
+
+        expect(buttons[START].disabled).toBeTrue();
+        expect(buttons[STOP].disabled).toBeFalse();
+      });
+    }
+
+    it('enables start and disables stop when there is no race state', async () => {
+      const buttons = await render(undefined, undefined);
+
+      expect(buttons[START].disabled).toBeFalse();
+      expect(buttons[STOP].disabled).toBeTrue();
+    });
+
+    it('enables the race-done button only when the show state is RACE_FINISHED', async () => {
+      expect((await render(RaceState.RACED, ShowState.RACE_FINISHED))[RACE_DONE].disabled).toBeFalse();
+      expect((await render(RaceState.RACED, ShowState.RACE))[RACE_DONE].disabled).toBeTrue();
+    });
+
+    for (const showState of [ShowState.PLAYING_VIDEO, ShowState.VIDEO_FINISHED]) {
+      it(`enables the video-done button while the show state is ${showState}`, async () => {
+        expect((await render(RaceState.DONE, showState))[VIDEO_DONE].disabled).toBeFalse();
+      });
+    }
+
+    it('disables the video-done button for other show states', async () => {
+      expect((await render(RaceState.DONE, ShowState.BEFORE_RACE))[VIDEO_DONE].disabled).toBeTrue();
+      expect((await render(RaceState.DONE, undefined))[VIDEO_DONE].disabled).toBeTrue();
+    });
+  });
 });

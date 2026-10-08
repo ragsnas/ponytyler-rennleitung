@@ -1,10 +1,12 @@
-import {Component, Input} from '@angular/core';
+import {Component, Input, ChangeDetectionStrategy} from '@angular/core';
 import {Origin} from 'projects/backend-api/src/lib/song.service';
 
 @Component({
-  selector: 'lib-song-sync-origin',
-  templateUrl: 'song-sync-origin.component.html',
-  styleUrls: ['song-sync-origin.component.scss']
+    selector: 'lib-song-sync-origin',
+    templateUrl: 'song-sync-origin.component.html',
+    styleUrls: ['song-sync-origin.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class SongSyncOriginComponent {
 

@@ -120,6 +120,7 @@ describe("MqttBrokerService", () => {
         data: {
           showId: 7,
           bikeWon: 1,
+          raceFinishedAt: expect.any(String),
           raceState: RaceState.RACED,
           raced: true,
         },

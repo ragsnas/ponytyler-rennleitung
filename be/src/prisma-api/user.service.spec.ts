@@ -83,9 +83,7 @@ describe("UserService", () => {
       const updated = { id: 1, name: "New Name" };
       updateMock.mockResolvedValue(updated);
 
-      await expect(service.updateUser({ where, data })).resolves.toBe(
-        updated,
-      );
+      await expect(service.updateUser({ where, data })).resolves.toBe(updated);
       expect(updateMock).toHaveBeenCalledWith({ data, where });
     });
   });

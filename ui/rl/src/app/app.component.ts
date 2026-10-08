@@ -1,4 +1,4 @@
-import {Component, OnInit} from '@angular/core';
+import {Component, OnInit, ChangeDetectionStrategy} from '@angular/core';
 import {Show, ShowService} from "projects/backend-api/src/lib/show.service";
 import {HealthService} from "projects/backend-api/src/lib/health.service";
 import {catchError, filter, map, Observable, of, switchMap, timer} from "rxjs";
@@ -6,9 +6,11 @@ import {catchError, filter, map, Observable, of, switchMap, timer} from "rxjs";
 const HEALTH_CHECK_INTERVAL_MS = 5000;
 
 @Component({
-  selector: 'app-root',
-  templateUrl: './app.component.html',
-  styleUrls: ['./app.component.scss']
+    selector: 'app-root',
+    templateUrl: './app.component.html',
+    styleUrls: ['./app.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class AppComponent implements OnInit {
   public currentShow$: Observable<Show> | undefined;

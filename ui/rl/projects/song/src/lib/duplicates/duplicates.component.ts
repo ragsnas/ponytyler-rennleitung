@@ -1,4 +1,4 @@
-import { Component, OnInit } from "@angular/core";
+import { Component, OnInit, ChangeDetectionStrategy } from "@angular/core";
 import { Song, SongService } from "projects/backend-api/src/lib/song.service";
 import { Subject } from "rxjs";
 import { closest, distance } from "fastest-levenshtein";
@@ -14,9 +14,11 @@ export interface SongWithDuplicateMeta extends Song {
 const PONTY_TYPER_REFRESH_TIMER_INTERVAL = 'pontyTyperLevenshteinDistanceMinimum';
 
 @Component({
-  selector: 'lib-song-duplicates',
-  templateUrl: './duplicates.component.html',
-  styleUrls: ['./duplicates.component.css'],
+    selector: 'lib-song-duplicates',
+    templateUrl: './duplicates.component.html',
+    styleUrls: ['./duplicates.component.css'],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class DuplicatesComponent implements OnInit {
   songs$: Subject<SongWithDuplicateMeta[]> = new Subject<SongWithDuplicateMeta[]>();

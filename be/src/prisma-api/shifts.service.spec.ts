@@ -83,9 +83,7 @@ describe("ShiftsService", () => {
       const updated = { id: 1, order: 2 };
       updateMock.mockResolvedValue(updated);
 
-      await expect(service.updateShift({ where, data })).resolves.toBe(
-        updated,
-      );
+      await expect(service.updateShift({ where, data })).resolves.toBe(updated);
       expect(updateMock).toHaveBeenCalledWith({ data, where });
     });
   });

@@ -1,3 +1,4 @@
+import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { DeleteUserComponent } from './delete-user.component';
@@ -8,7 +9,8 @@ describe('DeleteUserComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [DeleteUserComponent]
+      declarations: [DeleteUserComponent],
+      schemas: [NO_ERRORS_SCHEMA]
     })
     .compileComponents();
 

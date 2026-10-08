@@ -1,30 +1,34 @@
 <div>
-  <div id="player1" *ngIf="bike1">
-    <h2>Bike 1</h2>
-    <div class="progress">
-      <mat-progress-bar [value]="bike1.progressInPercent"></mat-progress-bar>
-    </div>
-    <div class="average-speed">
-      <mat-icon>avg_pace</mat-icon>
-      {{ bike1.averageSpeedInKmh | number:'2.2-2'}} km/h
+  @if (bike1) {
+    <div id="player1">
+      <h2>Bike 1</h2>
+      <div class="progress">
+        <mat-progress-bar [value]="bike1.progressInPercent"></mat-progress-bar>
+      </div>
+      <div class="average-speed">
+        <mat-icon>avg_pace</mat-icon>
+        {{ bike1.averageSpeedInKmh | number:'2.2-2'}} km/h
       ({{bike1.progressInMm / 100 | number:'2.2-2'}} m von 250m)</div>
-    <div class="time-elapsed">
-      <mat-icon>timer</mat-icon>
-      {{ bike1.timeInSeconds | number:'2.4-4' }} s
+      <div class="time-elapsed">
+        <mat-icon>timer</mat-icon>
+        {{ bike1.timeInSeconds | number:'2.4-4' }} s
+      </div>
     </div>
-  </div>
-  <div id="player2" *ngIf="bike2">
-    <h2>Bike 1</h2>
-    <div class="progress">
-      <mat-progress-bar [value]="bike2.progressInPercent"></mat-progress-bar>
-    </div>
-    <div class="average-speed">
-      <mat-icon>avg_pace</mat-icon>
-      {{ bike2.averageSpeedInKmh | number:'2.2-2'}} km/h
+  }
+  @if (bike2) {
+    <div id="player2">
+      <h2>Bike 1</h2>
+      <div class="progress">
+        <mat-progress-bar [value]="bike2.progressInPercent"></mat-progress-bar>
+      </div>
+      <div class="average-speed">
+        <mat-icon>avg_pace</mat-icon>
+        {{ bike2.averageSpeedInKmh | number:'2.2-2'}} km/h
       ({{bike2.progressInMm / 100 | number:'2.2-2'}} m von 250m)</div>
-    <div class="time-elapsed">
-      <mat-icon>timer</mat-icon>
-      {{ bike2.timeInSeconds | number:'2.4-4'}} s
+      <div class="time-elapsed">
+        <mat-icon>timer</mat-icon>
+        {{ bike2.timeInSeconds | number:'2.4-4'}} s
+      </div>
     </div>
-  </div>
+  }
 </div>

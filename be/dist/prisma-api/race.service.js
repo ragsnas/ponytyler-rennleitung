@@ -28,6 +28,9 @@ let RaceService = RaceService_1 = class RaceService {
             clientId: "be-race-service",
         });
     }
+    onModuleDestroy() {
+        this.mqttClient.end();
+    }
     async race(raceWhereUniqueInput) {
         return this.prisma.race.findUnique({
             where: raceWhereUniqueInput,
@@ -259,7 +262,7 @@ let RaceService = RaceService_1 = class RaceService {
             currentRace = await this.prisma.race.findFirst({
                 where: {
                     raceState: {
-                        equals: race_state_enum_1.RaceState.LISTED
+                        equals: race_state_enum_1.RaceState.LISTED,
                     },
                     showId: { equals: showId },
                 },

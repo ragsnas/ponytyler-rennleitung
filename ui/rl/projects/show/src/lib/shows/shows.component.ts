@@ -1,4 +1,4 @@
-import { Component, Inject, LOCALE_ID, OnInit, Renderer2 } from "@angular/core";
+import { Component, Inject, LOCALE_ID, OnInit, Renderer2, ChangeDetectionStrategy } from "@angular/core";
 import { Show, ShowService, ShowState } from "projects/backend-api/src/lib/show.service";
 import { Observable, of } from "rxjs";
 import { MatSnackBar } from "@angular/material/snack-bar";
@@ -7,9 +7,11 @@ import { BackupService } from "projects/backend-api/src/public-api";
 import { environment } from "../../../../../src/environments/environment";
 
 @Component({
-  selector: "lib-shows",
-  templateUrl: "./shows.component.html",
-  styleUrls: ["./shows.component.scss"],
+    selector: "lib-shows",
+    templateUrl: "./shows.component.html",
+    styleUrls: ["./shows.component.scss"],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class ShowsComponent implements OnInit {
   shows$: Observable<Show[]> | undefined;
@@ -91,7 +93,7 @@ export class ShowsComponent implements OnInit {
     link.setAttribute("href", `${environment.apiUrl}api/backup/download`);
     link.setAttribute(
       "download",
-      `rl-backup_download_${formatDate(new Date(), "YYYY-MM-dd_HH-mm-ss-SSS", this.locale)}.db`,
+      `rl-backup_download_${formatDate(new Date(), "yyyy-MM-dd_HH-mm-ss-SSS", this.locale)}.db`,
     );
     link.click();
     link.remove();

@@ -1,4 +1,4 @@
-import { Component, forwardRef, Input, NO_ERRORS_SCHEMA } from '@angular/core';
+import { Component, forwardRef, Input, NO_ERRORS_SCHEMA, ChangeDetectionStrategy } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute, convertToParamMap, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
@@ -11,15 +11,17 @@ import { Show, ShowService } from 'projects/backend-api/src/lib/show.service';
 import { EncoreSong, EncoreSongService } from 'projects/backend-api/src/lib/encore-song.service';
 
 @Component({
-  selector: 'lib-song-auto-complete',
-  template: '',
-  providers: [
-    {
-      provide: NG_VALUE_ACCESSOR,
-      multi: true,
-      useExisting: forwardRef(() => StubSongAutoCompleteComponent),
-    },
-  ],
+    selector: 'lib-song-auto-complete',
+    template: '',
+    providers: [
+        {
+            provide: NG_VALUE_ACCESSOR,
+            multi: true,
+            useExisting: forwardRef(() => StubSongAutoCompleteComponent),
+        },
+    ],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 class StubSongAutoCompleteComponent implements ControlValueAccessor {
   @Input() label: string | undefined;

@@ -1,4 +1,4 @@
-import { Component, OnInit } from "@angular/core";
+import { Component, OnInit, ChangeDetectionStrategy } from "@angular/core";
 import { Observable } from "rxjs";
 import { Show, ShowService } from "projects/backend-api/src/lib/show.service";
 import { ActivatedRoute, Router } from "@angular/router";
@@ -6,9 +6,11 @@ import { MatSnackBar } from "@angular/material/snack-bar";
 import { Shift, ShiftService } from "projects/backend-api/src/lib/shift.service";
 
 @Component({
-  selector: "lib-dashboard",
-  templateUrl: "./shifts-dashboard.component.html",
-  styleUrl: "./shifts-dashboard.component.scss",
+    selector: "lib-dashboard",
+    templateUrl: "./shifts-dashboard.component.html",
+    styleUrl: "./shifts-dashboard.component.scss",
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class ShiftsDashboardComponent implements OnInit {
 

@@ -1,3 +1,5 @@
-<div *ngIf="song">
+@if (song) {
+  <div>
     {{ song.artist }} / {{ song.name }}
-</div>
+  </div>
+}

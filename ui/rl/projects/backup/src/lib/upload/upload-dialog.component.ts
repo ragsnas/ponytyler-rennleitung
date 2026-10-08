@@ -1,12 +1,14 @@
-import { Component, inject } from "@angular/core";
+import { Component, inject, ChangeDetectionStrategy } from "@angular/core";
 import { MAT_DIALOG_DATA, MatDialogRef } from "@angular/material/dialog";
 import { FileInputValidators, FileInputValue } from "@ngx-dropzone/cdk";
 import { FormControl } from "@angular/forms";
 
 @Component({
-  selector: 'lib-upload',
-  templateUrl: './upload-dialog.component.html',
-  styleUrl: './upload-dialog.component.css'
+    selector: 'lib-upload',
+    templateUrl: './upload-dialog.component.html',
+    styleUrl: './upload-dialog.component.css',
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class UploadDialogComponent {
   readonly dialogRef = inject(MatDialogRef<UploadDialogComponent>);

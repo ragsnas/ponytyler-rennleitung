@@ -1,4 +1,4 @@
-import { Component, OnInit } from "@angular/core";
+import { Component, OnInit, ChangeDetectionStrategy } from "@angular/core";
 import { ActivatedRoute } from "@angular/router";
 import { StatisticsService, StatSong } from "../../../../../backend-api/src/lib/statistics.service";
 import { Observable } from "rxjs";
@@ -11,9 +11,11 @@ export enum SongStatType {
 }
 
 @Component({
-  selector: "lib-songs",
-  templateUrl: "./songs.component.html",
-  styleUrls: ["./songs.component.scss"],
+    selector: "lib-songs",
+    templateUrl: "./songs.component.html",
+    styleUrls: ["./songs.component.scss"],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class SongsComponent implements OnInit {
   songStatType: SongStatType | undefined;

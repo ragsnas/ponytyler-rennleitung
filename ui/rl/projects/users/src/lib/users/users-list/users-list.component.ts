@@ -1,11 +1,13 @@
-import { Component, OnInit } from "@angular/core";
+import { Component, OnInit, ChangeDetectionStrategy } from "@angular/core";
 import { User, UserService } from "projects/backend-api/src/lib/user.service";
 import { Observable } from "rxjs";
 
 @Component({
-  selector: 'lib-users-list',
-  templateUrl: './users-list.component.html',
-  styleUrl: './users-list.component.css'
+    selector: 'lib-users-list',
+    templateUrl: './users-list.component.html',
+    styleUrl: './users-list.component.css',
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class UsersListComponent implements OnInit {
   users$: Observable<User[]> | undefined;

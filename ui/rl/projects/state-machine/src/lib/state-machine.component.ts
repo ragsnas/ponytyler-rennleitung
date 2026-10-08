@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit } from "@angular/core";
+import { Component, OnDestroy, OnInit, ChangeDetectionStrategy } from "@angular/core";
 import { Race, RaceService, RaceState } from "projects/backend-api/src/lib/race.service";
 import { Show, ShowService, ShowState } from "projects/backend-api/src/lib/show.service";
 import { MqttBrokerMessage, MqttBrokerService } from "projects/mqtt-broker/src/lib/mqtt-broker.service";
@@ -30,9 +30,11 @@ interface ShowStateChangeMessage {
 }
 
 @Component({
-  selector: "lib-state-machine",
-  templateUrl: "state-machine.component.html",
-  providers: [MqttBrokerService],
+    selector: "lib-state-machine",
+    templateUrl: "state-machine.component.html",
+    providers: [MqttBrokerService],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class StateMachineComponent implements OnInit, OnDestroy {
 

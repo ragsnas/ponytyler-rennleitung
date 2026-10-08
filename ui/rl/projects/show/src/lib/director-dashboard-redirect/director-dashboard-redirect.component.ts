@@ -1,11 +1,13 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { Show, ShowService } from 'projects/backend-api/src/lib/show.service';
 import {Router} from "@angular/router";
 
 @Component({
-  selector: 'lib-director-dashboard-redirect',
-  templateUrl: './director-dashboard-redirect.component.html',
-  styleUrls: ['./director-dashboard-redirect.component.scss']
+    selector: 'lib-director-dashboard-redirect',
+    templateUrl: './director-dashboard-redirect.component.html',
+    styleUrls: ['./director-dashboard-redirect.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class DirectorDashboardRedirectComponent implements OnInit {
 

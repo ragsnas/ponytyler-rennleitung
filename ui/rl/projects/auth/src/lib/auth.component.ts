@@ -1,14 +1,15 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 
 @Component({
-  selector: 'lib-auth',
-  template: `
+    selector: 'lib-auth',
+    template: `
     <p>
       auth works!
     </p>
   `,
-  styles: [
-  ]
+    styles: [],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class AuthComponent {
 }
