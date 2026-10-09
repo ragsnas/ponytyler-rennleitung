@@ -5,3 +5,5 @@ coverage
 .git
 *.log
 .env
+prisma/**/*.db
+prisma/backups

@@ -10,7 +10,8 @@ nvm install 22
 nvm use 22
 cd ~
 git clone https://github.com/ragsnas/ponytyler-rennleitung.git
-sudo cp ponytyler-rennleitung/ui/rl/dist/rl/*.* /var/www/html/
+(cd ponytyler-rennleitung/ui/rl && npm ci && npx ng build)
+sudo cp ponytyler-rennleitung/ui/rl/dist/rl/browser/*.* /var/www/html/
 sudo chmod a+r /var/www/html/*.*
 sudo cp ponytyler-rennleitung/ui/rl/nginx_config /etc/nginx/sites-enabled/default
 sudo systemctl start nginx
@@ -20,6 +21,8 @@ pm2 startup
 sudo env PATH=$PATH:/home/ponytyler/.nvm/versions/node/v22.13.1/bin /home/ponytyler/.nvm/versions/node/v22.13.1/lib/node_modules/pm2/bin/pm2 startup systemd -u ponytyler --hp /home/ponytyler
 cd ~/ponytyler-rennleitung/be
 npm i
+npx prisma generate
+npm run build
 pm2 start /home/ponytyler/ponytyler-rennleitung/be/dist/main.js
 pm2 save
 
