@@ -28,7 +28,7 @@ regression.
 npm test                # = npm run test:smoke
 npm run test:smoke      # happy path only
 npm run test:regression # hardened suite only
-npm run test:all        # smoke, then regression (run this before a release)
+npm run test:all        # smoke, then regression, on a fresh stack and database (run this before a release)
 ```
 
 Each of these will:
@@ -60,8 +60,31 @@ This opens the Playwright inspector for step-by-step debugging.
 - Simple "does the basic thing work" check → `tests/smoke/`.
 - Edge cases, error paths, multi-step scenarios, anything that mutates
   shared state → `tests/regression/`. Specs that change state every other
-  spec sees (e.g. flipping `selectable` on all songs) must be matched by the
-  `global-mutations` project in `playwright.config.ts`, which runs last.
+  spec sees (e.g. flipping `selectable` on all songs, or replacing the stub's
+  cloud songlist) go in a file named `*.global.spec.ts`. Those run in the
+  `global-mutations` project, which starts after everything else. Its tests
+  still run in parallel with each other, so they take the `exclusiveSongs` or
+  `songlist` fixture (see below).
+
+### Shared fixtures (`tests/fixtures/`)
+
+Regression specs import `test` and `expect` from `../fixtures` instead of
+`@playwright/test`. Set state up through REST and use the UI only for the
+thing under test.
+
+- `api` - `createShow`, `createSong`, `createRace(show, { person1, song1, person2, song2 })`, `setWinner`, `adoptShow(id)` (for a show created through the UI). Names default to unique ones, and everything is deleted again after the test.
+- `mqttPublisher` - publishes to the broker on TCP port 3011: `publishBikeStatus`, `publishBikeFinished`, `publishRaceStateChange`, `publishShowStateChange`, or `publish(topic, payload)` for anything else (a string payload is sent as is, e.g. garbage).
+- `uniqueName(prefix)` - a name that is unique across tests, workers and re-runs. It contains no hyphens, because the song file sync mangles them.
+- `distinctName(prefix)` - like `uniqueName`, but also far apart in edit distance from every other name. Use it for songs in duplicate-detection tests: the duplicates page pairs each song with its nearest neighbour in the whole database, and `uniqueName` values of two parallel tests are only a few characters apart.
+- `exclusiveSongs` - lock for `*.global.spec.ts` tests that change every song at once (blocking all missing songs, flipping `selectable` globally).
+- `songlist` - sets what the cloud songlist stub serves (`songlist.set([{ artist, title, status }])`) and restores the default list afterwards. Includes `exclusiveSongs`. Only for `*.global.spec.ts`: the regression specs read the default list.
+- `api.adoptSongsByArtist(artist)` - returns the songs of a (unique) artist and registers them for cleanup, for songs created through the UI, a file or the cloud sync.
+- `exclusiveRaceState` - **request it in any test that sets a race to `RACING`/`RACED` or reads one back.** The backend keeps only one such race in the whole database and resets every other one to `LISTED`, so two such tests in parallel would undo each other. The fixture holds a lock across workers for the duration of the test.
+- `rowByText` and `dismissSuccessSnackBar` - UI helpers shared by the specs.
+
+`tests/regression/fixtures.spec.ts` tests the fixtures themselves.
+
+Specs should not rely on each other: no `describe.serial` chains, each test seeds what it needs.
 
 ## Test Files
 
@@ -75,9 +98,14 @@ This opens the Playwright inspector for step-by-step debugging.
 
 ### `tests/regression/`
 
-- `show-dashboard.spec.ts` - Exercises the Show Dashboard page end to end: creating a show, adding races, editing a race's songs and rider names, merging two races waiting for an opponent, reordering races, marking each bike (and both bikes) as the winner, and deleting (canceling) a race
-- `songs.spec.ts` - Exercises the Songs page end to end: adding a song directly, syncing songs from local files ("DJ Notebook" upload), finding/merging duplicate songs, and syncing songs from the cloud songlist (the stub, see below)
-- `song-selectability.spec.ts` - Syncs songs' selectability against the cloud songlist. This flips the selectable flag on every song, so it runs in a separate `global-mutations` Playwright project after all other regression specs
+- `show-dashboard.spec.ts` - Exercises the Show Dashboard page end to end: creating a show, adding a race, editing a race's songs and rider names, merging two races waiting for an opponent, reordering races, marking each bike (and both bikes) as the winner, and deleting (canceling) a race. Independent tests, seeded through the `api` fixture
+- `fixtures.spec.ts` and `fixtures-songlist.global.spec.ts` - Self-tests of the shared fixtures (unique names, API seeding, locks, MQTT publisher, songlist stub control)
+- `song-file-sync.spec.ts` - Local file sync: creating songs from several files or a single one, tag and extension stripping, existing songs not offered again, selectable songs missing from the files. Also five `test.fail` tests for known defects (see the plan file)
+- `song-file-sync.global.spec.ts` - "Block all Songs, missing from File List" (blocks every selectable song without a file)
+- `song-cloud-sync.global.spec.ts` - Cloud sync against the stub: new, renamed, removed and listed-twice songs, case/tag-insensitive matching, selectable flips, running twice, empty list
+- `song-duplicates.spec.ts` - Duplicate detection and merge: the accuracy threshold, merge blocks the duplicate and drops the pair, already blocked songs are not offered, races keep a merged song
+- `songs.spec.ts` - Exercises the Songs page end to end: adding a song directly, a local file upload, and a cloud sync against the default stub list (the stub, see below)
+- `song-selectability.global.spec.ts` - "Update Selecability" against the cloud songlist: blocks songs that are not (or no longer) listed, re-enables listed ones, and the selectable songs follow. This flips the selectable flag on every song, so it runs in the `global-mutations` Playwright project after all other regression specs
 
 ## Prerequisites
 
@@ -106,9 +134,14 @@ The backend syncs songs from a cloud songlist (`SONGLIST_URL`, default
 `songlist-stub` (`e2e/songlist-stub/`), a dependency-free Node server that
 serves the songs in `songs.json` in the same two formats as the real site
 (HTML page at `/`, JSON at `/api/index.php`). The tests therefore never
-depend on the live site being up or its content staying the same. To test
-another cloud scenario, add songs to `songs.json` (status `listed` or
-`unlisted`; only listed songs appear on the HTML page).
+depend on the live site being up or its content staying the same.
+
+`songs.json` is the default list. A spec can replace it while it runs through
+the stub's admin endpoint (published on host port 8090): `PUT /__admin/songs`
+with a JSON array sets the list, `DELETE /__admin/songs` restores the default.
+Use the `songlist` fixture rather than calling it directly: it serializes the
+tests that do this and restores the default list afterwards. Status is
+`listed` or `unlisted`; only listed songs appear on the HTML page.
 
 ## How It Works
 

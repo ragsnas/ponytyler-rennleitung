@@ -42,6 +42,9 @@ services:
     container_name: ponytyler-songlist-stub-e2e
     working_dir: /app
     command: node server.js
+    # Published so specs can change the list it serves (see its server.js)
+    ports:
+      - "8090:8080"
     volumes:
       - ./e2e/songlist-stub:/app:ro
     networks:

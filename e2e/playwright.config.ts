@@ -41,16 +41,17 @@ if (runRegression) {
     {
       name: 'regression',
       testDir: './tests/regression',
-      testIgnore: /song-selectability\.spec\.ts/,
+      testIgnore: /\.global\.spec\.ts$/,
       dependencies: runSmoke ? ['smoke'] : [],
       use: { ...devices['Desktop Chrome'] },
     },
     {
-      // Specs that mutate state shared with every other spec (e.g. flipping
-      // the selectable flag on all songs) run only after everything else.
+      // Specs named *.global.spec.ts mutate state shared with every other spec
+      // (e.g. flipping the selectable flag on all songs, replacing the stub's
+      // cloud songlist) and run only after everything else.
       name: 'global-mutations',
       testDir: './tests/regression',
-      testMatch: /song-selectability\.spec\.ts/,
+      testMatch: /\.global\.spec\.ts$/,
       dependencies: ['regression'],
       use: { ...devices['Desktop Chrome'] },
     },
