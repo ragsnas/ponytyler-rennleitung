@@ -97,5 +97,21 @@ describe("DbBackupService", () => {
 
       expect(copyFileSync).toHaveBeenCalledTimes(2);
     });
+
+    it("hashes the raw bytes, so files differing only in non-UTF-8 bytes are not treated as equal", async () => {
+      (readdirSync as jest.Mock)
+        .mockReturnValueOnce(["2024"])
+        .mockReturnValueOnce(["03"])
+        .mockReturnValueOnce(["05"])
+        .mockReturnValueOnce(["12-30.db"]);
+      (readFileSync as jest.Mock)
+        .mockReturnValueOnce(Buffer.from([0xff]))
+        .mockReturnValueOnce(Buffer.from([0xfe]));
+      (existsSync as jest.Mock).mockReturnValue(true);
+
+      await service.hourly();
+
+      expect(copyFileSync).toHaveBeenCalledTimes(2);
+    });
   });
 });

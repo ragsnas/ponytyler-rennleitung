@@ -1,6 +1,6 @@
 FROM node:26-alpine
 WORKDIR /app
-RUN apk add --no-cache eudev-libs openssl
+RUN apk add --no-cache openssl
 COPY package.json package-lock.json ./
 RUN npm ci
 COPY . .

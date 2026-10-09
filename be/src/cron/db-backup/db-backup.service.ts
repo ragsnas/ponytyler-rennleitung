@@ -7,7 +7,7 @@ import {
   readdirSync,
   readFileSync,
 } from "fs";
-import { Md5 } from "ts-md5";
+import { createHash } from "crypto";
 import { pad } from "../../utils/pad";
 import { isDir } from "../../utils/isDir";
 import { isNumber } from "@nestjs/common/utils/shared.utils";
@@ -74,16 +74,16 @@ export class DbBackupService {
     }
   }
 
+  private hashFile(path: string): string {
+    return createHash("md5").update(readFileSync(path)).digest("hex");
+  }
+
   private isBackupNecessary(): boolean {
     const lastBackupFileFilename = this.getLastBackupFileFilename();
 
     if (lastBackupFileFilename) {
-      const currentDbFileHash = Md5.hashStr(
-        readFileSync(`${this.prismaFolder}/rl.db`).toString(),
-      );
-      const lastBackupFileFilenameHash = Md5.hashStr(
-        readFileSync(lastBackupFileFilename).toString(),
-      );
+      const currentDbFileHash = this.hashFile(`${this.prismaFolder}/rl.db`);
+      const lastBackupFileFilenameHash = this.hashFile(lastBackupFileFilename);
       if (currentDbFileHash === lastBackupFileFilenameHash) {
         return false;
       }
