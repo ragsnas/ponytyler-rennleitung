@@ -1,0 +1,19 @@
+{
+  "name": "@helper/fake-mqtt-signal-producer",
+  "version": "0.0.1",
+  "description": "",
+  "author": "",
+  "private": true,
+  "license": "UNLICENSED",
+  "scripts": {
+    "start": "nest start"
+  },
+  "dependencies": {
+    "aedes": "^1.0.2",
+    "mqtt": "^5.15.1",
+    "net": "^1.0.2"
+  },
+  "devDependencies": {
+    "@types/node": "^25.6.0"
+  }
+}

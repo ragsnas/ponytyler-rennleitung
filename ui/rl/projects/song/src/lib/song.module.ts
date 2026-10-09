@@ -1,5 +1,5 @@
 import { CommonModule } from "@angular/common";
-import { provideHttpClient, withInterceptorsFromDi } from "@angular/common/http";
+import { provideHttpClient, withInterceptorsFromDi, withXhr } from "@angular/common/http";
 import { NgModule } from "@angular/core";
 import { FormsModule, ReactiveFormsModule } from "@angular/forms";
 import { MatButtonModule } from "@angular/material/button";
@@ -17,7 +17,6 @@ import { SongSyncOriginModule } from "projects/ui/song-sync-origin/src/public-ap
 import { SongService } from "projects/backend-api/src/lib/song.service";
 import { CreateSongComponent } from "./song-input/create-song.component";
 import { SongSyncComponent } from "./song-sync/song-sync.component";
-import { SongComponent } from "./song/song.component";
 import { SongsComponent } from "./songs.component";
 import { EditSongComponent } from "./song-edit/edit-song.component";
 import { MatSnackBarModule } from "@angular/material/snack-bar";
@@ -37,7 +36,6 @@ const routes: Routes = [
 @NgModule({
   declarations: [
     SongsComponent,
-    SongComponent,
     CreateSongComponent,
     SongSyncComponent,
     EditSongComponent,
@@ -64,7 +62,7 @@ const routes: Routes = [
     MatSelectModule,
     MatSliderModule,
     MatChipsModule],
-  providers: [SongService, provideHttpClient(withInterceptorsFromDi())],
+  providers: [SongService, provideHttpClient(withXhr(), withInterceptorsFromDi())],
 })
 export class SongModule {
 }

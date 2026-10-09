@@ -7,9 +7,24 @@ export interface Show {
   id?: string;
   name: string;
   date: Date;
-  duration: number;
-  active: boolean;
-  finished: boolean;
+  duration?: number;
+  active?: boolean;
+  finished?: boolean;
+  showState?: ShowState;
+}
+
+export enum ShowState {
+  LISTED = "LISTED",
+  BEFORE_SHOW = "BEFORE_SHOW",
+  BEFORE_RACE = "BEFORE_RACE",
+  RACE = "RACE",
+  RACE_FINISHED = "RACE_FINISHED",
+  PLAYING_VIDEO = "PLAYING_VIDEO",
+  VIDEO_FINISHED = "VIDEO_FINISHED",
+  SHOW_FINISHED = "SHOW_FINISHED",
+  BEFORE_ENCORE = "BEFORE_ENCORE",
+  PLAYING_ENCORE = "PLAYING_ENCORE",
+  ENCORE_FINISHED = "ENCORE_FINISHED"
 }
 
 @Injectable({
@@ -30,7 +45,7 @@ export class ShowService {
     return this.http.get<Show[]>(environment.apiUrl + 'api/show/current-shows')
   }
 
-  getCurrentShow(): Observable<Show> | undefined {
+  getCurrentShow(): Observable<Show> {
     return this.http.get<Show>(environment.apiUrl + 'api/show/current-show')
   }
 

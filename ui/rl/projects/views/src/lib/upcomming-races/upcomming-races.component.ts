@@ -1,12 +1,14 @@
-import { Component, OnInit } from "@angular/core";
+import { Component, OnInit, ChangeDetectionStrategy } from "@angular/core";
 import { Race, RaceService } from "projects/backend-api/src/lib/race.service";
 import { Show, ShowService } from "projects/backend-api/src/lib/show.service";
 import { filter, map, Observable } from "rxjs";
 
 @Component({
-  selector: 'lib-upcomming-races',
-  templateUrl: './upcomming-races.component.html',
-  styleUrls: ['./upcomming-races.component.scss']
+    selector: 'lib-upcomming-races',
+    templateUrl: './upcomming-races.component.html',
+    styleUrls: ['./upcomming-races.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class UpcommingRacesComponent implements OnInit {
   public upcommingRaces$: Observable<Race[]> | undefined;

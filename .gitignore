@@ -3,3 +3,10 @@ node_modules
 .env
 /be/prisma/backups/
 /be/prisma/rl.db
+
+# Build output and local artefacts
+dist/
+.idea/
+/offline-bundle/
+*.tar
+/be/prisma/**/*.db

@@ -1,0 +1,86 @@
+# Dedicated stack for running the Playwright e2e suite (see e2e/README.md).
+#
+# Isolated from docker-compose.yml (dev) so both can run at the same time:
+# a distinct Compose project name (below), different container names,
+# network, and host ports, and an ephemeral (tmpfs) database that always
+# starts empty. Without the distinct project name, both files default to
+# the same directory-derived project name with identical service keys
+# (backend/frontend/postgres), so Compose treats them as the same logical
+# services and `up` on this file recreates/removes the dev containers
+# despite the different `container_name`s.
+name: ponytyler-rennleitung-e2e
+services:
+  backend:
+    build:
+      context: ./be
+      dockerfile: Dockerfile
+    container_name: ponytyler-backend-e2e
+    ports:
+      - "3010:3000"
+      - "3011:3001"
+      - "3012:3002"
+    environment:
+      - NODE_ENV=development
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/ponytyler
+      - MQTT_PORT=3001
+      - MQTT_WS_PORT=3002
+      # Fixed song list instead of the live https://songlist.ponytyler.de
+      - SONGLIST_URL=http://songlist-stub:8080
+    depends_on:
+      postgres:
+        condition: service_healthy
+      songlist-stub:
+        condition: service_started
+    networks:
+      - ponytyler-e2e-network
+    command: sh -c "npx prisma generate && npx prisma db push && npm run start:dev"
+
+  # Stand-in for the cloud songlist (e2e/songlist-stub), so the song sync
+  # specs don't depend on the live site being up or unchanged.
+  songlist-stub:
+    image: node:26-alpine
+    container_name: ponytyler-songlist-stub-e2e
+    working_dir: /app
+    command: node server.js
+    volumes:
+      - ./e2e/songlist-stub:/app:ro
+    networks:
+      - ponytyler-e2e-network
+
+  frontend:
+    build:
+      context: ./ui/rl
+      dockerfile: Dockerfile.dev
+      args:
+        - NODE_ENV=development
+    container_name: ponytyler-frontend-e2e
+    ports:
+      - "4210:4200"
+    environment:
+      - NODE_ENV=development
+    networks:
+      - ponytyler-e2e-network
+    depends_on:
+      backend:
+        condition: service_started
+
+  postgres:
+    image: postgres:15-alpine
+    container_name: ponytyler-postgres-e2e
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=ponytyler
+    tmpfs:
+      - /var/lib/postgresql/data
+    networks:
+      - ponytyler-e2e-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+networks:
+  ponytyler-e2e-network:
+    driver: bridge

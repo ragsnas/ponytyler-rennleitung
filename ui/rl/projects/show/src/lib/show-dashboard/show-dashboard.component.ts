@@ -1,24 +1,19 @@
-import { Component, OnDestroy, OnInit } from "@angular/core";
+import { Component, OnDestroy, OnInit, ChangeDetectionStrategy, computed, signal } from "@angular/core";
 import { ActivatedRoute, ParamMap, Router } from "@angular/router";
 import { Race, RaceService, RaceState } from "projects/backend-api/src/lib/race.service";
 import { StatisticsService } from "projects/backend-api/src/lib/statistics.service";
-import { Show, ShowService } from "projects/backend-api/src/lib/show.service";
+import { Show, ShowService, ShowState } from "projects/backend-api/src/lib/show.service";
+import { EncoreSong, EncoreSongService } from "projects/backend-api/src/lib/encore-song.service";
 import {
-  BehaviorSubject,
   combineLatest,
   delay,
   interval,
-  map,
-  Observable,
-  of,
   startWith,
   Subject,
   Subscription,
   switchMap,
   takeUntil,
-  takeWhile,
   tap,
-  timer,
 } from "rxjs";
 import { MatSnackBar } from "@angular/material/snack-bar";
 import { FormControl } from "@angular/forms";
@@ -36,16 +31,20 @@ export interface RaceWithSongPlayedInfo extends Race {
 const PONTY_TYPER_REFRESH_TIMER_INTERVAL = "pontyTyperRefreshTimerInterval";
 
 function compareRaceState(race1: Race, race2: Race) {
-  const order = {
+  const order: Partial<Record<RaceState, number>> = {
     [RaceState.WAITING_TO_RACE]: 1,
-    [RaceState.WAITING_FOR_OPPONENT]: 2,
-    [RaceState.RACED]: 3,
-    [RaceState.CANCELED]: 4,
+    [RaceState.RACING]: 2,
+    [RaceState.LISTED]: 3,
+    [RaceState.WAITING_FOR_OPPONENT]: 4,
+    [RaceState.RACED]: 5,
+    [RaceState.CANCELED]: 6,
   };
-  if (order[race1.raceState as RaceState] > order[race2.raceState as RaceState]) {
+  const order1 = (race1.raceState && order[race1.raceState]) ?? Number.MAX_SAFE_INTEGER;
+  const order2 = (race2.raceState && order[race2.raceState]) ?? Number.MAX_SAFE_INTEGER;
+  if (order1 > order2) {
     return 1;
   }
-  if (order[race1.raceState as RaceState] < order[race2.raceState as RaceState]) {
+  if (order1 < order2) {
     return -1;
   }
   return 0;
@@ -66,7 +65,7 @@ function sortRacesForList() {
     const raceStateSortResult = compareRaceState(race1, race2);
     if (raceStateSortResult !== 0) {
       return raceStateSortResult;
-    } else if (race1.raceState === RaceState.WAITING_TO_RACE || race1.raceState === RaceState.WAITING_FOR_OPPONENT) {
+    } else if (race1.raceState === RaceState.LISTED || race1.raceState === RaceState.WAITING_FOR_OPPONENT) {
       return compareRacesByOrderNumber(race1, race2, "asc");
     } else if (race1.raceState === RaceState.RACED || race1.raceState === RaceState.CANCELED) {
       return compareRacesByOrderNumber(race1, race2, "desc");
@@ -76,29 +75,39 @@ function sortRacesForList() {
 }
 
 @Component({
-  selector: "lib-show-dashboard",
-  templateUrl: "./show-dashboard.component.html",
-  styleUrls: ["./show-dashboard.component.scss"],
+    selector: "lib-show-dashboard",
+    templateUrl: "./show-dashboard.component.html",
+    styleUrls: ["./show-dashboard.component.scss"],
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: false
 })
 export class ShowDashboardComponent implements OnInit, OnDestroy {
-  show: Show | undefined;
-  races$: BehaviorSubject<RaceWithSongPlayedInfo[]> = new BehaviorSubject<RaceWithSongPlayedInfo[]>([]);
-  finishedRaces$: BehaviorSubject<Race[]> = new BehaviorSubject<Race[]>([]);
-  firstRaceWaitingToRaceId: string | undefined;
-  lastRaceWaitingToRaceId: string | undefined;
-  refreshing: boolean = false;
+  readonly show = signal<Show | undefined>(undefined);
+  readonly races = signal<RaceWithSongPlayedInfo[]>([]);
+  readonly finishedRaces = signal<Race[]>([]);
+  readonly encoreSongs = signal<EncoreSong[]>([]);
+  readonly firstRaceWaitingToRaceId = signal<string | undefined>(undefined);
+  readonly lastRaceWaitingToRaceId = signal<string | undefined>(undefined);
+  readonly refreshing = signal(false);
   refreshIntervalFormControl: FormControl<string> = new FormControl<string>(localStorage.getItem(PONTY_TYPER_REFRESH_TIMER_INTERVAL) || "5000", { nonNullable: true });
   refresh$: Subject<void> = new Subject<void>();
   unsubscribe$: Subject<void> = new Subject<void>();
   timerSubscription: Subscription = new Subscription();
   loadRacesSubscription: Subscription = new Subscription();
-  secondsRemainingPercentage$: Observable<string> = of("");
-  isListFull: boolean = false;
-  moreThanOnePersonWaitingForOpponent: boolean = false;
+  /** Refresh interval in ms that drives the countdown bar animation; 0 while refreshing is stopped. */
+  readonly refreshIntervalMs = signal(0);
+  /** Incremented every refresh cycle so the countdown bar animation restarts. */
+  private readonly refreshCycle = signal(0);
+  /** Single-element list, so `@for ... track` re-creates the bar (and restarts its animation) per cycle. */
+  readonly refreshCycles = computed(() => [this.refreshCycle()]);
+  readonly isListFull = signal(false);
+  readonly moreThanOnePersonWaitingForOpponent = signal(false);
+  readonly lastUpdated = signal<Date | undefined>(undefined);
 
   constructor(
     private showService: ShowService,
     private raceService: RaceService,
+    private encoreSongService: EncoreSongService,
     private statisticsService: StatisticsService,
     private route: ActivatedRoute,
     private router: Router,
@@ -116,7 +125,7 @@ export class ShowDashboardComponent implements OnInit, OnDestroy {
     this.statisticsService.isListFull(
       this.route.snapshot.paramMap.get("showId")!,
     ).subscribe(isListFull =>
-      this.isListFull = isListFull);
+      this.isListFull.set(isListFull));
     this.setTimer(Number(this.refreshIntervalFormControl.getRawValue()));
     this.loadRaces();
   }
@@ -133,22 +142,25 @@ export class ShowDashboardComponent implements OnInit, OnDestroy {
           switchMap(() => combineLatest([
             this.showService.getShow(showId),
             this.raceService.getAllRacesForShow(showId),
+            this.encoreSongService.getEncoreSongsForShow(showId),
           ])));
       }),
     ).subscribe({
-      next: ([show, races]) => {
-        this.show = show;
+      next: ([show, races, encoreSongs]) => {
+        this.show.set(show);
+        this.encoreSongs.set(encoreSongs);
         const finishedRaces = races.filter(race => race.raceState === RaceState.RACED);
-        const racesWaitingToRace = races.filter(race => race.raceState === RaceState.WAITING_TO_RACE);
-        this.lastRaceWaitingToRaceId = racesWaitingToRace[racesWaitingToRace.length - 1]?.id;
-        this.firstRaceWaitingToRaceId = racesWaitingToRace[0]?.id;
-        this.finishedRaces$.next(finishedRaces);
-        this.races$.next(this.addAlreadyPlayedInfoToRacesFromFinishedRaces(
+        const racesWaitingToRace = races.filter(race => race.raceState === RaceState.LISTED);
+        this.lastRaceWaitingToRaceId.set(racesWaitingToRace[racesWaitingToRace.length - 1]?.id);
+        this.firstRaceWaitingToRaceId.set(racesWaitingToRace[0]?.id);
+        this.finishedRaces.set(finishedRaces);
+        this.races.set(this.addAlreadyPlayedInfoToRacesFromFinishedRaces(
           races.sort(sortRacesForList()),
           finishedRaces,
         ));
-        this.moreThanOnePersonWaitingForOpponent = races.filter((race: Race) => race.raceState === RaceState.WAITING_FOR_OPPONENT).length > 1;
-        this.refreshing = false;
+        this.moreThanOnePersonWaitingForOpponent.set(races.filter((race: Race) => race.raceState === RaceState.WAITING_FOR_OPPONENT).length > 1);
+        this.refreshing.set(false);
+        this.lastUpdated.set(new Date());
       },
       error: (error) => {
         this.snackBar.open(`Error during loading of Data: ${JSON.stringify(error)}`, "OK", {
@@ -160,7 +172,7 @@ export class ShowDashboardComponent implements OnInit, OnDestroy {
   }
 
   bikeWon(bike: number, race: Race) {
-    if (race.raceState !== RaceState.WAITING_TO_RACE) {
+    if (race.raceState !== RaceState.LISTED) {
       this.snackBar.open(`Can't mark Winning Bike if Race is not Waiting to be Raced`, "OK", {
         duration: 5000, announcementMessage: `Error`, panelClass: "error",
       });
@@ -173,7 +185,7 @@ export class ShowDashboardComponent implements OnInit, OnDestroy {
           raced: true,
         } as Race)
         .subscribe({
-          next: (result) => {
+          next: () => {
             this.snackBar.open(`Marked Race as "Bike ${bike} won!" Congrats ${bike === 1 ? race.person1 : race.person2}`, "OK", {
               panelClass: "success",
               duration: 250,
@@ -199,7 +211,7 @@ export class ShowDashboardComponent implements OnInit, OnDestroy {
         bikeWon: 3,
       } as Race)
       .subscribe({
-        next: (result) => {
+        next: () => {
           this.snackBar.open(`Marked Race as "Both Won"`, "OK", { panelClass: "success", duration: 250 });
           this.loadRaces();
         },
@@ -219,7 +231,7 @@ export class ShowDashboardComponent implements OnInit, OnDestroy {
         raceState: RaceState.CANCELED,
       } as Race)
       .subscribe({
-        next: (result) => {
+        next: () => {
           this.snackBar.open(`Marked Race as over`, "OK", { panelClass: "success", duration: 250 });
           this.loadRaces();
         },
@@ -233,9 +245,9 @@ export class ShowDashboardComponent implements OnInit, OnDestroy {
 
   markRaceAsNotRaced(race: Race): void {
     this.raceService
-      .updateRace({ ...race, raced: false, bikeWon: 0, raceState: RaceState.WAITING_TO_RACE } as Race)
+      .updateRace({ ...race, raced: false, bikeWon: 0, raceState: RaceState.LISTED } as Race)
       .subscribe({
-        next: (result) => {
+        next: () => {
           this.snackBar.open(`Marked Race as NOT over`, "OK", { panelClass: "success", duration: 250 });
           this.loadRaces();
         },
@@ -257,7 +269,7 @@ export class ShowDashboardComponent implements OnInit, OnDestroy {
   }
 
   private addAlreadyPlayedInfoToRacesFromFinishedRaces(races: Race[], finishedRaces: Race[]): RaceWithSongPlayedInfo[] {
-    const racesWaitingToRace = races.filter(race => race.raceState === RaceState.WAITING_TO_RACE || race.raceState === RaceState.WAITING_FOR_OPPONENT);
+    const racesWaitingToRace = races.filter(race => race.raceState === RaceState.LISTED || race.raceState === RaceState.WAITING_FOR_OPPONENT);
     return races.map((race: Race) => ({
       ...race,
       song1AlreadyPlayed: this.getSongAlreadyPlayed(finishedRaces, race.song1Id),
@@ -282,35 +294,32 @@ export class ShowDashboardComponent implements OnInit, OnDestroy {
   }
 
   private setTimer(timerInterval: number): void {
-    this.secondsRemainingPercentage$ = this.resetSecondsRemainingPercentage(timerInterval);
+    this.refreshIntervalMs.set(timerInterval);
     this.timerSubscription.unsubscribe();
     this.timerSubscription = interval(timerInterval).pipe(
       takeUntil(this.unsubscribe$),
-      tap(() => this.refreshing = true),
+      tap(() => this.refreshing.set(true)),
       delay(600),
     ).subscribe(() => {
       this.refresh$.next();
-      this.secondsRemainingPercentage$ = this.resetSecondsRemainingPercentage(timerInterval);
+      this.refreshCycle.update(cycle => cycle + 1);
     });
   }
 
-  private resetSecondsRemainingPercentage(timerInterval: number) {
-    const milisecondsInterval = 250;
-    return timer(0, milisecondsInterval).pipe(
-      takeWhile(n => (n * milisecondsInterval) < timerInterval),
-      map(timerValue => ((timerValue * milisecondsInterval / timerInterval) * 100).toString()),
-    );
+  private stopTimer(): void {
+    this.refreshIntervalMs.set(0);
+    this.timerSubscription.unsubscribe();
   }
 
-  private stopTimer(): void {
-    this.secondsRemainingPercentage$ = of("");
-    this.timerSubscription.unsubscribe();
+  manualRefresh(): void {
+    this.refreshing.set(true);
+    this.refresh$.next();
   }
 
   deleteShow() {
     const dialog = this.dialog.open(YesNoDialogComponent, {
       data: {
-        title: `Do you want to delete the Show "${this.show?.name}"?`,
+        title: `Do you want to delete the Show "${this.show()?.name}"?`,
         text: `This will delete the Show and all the related Races.`,
         optionYes: "Yes, Delete",
         optionNo: "No, Cancel",
@@ -318,8 +327,8 @@ export class ShowDashboardComponent implements OnInit, OnDestroy {
     });
     dialog.afterClosed().subscribe(result => {
       if (result) {
-        this.showService.deleteShow(this.show?.id as string).subscribe({
-          next: (result) => {
+        this.showService.deleteShow(this.show()?.id as string).subscribe({
+          next: () => {
             this.snackBar.open(`Show was deleted`, "OK", { panelClass: "success", duration: 250 });
             this.router.navigate(["../"]);
           },
@@ -335,7 +344,7 @@ export class ShowDashboardComponent implements OnInit, OnDestroy {
 
   mergeTopWaitingForOpponentRaces(race: Race) {
     const race1: Race = race;
-    const otherRaceWaitingForOpponent: Race | undefined = this.races$.value.find((otherRace: Race) => race.id !== otherRace.id && otherRace.raceState === RaceState.WAITING_FOR_OPPONENT);
+    const otherRaceWaitingForOpponent: Race | undefined = this.races().find((otherRace: Race) => race.id !== otherRace.id && otherRace.raceState === RaceState.WAITING_FOR_OPPONENT);
     if (race && otherRaceWaitingForOpponent) {
       const person1 = race.person1 || race.person2;
       const song1Id = race.song1Id || race.song2Id;
@@ -348,7 +357,7 @@ export class ShowDashboardComponent implements OnInit, OnDestroy {
           song1Id,
           person2,
           song2Id,
-          raceState: RaceState.WAITING_TO_RACE,
+          raceState: RaceState.LISTED,
         }),
         this.raceService.updateRace({
           ...otherRaceWaitingForOpponent,
@@ -374,7 +383,7 @@ export class ShowDashboardComponent implements OnInit, OnDestroy {
     this.raceService
       .moveRaceUpOrDown({ ...race } as Race, upOrDown)
       .subscribe({
-        next: (result) => {
+        next: () => {
           this.snackBar.open(`Moved Race "${upOrDown}"`, "OK", { panelClass: "success", duration: 250 });
           this.loadRaces();
         },
@@ -387,16 +396,33 @@ export class ShowDashboardComponent implements OnInit, OnDestroy {
   }
 
   isRaceLastWaitingToRace(race: Race): boolean {
-    return (this.lastRaceWaitingToRaceId === race.id);
+    return (this.lastRaceWaitingToRaceId() === race.id);
   }
 
   isRaceFirstWaitingToRace(race: Race) {
-    return (this.firstRaceWaitingToRaceId === race.id);
+    return (this.firstRaceWaitingToRaceId() === race.id);
+  }
+
+  startRace(race: Race): void {
+    combineLatest([
+      this.raceService.updateRace({ ...race, raceState: RaceState.WAITING_TO_RACE } as Race),
+      this.showService.updateShow({ ...this.show(), showState: ShowState.BEFORE_RACE } as Show),
+    ]).subscribe({
+      next: () => {
+        this.snackBar.open(`Race started`, "OK", { panelClass: "success", duration: 250 });
+        this.loadRaces();
+      },
+      error: (error) => {
+        this.snackBar.open(`Race could not be started: ${JSON.stringify(error)}`, "OK", {
+          duration: 10000, panelClass: "error",
+        });
+      },
+    });
   }
 
   repairOrder() {
-    this.raceService.repairOrder(this.show?.id || "").subscribe({
-      next: (result) => {
+    this.raceService.repairOrder(this.show()?.id || "").subscribe({
+      next: () => {
         this.snackBar.open(`Race Order Repaired"`, "OK", { panelClass: "success", duration: 250 });
         this.loadRaces();
       },

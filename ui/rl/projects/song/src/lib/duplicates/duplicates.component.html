@@ -18,10 +18,8 @@
 </div>
 
 
-<ng-container *ngIf="songs$ | async as songs">
-
+@if (songs$ | async; as songs) {
   <table mat-table [dataSource]="songs" class="mat-elevation-z8">
-
     <ng-container matColumnDef="original">
       <th mat-header-cell *matHeaderCellDef>Original</th>
       <td mat-cell *matCellDef="let element">
@@ -29,7 +27,6 @@
         {{element.artist}} - {{element.name}}
       </td>
     </ng-container>
-
     <ng-container matColumnDef="duplicate">
       <th mat-header-cell *matHeaderCellDef>Duplicate</th>
       <td mat-cell *matCellDef="let element">
@@ -37,12 +34,10 @@
         {{element.duplicate.artist}} - {{element.duplicate.name}}
       </td>
     </ng-container>
-
     <ng-container matColumnDef="distance">
       <th mat-header-cell *matHeaderCellDef>Distance</th>
       <td mat-cell *matCellDef="let element"> {{element.distance}}</td>
     </ng-container>
-
     <ng-container matColumnDef="actions">
       <th mat-header-cell *matHeaderCellDef>Actions</th>
       <td mat-cell *matCellDef="let element">
@@ -51,9 +46,8 @@
         </button>
       </td>
     </ng-container>
-
     <tr mat-header-row *matHeaderRowDef="['distance', 'original', 'duplicate', 'actions']"></tr>
     <tr mat-row *matRowDef="let row; columns: ['distance', 'original', 'duplicate', 'actions'];"></tr>
   </table>
-</ng-container>
+}
 

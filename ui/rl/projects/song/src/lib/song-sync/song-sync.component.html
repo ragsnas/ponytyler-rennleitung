@@ -1,36 +1,53 @@
 <h3>Songs File Sync</h3>
-<div (click)="uploadFile.click()">
-    <button mat-flat-button color="primary">Choose Files from DJ Notebook</button>
-    <input #uploadFile [multiple]="true" (change)="filesChanged($event)" type='file' style="display:none"/> 
-</div>
+<ui-button-list>
+  <button mat-flat-button color="primary" (click)="uploadFile.click()">Choose Files from DJ Notebook</button>
+  <input #uploadFile [multiple]="true" (change)="filesChanged($event)" type='file' style="display:none"/>
+  <button mat-flat-button color="primary" (click)="syncWithCloud()" [disabled]="syncingWithCloud">
+    <mat-icon>cloud_sync</mat-icon>Sync with Cloud Songlist
+  </button>
+  @if (syncingWithCloud) {
+    <mat-spinner [diameter]="24"></mat-spinner>
+  }
+</ui-button-list>
 
-<div *ngIf="nothingFound">
+@if (nothingFound) {
+  <div>
     <p>Nothing to Sync</p>
-</div>
+  </div>
+}
 
-<div *ngIf="this.processingFiles > 0">
+@if (this.processingFiles > 0) {
+  <div>
     Processing {{ this.processingFiles }} Files/Songs.
     <mat-spinner></mat-spinner>
-</div>
+  </div>
+}
 
-<ng-container *ngIf="filesToSync.length > 0 || songsNotFoundInFiles.length > 0">
-    <ui-button-list>
-        <button mat-flat-button color="primary" (click)="createAllNewSongs()" [disabled]="filesToSync.length <= 0"><mat-icon>cloud_sync</mat-icon>Sync all new Files</button>
-        <button mat-flat-button color="primary" (click)="markAllMissingSongsBlocked()" [disabled]="songsNotFoundInFiles.length <= 0"><mat-icon>block</mat-icon>Block all Songs, missing from File List</button>
-    </ui-button-list>
-
-    <mat-list>
-        <div *ngIf="filesToSync.length > 0" mat-subheader>New Songs/Files</div>
-        <mat-list-item *ngFor="let file of filesToSync" (click)="syncSingleFile(file)">
-            <mat-icon matListItemIcon>note_add</mat-icon>
-            <div matListItemTitle>{{file}}</div>
-        </mat-list-item>
-        <mat-divider></mat-divider>
-        <div *ngIf="songsNotFoundInFiles.length > 0" mat-subheader>Songs that are not in the File List but selectable</div>
-        <mat-list-item *ngFor="let song of songsNotFoundInFiles">
-            <mat-icon matListItemIcon>audio_file</mat-icon>
-            <div matListItemTitle>{{song.artist}} - {{song.name}}</div>
-        </mat-list-item>
-        </mat-list>    
-</ng-container>
+@if (filesToSync.length > 0 || songsNotFoundInFiles.length > 0) {
+  <ui-button-list>
+    <button mat-flat-button color="primary" (click)="createAllNewSongs()" [disabled]="filesToSync.length <= 0"><mat-icon>cloud_sync</mat-icon>Sync all new Files</button>
+    <button mat-flat-button color="primary" (click)="markAllMissingSongsBlocked()" [disabled]="songsNotFoundInFiles.length <= 0"><mat-icon>block</mat-icon>Block all Songs, missing from File List</button>
+  </ui-button-list>
+  <mat-list>
+    @if (filesToSync.length > 0) {
+      <div mat-subheader>New Songs/Files</div>
+    }
+    @for (file of filesToSync; track file) {
+      <mat-list-item (click)="syncSingleFile(file)">
+        <mat-icon matListItemIcon>note_add</mat-icon>
+        <div matListItemTitle>{{file}}</div>
+      </mat-list-item>
+    }
+    <mat-divider></mat-divider>
+    @if (songsNotFoundInFiles.length > 0) {
+      <div mat-subheader>Songs that are not in the File List but selectable</div>
+    }
+    @for (song of songsNotFoundInFiles; track song) {
+      <mat-list-item>
+        <mat-icon matListItemIcon>audio_file</mat-icon>
+        <div matListItemTitle>{{song.artist}} - {{song.name}}</div>
+      </mat-list-item>
+    }
+  </mat-list>
+}
 

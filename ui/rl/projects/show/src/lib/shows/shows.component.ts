@@ -1,16 +1,17 @@
-import { Component, Inject, LOCALE_ID, OnInit, Renderer2 } from "@angular/core";
-import { Show, ShowService } from "projects/backend-api/src/lib/show.service";
-import { Observable, of, Subject } from "rxjs";
+import { Component, Inject, LOCALE_ID, OnInit, Renderer2, ChangeDetectionStrategy } from "@angular/core";
+import { Show, ShowService, ShowState } from "projects/backend-api/src/lib/show.service";
+import { Observable, of } from "rxjs";
 import { MatSnackBar } from "@angular/material/snack-bar";
 import { formatDate } from "@angular/common";
-import { MatDialog } from "@angular/material/dialog";
-import { BackendApiModule, BackupService } from "projects/backend-api/src/public-api";
+import { BackupService } from "projects/backend-api/src/public-api";
 import { environment } from "../../../../../src/environments/environment";
 
 @Component({
-  selector: "lib-shows",
-  templateUrl: "./shows.component.html",
-  styleUrls: ["./shows.component.scss"],
+    selector: "lib-shows",
+    templateUrl: "./shows.component.html",
+    styleUrls: ["./shows.component.scss"],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class ShowsComponent implements OnInit {
   shows$: Observable<Show[]> | undefined;
@@ -31,30 +32,50 @@ export class ShowsComponent implements OnInit {
     this.downloadBackupPossible$ = this.backupService.isDownloadPossible();
   }
 
-  toggleActive(show: Show) {
+  startShow(show: Show): void {
     this.showService.updateShow({
       ...show,
-      active: !show.active,
+      active: true,
+      showState: ShowState.BEFORE_RACE,
+      finished: false
     }).subscribe({
-      next: (result) => {
-        console.log(`this worked`);
+      next: () => {
         this.shows$ = this.showService.getAllShows();
       },
       error: (error) => {
-        this.snackBar.open(`Error during toggling of Show Status: ${JSON.stringify(error)}`, "OK", {
+        this.snackBar.open(`Error staarting Show: ${JSON.stringify(error)}`, "OK", {
           duration: 10000, announcementMessage: `Error`, panelClass: "error",
         });
       },
     });
   }
 
-  toggleFinished(show: Show) {
+  stopShow(show: Show): void {
     this.showService.updateShow({
       ...show,
-      finished: !show.finished,
-      active: (!show.finished) ? false : show.active,
+      active: false,
+      showState: ShowState.SHOW_FINISHED,
+      finished: true
     }).subscribe({
-      next: (result) => {
+      next: () => {
+        this.shows$ = this.showService.getAllShows();
+      },
+      error: (error) => {
+        this.snackBar.open(`Error staarting Show: ${JSON.stringify(error)}`, "OK", {
+          duration: 10000, announcementMessage: `Error`, panelClass: "error",
+        });
+      },
+    });
+  }
+
+  setFinished(show: Show) {
+    this.showService.updateShow({
+      ...show,
+      finished: true,
+      active: false,
+      showState: ShowState.SHOW_FINISHED
+    }).subscribe({
+      next: () => {
         this.shows$ = this.showService.getAllShows();
       },
       error: (error) => {
@@ -72,7 +93,7 @@ export class ShowsComponent implements OnInit {
     link.setAttribute("href", `${environment.apiUrl}api/backup/download`);
     link.setAttribute(
       "download",
-      `rl-backup_download_${formatDate(new Date(), "YYYY-MM-dd_HH-mm-ss-SSS", this.locale)}.db`,
+      `rl-backup_download_${formatDate(new Date(), "yyyy-MM-dd_HH-mm-ss-SSS", this.locale)}.db`,
     );
     link.click();
     link.remove();

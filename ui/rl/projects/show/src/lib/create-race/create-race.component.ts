@@ -1,17 +1,19 @@
-import {Component, OnInit} from '@angular/core';
+import {Component, OnInit, ChangeDetectionStrategy} from '@angular/core';
 import {FormControl, FormGroup} from '@angular/forms';
 import {ActivatedRoute, Router} from '@angular/router';
 import {Song, SongService} from 'projects/song/src/public-api';
-import {Race, RaceService, RaceState} from 'projects/backend-api/src/lib/race.service';
+import {RaceService, RaceState} from 'projects/backend-api/src/lib/race.service';
 import {StatisticsService} from 'projects/backend-api/src/lib/statistics.service';
 import {MatSnackBar} from "@angular/material/snack-bar";
 import {Show, ShowService} from 'projects/backend-api/src/lib/show.service';
-import {combineLatest, filter, map, Observable} from 'rxjs';
+import {Observable} from 'rxjs';
 
 @Component({
-  selector: 'lib-create-race',
-  templateUrl: './create-race.component.html',
-  styleUrls: ['./create-race.component.scss']
+    selector: 'lib-create-race',
+    templateUrl: './create-race.component.html',
+    styleUrls: ['./create-race.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class CreateRaceComponent implements OnInit {
 
@@ -52,13 +54,13 @@ export class CreateRaceComponent implements OnInit {
   createRace() {
     this.createInProcess = true;
     const race = this.form.getRawValue();
-    const raceState = race.person1 && race.person2 && race.song1Id && race.song2Id ? RaceState.WAITING_TO_RACE : RaceState.WAITING_FOR_OPPONENT;
+    const raceState = race.person1 && race.person2 && race.song1?.id && race.song2?.id ? RaceState.LISTED : RaceState.WAITING_FOR_OPPONENT;
     this.raceService.createRace({
       ...race,
       raceState,
       showId: this.route.snapshot.paramMap.get('showId')
     }).subscribe({
-      next: (result) => {
+      next: () => {
         let snackBarMessage = `Successfully Created Race between ${race.person1} and ${race.person2}`;
         if (raceState === RaceState.WAITING_FOR_OPPONENT) {
           snackBarMessage = `Successfully Created Race for Waiting List`;

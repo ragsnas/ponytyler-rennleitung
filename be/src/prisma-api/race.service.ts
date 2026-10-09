@@ -1,11 +1,31 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, OnModuleDestroy } from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
 import { PrismaService } from "./prisma.service";
-import { Prisma, Race } from "@prisma/client";
-import { RaceState } from "../race/race.controller";
+import { Prisma, Race, RaceState } from "@prisma/client";
+import mqtt from "mqtt";
+import * as os from "os";
+
+const DEFAULT_MQTT_PORT = 3001;
+const RACE_STATE_CHANGE_TOPIC = "RaceStateChange";
 
 @Injectable()
-export class RaceService {
-  constructor(private prisma: PrismaService) {
+export class RaceService implements OnModuleDestroy {
+  private readonly mqttClient: mqtt.MqttClient;
+
+  constructor(
+    private prisma: PrismaService,
+    private configService: ConfigService,
+  ) {
+    const port = Number(
+      this.configService.get("MQTT_PORT") ?? DEFAULT_MQTT_PORT,
+    );
+    this.mqttClient = mqtt.connect(`mqtt://${os.hostname()}:${port}`, {
+      clientId: "be-race-service",
+    });
+  }
+
+  onModuleDestroy() {
+    this.mqttClient.end();
   }
 
   async race(
@@ -32,7 +52,7 @@ export class RaceService {
     return this.prisma.race.findFirst({
       where: {
         showId: Number(show.id),
-        raceState: { equals: RaceState.WAITING_TO_RACE },
+        raceState: { equals: RaceState.LISTED },
       },
       include: { song1: true, song2: true },
       orderBy: { orderNumber: "asc" },
@@ -48,7 +68,7 @@ export class RaceService {
     return this.prisma.race.findMany({
       where: {
         showId: Number(show.id),
-        raceState: { equals: RaceState.WAITING_TO_RACE },
+        raceState: { equals: RaceState.LISTED },
       },
       include: { song1: true, song2: true },
       orderBy: { orderNumber: "asc" },
@@ -100,7 +120,8 @@ export class RaceService {
     data: Prisma.RaceUncheckedUpdateInput;
   }): Promise<Race> {
     const { where, data } = params;
-    return this.prisma.race.update({
+    const existingRace = await this.prisma.race.findUnique({ where });
+    const updatedRace = await this.prisma.race.update({
       data: {
         person1: data.person1,
         song1: data.song1Id
@@ -113,6 +134,8 @@ export class RaceService {
         createdAt: data.createdAt,
         orderNumber: data.orderNumber,
         raced: data.raced,
+        raceStartedAt: data.raceStartedAt,
+        raceFinishedAt: data.raceFinishedAt,
         raceState: this.calculateRaceState(data),
         bikeWon: data.bikeWon,
         show: {
@@ -123,6 +146,52 @@ export class RaceService {
       },
       where,
     });
+
+    if (existingRace && existingRace.raceState !== updatedRace.raceState) {
+      console.log(`Race State Changed:`, updatedRace.raceState);
+      this.publishRaceStateChange(updatedRace);
+    }
+
+    if (this.isActiveRaceState(updatedRace.raceState as RaceState)) {
+      await this.resetOtherActiveRaces(updatedRace.id);
+    }
+
+    return updatedRace;
+  }
+
+  private isActiveRaceState(raceState: RaceState): boolean {
+    return !RaceService.ALLOWED_INACTIVE_RACE_STATES.includes(raceState);
+  }
+
+  private async resetOtherActiveRaces(excludeId: number) {
+    const otherActiveRaces = await this.prisma.race.findMany({
+      where: {
+        id: { not: excludeId },
+        raceState: { notIn: RaceService.ALLOWED_INACTIVE_RACE_STATES },
+      },
+    });
+
+    for (const race of otherActiveRaces) {
+      const resetRace = await this.prisma.race.update({
+        where: { id: race.id },
+        data: { raceState: RaceState.LISTED },
+      });
+      this.publishRaceStateChange(resetRace);
+    }
+  }
+
+  private static readonly ALLOWED_INACTIVE_RACE_STATES: RaceState[] = [
+    RaceState.CANCELED,
+    RaceState.LISTED,
+    RaceState.DONE,
+    RaceState.WAITING_FOR_OPPONENT,
+  ];
+
+  private publishRaceStateChange(race: Race) {
+    this.mqttClient.publish(
+      RACE_STATE_CHANGE_TOPIC,
+      JSON.stringify({ raceId: race.id.toString(), state: race.raceState }),
+    );
   }
 
   async repairOrder(showId: string) {
@@ -134,7 +203,9 @@ export class RaceService {
     console.log(`Found ${allRaces.length} races`);
     const transactions = [];
     for (const [indexCounter, race] of allRaces.entries()) {
-      console.log(`> [${indexCounter}] Preparing update for order nr ${race.orderNumber} (race id: ${race.id})`);
+      console.log(
+        `> [${indexCounter}] Preparing update for order nr ${race.orderNumber} (race id: ${race.id})`,
+      );
       transactions.push(
         this.prisma.race.update({
           data: {
@@ -148,13 +219,18 @@ export class RaceService {
     return this.prisma.$transaction(transactions);
   }
 
-  async moveRacePosition(params: { raceToMoveId: string, upOrDown: string }) {
-    const raceToMove: Race = await this.race({ id: Number(params.raceToMoveId) });
-    const orderNumberEqClause = params.upOrDown === "up" ? { lt: raceToMove.orderNumber } : { gt: raceToMove.orderNumber };
+  async moveRacePosition(params: { raceToMoveId: string; upOrDown: string }) {
+    const raceToMove: Race = await this.race({
+      id: Number(params.raceToMoveId),
+    });
+    const orderNumberEqClause =
+      params.upOrDown === "up"
+        ? { lt: raceToMove.orderNumber }
+        : { gt: raceToMove.orderNumber };
     const raceToSwitchWithResults: Race[] = await this.races({
       where: {
         showId: Number(raceToMove.showId),
-        raceState: RaceState.WAITING_TO_RACE,
+        raceState: RaceState.LISTED,
         orderNumber: orderNumberEqClause,
       },
       orderBy: { orderNumber: params.upOrDown === "up" ? "desc" : "asc" },
@@ -162,27 +238,36 @@ export class RaceService {
     });
     const raceToSwitchWith: Race = raceToSwitchWithResults[0];
     if (raceToSwitchWith) {
-      console.log(`>>>>>\nraceToMove #${raceToMove.id}: ${raceToMove.orderNumber}`
-        + `\nwill switch with:`
-        + `\nraceToSwitchWith #${raceToSwitchWith.id}: ${raceToSwitchWith.orderNumber}`
-        + `\n to move "${params.upOrDown}"`);
+      console.log(
+        `>>>>>\nraceToMove #${raceToMove.id}: ${raceToMove.orderNumber}` +
+          `\nwill switch with:` +
+          `\nraceToSwitchWith #${raceToSwitchWith.id}: ${raceToSwitchWith.orderNumber}` +
+          `\n to move "${params.upOrDown}"`,
+      );
 
       console.log(`raceToMove:`, raceToMove);
       console.log(`raceToSwitchWith:`, raceToSwitchWith);
-      const updateRaceToMove = this.prisma.race.update({
-        data: {
-          orderNumber: raceToSwitchWith.orderNumber,
-        },
+      // (showId, orderNumber) is unique, so the two numbers cannot be swapped
+      // directly: park the moved race on a temporary negative number (its own
+      // id, which no real race uses) while the other one takes its place.
+      const parkRaceToMove = this.prisma.race.update({
+        data: { orderNumber: -raceToMove.id },
         where: { id: raceToMove.id },
       });
       const updateRaceToSwitchWith = this.prisma.race.update({
-        data: {
-          orderNumber: raceToMove.orderNumber,
-        },
+        data: { orderNumber: raceToMove.orderNumber },
         where: { id: raceToSwitchWith.id },
       });
+      const updateRaceToMove = this.prisma.race.update({
+        data: { orderNumber: raceToSwitchWith.orderNumber },
+        where: { id: raceToMove.id },
+      });
 
-      return this.prisma.$transaction([updateRaceToSwitchWith, updateRaceToMove]);
+      return this.prisma.$transaction([
+        parkRaceToMove,
+        updateRaceToSwitchWith,
+        updateRaceToMove,
+      ]);
     }
   }
 
@@ -194,20 +279,54 @@ export class RaceService {
       data.person1 &&
       data.person2
     ) {
-      return RaceState.WAITING_TO_RACE;
+      return RaceState.LISTED;
     } else if (
-      data.raceState === RaceState.WAITING_TO_RACE &&
+      data.raceState === RaceState.LISTED &&
       !(data.song1Id && data.song2Id && data.person1 && data.person2)
     ) {
       return RaceState.WAITING_FOR_OPPONENT;
     }
 
-    return (data.raceState as RaceState) || RaceState.WAITING_TO_RACE;
+    return (data.raceState as RaceState) || RaceState.LISTED;
   }
 
   async deleteRace(where: Prisma.RaceWhereUniqueInput): Promise<Race> {
     return this.prisma.race.delete({
       where,
     });
+  }
+
+  async currentRace(showId: number) {
+    console.log(`Loading current race for show ${showId}`);
+    let currentRace: Race = await this.prisma.race.findFirst({
+      where: {
+        raceState: {
+          in: [
+            RaceState.WAITING_TO_RACE,
+            RaceState.RACING,
+            RaceState.ERROR,
+            RaceState.RACED,
+            RaceState.VIDEO_PLAYING,
+          ],
+        },
+        showId: { equals: showId },
+      },
+      orderBy: { orderNumber: "desc" },
+      include: { song1: true, song2: true },
+    });
+    if (!currentRace) {
+      console.log(`No active Race found, loading latest added Race instead`);
+      currentRace = await this.prisma.race.findFirst({
+        where: {
+          raceState: {
+            equals: RaceState.LISTED,
+          },
+          showId: { equals: showId },
+        },
+        orderBy: { orderNumber: "desc" },
+        include: { song1: true, song2: true },
+      });
+    }
+    return currentRace;
   }
 }

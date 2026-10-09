@@ -13,13 +13,13 @@ export class BackupService {
   }
 
   isDownloadPossible(): Observable<boolean> {
-    let isDownloadPossible$ = new Subject<boolean>();
+    const isDownloadPossible$ = new Subject<boolean>();
     try {
       this.http.get<boolean>(`${environment.apiUrl}api/backup/download-possible`).subscribe(result => {
         console.log(`isDownloadPossible is now ${result}`);
         isDownloadPossible$.next(result);
       });
-    } catch (e) {
+    } catch {
       isDownloadPossible$.next(false);
     }
     return isDownloadPossible$.asObservable();

@@ -1,37 +1,38 @@
-<ng-container *ngIf="show$ | async as show">
+@if (show$ | async; as show) {
   <h2>Adding Race for Show: {{show.name}}</h2>
-</ng-container>
-<ng-container *ngIf="listIsFull">
+}
+@if (listIsFull) {
   <lib-message type="warn">
     The List exceeds the Number of Races calculated to be raceable within the defined duration,
     based on the average Number of Songs raced per Hour in past races.
   </lib-message>
-</ng-container>
-<div *ngIf="form" [formGroup]="form">
+}
+@if (form) {
+  <div [formGroup]="form">
     <div>
-        <mat-form-field appearance="outline">
-            <mat-label>Black Bike Rider</mat-label>
-            <input matInput placeholder="i.e. Gylcan or Oman or Paul or ..." formControlName="person1">
-        </mat-form-field>
+      <mat-form-field appearance="outline">
+        <mat-label>Black Bike Rider</mat-label>
+        <input matInput placeholder="i.e. Gylcan or Oman or Paul or ..." formControlName="person1">
+      </mat-form-field>
     </div>
     <div>
-        <lib-song-auto-complete [showId]="showId" label="Song for Black Bike" formControlName="song1"></lib-song-auto-complete>
+      <lib-song-auto-complete [showId]="showId" label="Song for Black Bike" formControlName="song1"></lib-song-auto-complete>
     </div>
     <hr>
-    <div>
+      <div>
         <mat-form-field appearance="outline">
-            <mat-label>White Bike Rider</mat-label>
-            <input matInput placeholder="i.e. Olga or Steve or ..." formControlName="person2">
+          <mat-label>White Bike Rider</mat-label>
+          <input matInput placeholder="i.e. Olga or Steve or ..." formControlName="person2">
         </mat-form-field>
-    </div>
-    <div>
+      </div>
+      <div>
         <lib-song-auto-complete [showId]="showId" label="Song for White Bike" formControlName="song2"></lib-song-auto-complete>
+      </div>
+      <ui-button-list>
+        <button mat-flat-button color="accent" [routerLink]="'../'">
+          <mat-icon>arrow_back</mat-icon>
+        </button>
+        <button mat-flat-button color="primary" (click)="createRace()" [disabled]="form.invalid || createInProcess">Speichern</button>
+      </ui-button-list>
     </div>
-
-  <ui-button-list>
-    <button mat-flat-button color="accent" [routerLink]="'../'">
-      <mat-icon>arrow_back</mat-icon>
-    </button>
-    <button mat-flat-button color="primary" (click)="createRace()" [disabled]="form.invalid || createInProcess">Speichern</button>
-  </ui-button-list>
-</div>
+  }

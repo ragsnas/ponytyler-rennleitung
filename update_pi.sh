@@ -6,6 +6,8 @@ sudo cp --verbose ~/ponytyler-rennleitung/be/prisma/*.db ~/rl_db_backup_$EPOCHSE
 printf "\n- PULL FROM REPOSITORY ----------------------------\n"
 git reset --hard
 git pull
+printf "\n- BUILD UI ----------------------------------------\n"
+(cd ~/ponytyler-rennleitung/ui/rl && npm ci && npx ng build)
 printf "\n- COPY UI TO NGINX HTML FOLDER --------------------\n"
 sudo cp --verbose ~/ponytyler-rennleitung/ui/rl/dist/rl/browser/*.* /var/www/html/
 sudo chmod -v a+r /var/www/html/*.*
@@ -21,7 +23,6 @@ cd ~/ponytyler-rennleitung/be
 npm i
 printf "\n- BUILD/MIGRATE DATABASE --------------------------\n"
 npx prisma generate
-npx prisma generate --sql
 npx prisma migrate deploy
 printf "\n- BUILD ACTUAL BACKEND ----------------------------\n"
 npm run build

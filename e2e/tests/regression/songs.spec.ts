@@ -1,0 +1,168 @@
+import { test, expect, Page, Locator, BrowserContext } from '@playwright/test';
+
+/**
+ * Exercises the Songs page end to end through the Angular frontend: adding a
+ * song directly, syncing songs from local files ("DJ Notebook" upload),
+ * finding/merging duplicate songs, syncing songs from the cloud
+ * songlist (https://songlist.ponytyler.de in production, the same site the app itself
+ * integrates with - see be/src/cron/song-sync/song-sync.service.ts). In the
+ * e2e stack the backend's SONGLIST_URL points at the songlist stub
+ * (e2e/songlist-stub), so the cloud list is a fixed, known set of songs.
+ * Syncing songs' selectability lives in song-selectability.spec.ts, since it
+ * mutates every song globally.
+ *
+ * Ordering matters here: "finds and
+ * merges duplicate songs" runs before the cloud sync so the duplicate
+ * detection (an O(n^2) scan over all selectable songs) isn't slowed down by
+ * however many songs the real cloud list happens to contain.
+ */
+
+const BACKEND_URL = 'http://localhost:3010';
+
+// Fixture songs served by the songlist stub (e2e/songlist-stub/songs.json).
+const STUB_ARTIST = 'Stub Artist';
+const STUB_LISTED_SONG = 'Stub Listed Song';
+const STUB_UNLISTED_SONG = 'Stub Unlisted Song';
+
+function rowByText(page: Page, text: string): Locator {
+  return page.locator('table tr', { hasText: text });
+}
+
+async function dismissSuccessSnackBar(page: Page): Promise<void> {
+  // .last(): a still-closing snackbar from a preceding action can briefly
+  // overlap with a freshly opened one, so anchor on the most recent.
+  const snackBarAction = page.locator('.mat-mdc-snack-bar-action button, button:has-text("OK")').last();
+  await snackBarAction.waitFor({ state: 'visible', timeout: 10000 });
+  await snackBarAction.click();
+}
+
+test.describe.serial('Songs', () => {
+  test.setTimeout(120000);
+
+  const uniqueSuffix = Date.now();
+
+  let context: BrowserContext;
+  let page: Page;
+
+  test.beforeAll(async ({ browser }) => {
+    context = await browser.newContext();
+    page = await context.newPage();
+  });
+
+  test.afterAll(async () => {
+    await context.close();
+  });
+
+  test('adds a song', async () => {
+    const name = `E2E Song ${uniqueSuffix}`;
+    const artist = `E2E Artist ${uniqueSuffix}`;
+
+    await page.goto('/song', { waitUntil: 'networkidle' });
+
+    await page.locator('button:has-text("Add Song")').first().click();
+    await page.waitForURL(/\/song\/create$/, { timeout: 10000 });
+
+    await page.locator('input[formControlName="name"]').fill(name);
+    await page.locator('input[formControlName="artist"]').fill(artist);
+    await page.locator('button:has-text("Speichern")').click();
+
+    await page.waitForURL(/\/song$/, { timeout: 15000 });
+
+    const row = rowByText(page, name);
+    await expect(row).toBeVisible({ timeout: 10000 });
+    await expect(row).toContainText(artist);
+    // FROM_DIRECT_INPUT origin icon (lib-song-sync-origin).
+    await expect(row).toContainText('keyboard');
+  });
+
+  test('syncs songs via file upload', async () => {
+    const artist = `E2E Upload Artist ${uniqueSuffix}`;
+    const name = `E2E Upload Song ${uniqueSuffix}`;
+    const fileName = `${artist} - ${name}.mp3`;
+
+    await page.goto('/song/sync', { waitUntil: 'networkidle' });
+
+    await page.locator('input[type="file"]').setInputFiles({
+      name: fileName,
+      mimeType: 'audio/mpeg',
+      buffer: Buffer.from('fake-audio-data'),
+    });
+
+    const fileListItem = page.locator('mat-list-item', { hasText: fileName });
+    await expect(fileListItem).toBeVisible({ timeout: 10000 });
+
+    await page.locator('button:has-text("Sync all new Files")').click();
+    await expect(fileListItem).toHaveCount(0, { timeout: 10000 });
+
+    await page.goto('/song', { waitUntil: 'networkidle' });
+    const row = rowByText(page, name);
+    await expect(row).toBeVisible({ timeout: 10000 });
+    await expect(row).toContainText(artist);
+    // FROM_FILE_SYNC origin icon.
+    await expect(row).toContainText('file_upload');
+  });
+
+  test('finds and merges duplicate songs', async ({ request }) => {
+    const artist = `E2E Duplicate Artist ${uniqueSuffix}`;
+    // A single middle-character edit (e -> o) gives a Levenshtein distance
+    // of 1, well under the page's default threshold of 6, while keeping
+    // neither name a substring of the other.
+    const nameA = `Thunder Strike ${uniqueSuffix}`;
+    const nameB = `Thundor Strike ${uniqueSuffix}`;
+
+    for (const name of [nameA, nameB]) {
+      const response = await request.post(`${BACKEND_URL}/api/song`, {
+        data: { name, artist, selectable: true },
+      });
+      expect(response.status()).toBe(201);
+    }
+
+    await page.goto('/song/duplicates', { waitUntil: 'networkidle' });
+
+    const pairRow = page.locator('table tr').filter({ hasText: artist });
+    await expect(pairRow).toBeVisible({ timeout: 15000 });
+    await expect(pairRow).toContainText('1'); // distance column
+
+    const duplicateCellText = await pairRow.locator('td').nth(2).innerText();
+    const duplicateName = [nameA, nameB].find((name) => duplicateCellText.includes(name));
+    expect(duplicateName).toBeDefined();
+    const originalName = duplicateName === nameA ? nameB : nameA;
+
+    await pairRow.getByRole('button', { name: 'Deactivate Duplicate' }).click();
+    await expect(page.getByText('Successfully deactivated Duplicate')).toBeVisible({ timeout: 10000 });
+    await dismissSuccessSnackBar(page);
+
+    await page.goto('/song', { waitUntil: 'networkidle' });
+    await expect(rowByText(page, duplicateName as string)).toContainText('block');
+    await expect(rowByText(page, originalName)).toContainText('check_box');
+  });
+
+  test('syncs songs via the cloud songlist', async () => {
+    await page.goto('/song', { waitUntil: 'networkidle' });
+
+    await page.locator('button:has-text("Sync Songs")').click();
+    await page.waitForURL(/\/song\/sync$/, { timeout: 10000 });
+
+    await page.locator('button:has-text("Sync with Cloud Songlist")').click();
+    await expect(page.getByText('Cloud Song Sync finished.')).toBeVisible({ timeout: 30000 });
+    await dismissSuccessSnackBar(page);
+
+    // The sync creates missing songs in the background without awaiting each
+    // write before responding, so the list only catches up eventually.
+    for (const { name, icon } of [
+      { name: STUB_LISTED_SONG, icon: 'check_box' },
+      { name: STUB_UNLISTED_SONG, icon: 'block' },
+    ]) {
+      await expect(async () => {
+        await page.goto('/song', { waitUntil: 'networkidle' });
+        // Exact match: a leftover "<name> [PT]" row from another spec must not count.
+        const row = page.locator('table tr').filter({ has: page.getByText(name, { exact: true }) });
+        await expect(row).toBeVisible({ timeout: 2000 });
+        await expect(row).toContainText(STUB_ARTIST);
+        // FROM_CLOUD_SYNC origin icon, plus selectable (listed) or blocked (unlisted).
+        await expect(row).toContainText('cloud');
+        await expect(row).toContainText(icon);
+      }).toPass({ timeout: 30000 });
+    }
+  });
+});

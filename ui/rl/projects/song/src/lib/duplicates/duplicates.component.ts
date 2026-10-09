@@ -1,22 +1,23 @@
-import { Component, OnInit } from "@angular/core";
-import { Song, SongService } from "../../public-api";
-import { Subject } from "rxjs";
-import { closest, distance } from "fastest-levenshtein";
+import { Component, DestroyRef, OnInit, ChangeDetectionStrategy, inject } from "@angular/core";
+import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
+import { SongService } from "projects/backend-api/src/lib/song.service";
+import { Subject, debounceTime } from "rxjs";
 import { MatSnackBar } from "@angular/material/snack-bar";
 import { ActivatedRoute, Router } from "@angular/router";
 import { FormControl } from "@angular/forms";
+import { filterDuplicates, findNearestNeighbours, SongNeighbour, SongWithDuplicateMeta } from "./duplicates.util";
 
-export interface SongWithDuplicateMeta extends Song {
-  duplicate: Song
-  distance: number
-}
+export type { SongWithDuplicateMeta } from "./duplicates.util";
 
 const PONTY_TYPER_REFRESH_TIMER_INTERVAL = 'pontyTyperLevenshteinDistanceMinimum';
+const FILTER_DEBOUNCE_MS = 200;
 
 @Component({
-  selector: 'lib-song-duplicates',
-  templateUrl: './duplicates.component.html',
-  styleUrls: ['./duplicates.component.css'],
+    selector: 'lib-song-duplicates',
+    templateUrl: './duplicates.component.html',
+    styleUrls: ['./duplicates.component.css'],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class DuplicatesComponent implements OnInit {
   songs$: Subject<SongWithDuplicateMeta[]> = new Subject<SongWithDuplicateMeta[]>();
@@ -24,46 +25,36 @@ export class DuplicatesComponent implements OnInit {
   levenshteinDistanceMinimumFormControl: FormControl<string> = new FormControl<string>(localStorage.getItem(PONTY_TYPER_REFRESH_TIMER_INTERVAL) || '6', {nonNullable: true});
   levenshteinDistanceMinimum: number = 0;
 
+  private neighbours: SongNeighbour[] = [];
+  private readonly destroyRef = inject(DestroyRef);
+
   constructor(private songService: SongService, private snackBar: MatSnackBar, private router: Router, private route: ActivatedRoute) {
   }
 
   ngOnInit(): void {
     this.levenshteinDistanceMinimum = Number(localStorage.getItem(PONTY_TYPER_REFRESH_TIMER_INTERVAL)) || 6;
     this.loadSongs();
-    this.levenshteinDistanceMinimumFormControl.valueChanges.subscribe((newDistance: string) => {
-        console.log(`\nchange made`, newDistance);
-        localStorage.setItem(PONTY_TYPER_REFRESH_TIMER_INTERVAL, newDistance);
-        this.levenshteinDistanceMinimum = Number(newDistance);
-        this.loadSongs();
-    });
 
+    // The chip follows the slider immediately; the (cheap) filtering is debounced.
+    this.levenshteinDistanceMinimumFormControl.valueChanges
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((newDistance: string) => {
+        this.levenshteinDistanceMinimum = Number(newDistance);
+      });
+    this.levenshteinDistanceMinimumFormControl.valueChanges
+      .pipe(debounceTime(FILTER_DEBOUNCE_MS), takeUntilDestroyed(this.destroyRef))
+      .subscribe((newDistance: string) => {
+        localStorage.setItem(PONTY_TYPER_REFRESH_TIMER_INTERVAL, newDistance);
+        this.publishDuplicates();
+      });
   }
 
+  /** Fetches the songs and computes the nearest neighbours once; the slider only re-filters. */
   loadSongs() {
     this.songService.getSelectableSongs().subscribe({
       next: (songs) => {
-        const songsWithDuplicateMeta: SongWithDuplicateMeta[] = []
-        songs.forEach((song: Song) => {
-          const otherSongs = songs
-            .filter((filteredSong: Song) => song.id !== filteredSong.id);
-          const songsAsFullTitle = otherSongs
-            .map((filteredSong: Song) => `${filteredSong.artist} - ${filteredSong.name}`);
-          const closestSongFullTitle = closest(`${song.artist} - ${song.name}`, songsAsFullTitle);
-          const levDistance = distance(`${song.artist} - ${song.name}`, closestSongFullTitle);
-          console.log(`\nthis.levenshteinDistanceMinimum is `, this.levenshteinDistanceMinimum);
-          if (
-            levDistance <= this.levenshteinDistanceMinimum
-            && !songsWithDuplicateMeta.some((recognizedDuplicate: SongWithDuplicateMeta) =>
-              recognizedDuplicate.duplicate.id === song.id)) {
-            const closestSong = otherSongs.find((otherSong: Song) => `${otherSong.artist} - ${otherSong.name}` === closestSongFullTitle);
-            songsWithDuplicateMeta.push({
-              ...song,
-              distance: levDistance,
-              duplicate: closestSong
-            } as SongWithDuplicateMeta);
-          }
-        });
-        this.songs$.next(songsWithDuplicateMeta.sort((song1: SongWithDuplicateMeta, song2: SongWithDuplicateMeta) => song1.distance == song2.distance ? 0 : (song1.distance > song2.distance ? 1 : -1)));
+        this.neighbours = findNearestNeighbours(songs);
+        this.publishDuplicates();
       },
       error: (error) => {
         console.log(`error:`, error);
@@ -71,12 +62,16 @@ export class DuplicatesComponent implements OnInit {
     });
   }
 
+  private publishDuplicates() {
+    this.songs$.next(filterDuplicates(this.neighbours, this.levenshteinDistanceMinimum));
+  }
+
   mergeSingleSong(song: SongWithDuplicateMeta) {
     this.songService.updateSong({
       ...song.duplicate,
       selectable: false
     }).subscribe({
-      next: (result) => {
+      next: () => {
         this.snackBar.open(`Successfully deactivated Duplicate`, 'OK', {duration: 250, panelClass: 'success'})
           .afterDismissed()
           .subscribe(() => {

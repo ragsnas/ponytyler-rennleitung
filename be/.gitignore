@@ -41,3 +41,6 @@ lerna-debug.log*
 prisma/rl.db
 /prisma/backups/*.db
 /prisma/backups/*.sql
+/dist
+/prisma/backups/
+/prisma/**/*.db

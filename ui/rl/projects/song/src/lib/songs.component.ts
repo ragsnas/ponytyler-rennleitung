@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { FormControl, FormGroup } from '@angular/forms';
 import {
   BehaviorSubject,
@@ -7,20 +7,28 @@ import {
   map,
   startWith,
 } from 'rxjs';
+import { HttpErrorResponse } from '@angular/common/http';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { Song, SongService } from '../../../backend-api/src/lib/song.service';
 
 @Component({
-  selector: 'lib-song-songs',
-  templateUrl: './songs.component.html',
-  styleUrls: ['./songs.component.scss'],
+    selector: 'lib-song-songs',
+    templateUrl: './songs.component.html',
+    styleUrls: ['./songs.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class SongsComponent implements OnInit {
   songs$: BehaviorSubject<Song[]> = new BehaviorSubject<Song[]>([]);
   filteredSongs$: Observable<Song[]> | undefined;
   filter = new FormControl<string>('');
   filterForm = new FormGroup({ filter: this.filter });
+  updatingSelectability = false;
 
-  constructor(private songService: SongService) {}
+  constructor(
+    private songService: SongService,
+    private snackBar: MatSnackBar
+  ) {}
 
   ngOnInit(): void {
     this.loadSongs();
@@ -83,6 +91,26 @@ export class SongsComponent implements OnInit {
       },
       error: (error) => {
         console.log(`error:`, error);
+      },
+    });
+  }
+
+  updateSelectability() {
+    if (this.updatingSelectability) {
+      return;
+    }
+    this.updatingSelectability = true;
+    this.songService.updateSelectability().subscribe({
+      next: () => {
+        this.updatingSelectability = false;
+        this.loadSongs();
+        this.snackBar.open('Selectability updated.', 'OK', { panelClass: 'success' });
+      },
+      error: (error: HttpErrorResponse) => {
+        this.updatingSelectability = false;
+        this.snackBar.open(`Error updating selectability: ${JSON.stringify(error.message)}`, 'OK', {
+          duration: 10000, panelClass: 'error',
+        });
       },
     });
   }

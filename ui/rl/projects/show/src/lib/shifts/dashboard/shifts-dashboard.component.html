@@ -1,7 +1,6 @@
 <h2>{{ show?.name }} / Shifts</h2>
 
-<ng-container *ngIf="shifts$ | async as shifts">
-
+@if (shifts$ | async; as shifts) {
   <div>
     <ui-button-list>
       <button mat-flat-button color="accent" [routerLink]="'../'">
@@ -13,14 +12,12 @@
       </button>
     </ui-button-list>
   </div>
-
-  <ng-container *ngIf="shifts && shifts.length > 0">
-  </ng-container>
-
-  <ng-container *ngIf="shifts && shifts.length <= 0">
+  @if (shifts && shifts.length > 0) {
+  }
+  @if (shifts && shifts.length <= 0) {
     <lib-message [type]="'info'">
       No Shifts yet.
       Use The Wizzard to create Shifts.
     </lib-message>
-  </ng-container>
-</ng-container>
+  }
+}

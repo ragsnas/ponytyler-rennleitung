@@ -1,4 +1,4 @@
-import { Component, OnInit } from "@angular/core";
+import { Component, OnInit, ChangeDetectionStrategy } from "@angular/core";
 import { ActivatedRoute } from "@angular/router";
 import { StatisticsService, WhichBikeWonMost } from "../../../../../backend-api/src/lib/statistics.service";
 import { map, Observable, tap } from "rxjs";
@@ -9,9 +9,11 @@ export type WhichBikeWonMostUi = {
 }
 
 @Component({
-  selector: "lib-songs",
-  templateUrl: "./which-bike-won-most.component.html",
-  styleUrls: ["./which-bike-won-most.component.scss"],
+    selector: "lib-songs",
+    templateUrl: "./which-bike-won-most.component.html",
+    styleUrls: ["./which-bike-won-most.component.scss"],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class WhichBikeWonMostComponent implements OnInit {
   whichBikeWonMostComponent$: Observable<WhichBikeWonMostUi[]> | undefined;

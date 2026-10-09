@@ -8,25 +8,17 @@ import {
   Post,
   Query,
 } from "@nestjs/common";
-import { RaceService } from "src/prisma-api/race.service";
-import { ShowService } from "src/prisma-api/show.service";
-import { Prisma, Race } from "@prisma/client";
+import { RaceService } from "../prisma-api/race.service";
+import { ShowService } from "../prisma-api/show.service";
+import { Prisma, RaceState } from "@prisma/client";
 import { combineLatest, map } from "rxjs";
-
-export enum RaceState {
-  WAITING_FOR_OPPONENT = "WAITING_FOR_OPPONENT",
-  WAITING_TO_RACE = "WAITING_TO_RACE",
-  CANCELED = "CANCELED",
-  RACED = "RACED",
-}
 
 @Controller("api/race")
 export class RaceController {
   constructor(
     private readonly raceService: RaceService,
     private readonly showService: ShowService,
-  ) {
-  }
+  ) {}
 
   @Post()
   create(@Body() data: Prisma.RaceUncheckedCreateInput) {
@@ -86,6 +78,7 @@ export class RaceController {
             .reduce(
               (accumulator: number, currentValue: number) =>
                 accumulator + currentValue,
+              0,
             ) || 0;
 
         const totalTime =
@@ -94,11 +87,17 @@ export class RaceController {
             .reduce(
               (accumulator: number, currentValue: number) =>
                 accumulator + currentValue,
+              0,
             ) || 0;
 
         return Math.round(numberOfRaces / (totalTime / 60));
       }),
     );
+  }
+
+  @Get("current/:showId")
+  findCurrentRace(@Param("showId") showId: string) {
+    return this.raceService.currentRace(parseInt(showId));
   }
 
   @Get("upcoming-race-with-songs")
@@ -122,7 +121,10 @@ export class RaceController {
   }
 
   @Patch(":id/:upOrDown")
-  async moveRaceUpOrDown(@Param("id") id: string, @Param("upOrDown") upOrDown: string) {
+  async moveRaceUpOrDown(
+    @Param("id") id: string,
+    @Param("upOrDown") upOrDown: string,
+  ) {
     return this.raceService.moveRacePosition({ raceToMoveId: id, upOrDown });
   }
 

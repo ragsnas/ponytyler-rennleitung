@@ -1,13 +1,15 @@
-import {Component} from '@angular/core';
+import {Component, ChangeDetectionStrategy} from '@angular/core';
 import {FormControl, FormGroup} from '@angular/forms';
 import {Origin, Song, SongService} from '../../public-api';
 import {ActivatedRoute, Router} from '@angular/router';
 import {MatSnackBar} from "@angular/material/snack-bar";
 
 @Component({
-  selector: 'lib-song-edit',
-  templateUrl: './edit-song.component.html',
-  styleUrls: ['./edit-song.component.scss']
+    selector: 'lib-song-edit',
+    templateUrl: './edit-song.component.html',
+    styleUrls: ['./edit-song.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class EditSongComponent {
 
@@ -41,7 +43,7 @@ export class EditSongComponent {
         ...this.form.getRawValue() as Song
       } as Song
     ).subscribe({
-      next: (result) => {
+      next: () => {
         this.snackBar.open(`Successfully Updated Song`, 'OK', {duration: 200, panelClass: 'success'})
           .afterDismissed()
           .subscribe(() => {
@@ -53,7 +55,7 @@ export class EditSongComponent {
           duration: 10000, panelClass: 'error'
         });
       }
-    });;
+    });
   }
 
 

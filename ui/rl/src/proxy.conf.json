@@ -1,6 +1,11 @@
 {
   "/api": {
-    "target": "http://localhost:3000",
+    "target": "http://backend:3000",
     "secure": false
+  },
+  "/mqtt-ws": {
+    "target": "ws://backend:3002",
+    "secure": false,
+    "ws": true
   }
 }

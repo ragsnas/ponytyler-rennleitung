@@ -1,0 +1,16 @@
+@if (show$ | async; as show) {
+  <h2>Adding Encore Song for Show: {{show.name}}</h2>
+}
+@if (form) {
+  <div [formGroup]="form">
+    <div>
+      <lib-song-auto-complete [showId]="showId" label="Encore Song" formControlName="song"></lib-song-auto-complete>
+    </div>
+    <ui-button-list>
+      <button mat-flat-button color="accent" [routerLink]="'../'">
+        <mat-icon>arrow_back</mat-icon>
+      </button>
+      <button mat-flat-button color="primary" (click)="addEncore()" [disabled]="form.invalid || createInProcess">Speichern</button>
+    </ui-button-list>
+  </div>
+}

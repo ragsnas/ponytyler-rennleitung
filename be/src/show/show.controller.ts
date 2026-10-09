@@ -1,4 +1,4 @@
-  import {
+import {
   Controller,
   Param,
   Get,
@@ -9,14 +9,14 @@
   Delete,
 } from "@nestjs/common";
 import { ShowService } from "../prisma-api/show.service";
-import { Show, Prisma } from "@prisma/client";
+import { Show, Prisma, ShowState } from "@prisma/client";
 import { RaceService } from "../prisma-api/race.service";
 
 @Controller("api/show")
 export class ShowController {
   constructor(
     private readonly showService: ShowService,
-    private readonly raceService: RaceService
+    private readonly raceService: RaceService,
   ) {}
 
   @Get("")
@@ -70,13 +70,12 @@ export class ShowController {
     return this.showService.createShow({
       ...showData,
       date: showData.date || new Date(),
+      showState: ShowState.BEFORE_SHOW,
     });
   }
 
   @Patch("repair-races-for/:id")
-  repairRacesFor(
-    @Param("id") id: string
-  ) {
+  repairRacesFor(@Param("id") id: string) {
     return this.raceService.repairOrder(id);
   }
 

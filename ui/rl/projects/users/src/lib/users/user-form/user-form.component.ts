@@ -1,26 +1,28 @@
-import { Component, OnDestroy, OnInit } from "@angular/core";
+import { Component, OnDestroy, OnInit, ChangeDetectionStrategy } from "@angular/core";
 import {
   AbstractControl,
   ControlValueAccessor,
-  FormBuilder,
   FormControl,
   FormGroup,
   NG_VALUE_ACCESSOR, Validators,
+  ValidationErrors,
 } from "@angular/forms";
 import { User } from "projects/backend-api/src/lib/user.service";
 import { Subscription } from "rxjs";
 
 @Component({
-  selector: 'user-form',
-  templateUrl: "user-form.component.html",
-  styleUrls: ["user-form.component.scss"],
-  providers: [
-    {
-      provide: NG_VALUE_ACCESSOR,
-      multi:true,
-      useExisting: UserFormComponent
-    }
-  ]
+    selector: 'user-form',
+    templateUrl: "user-form.component.html",
+    styleUrls: ["user-form.component.scss"],
+    providers: [
+        {
+            provide: NG_VALUE_ACCESSOR,
+            multi: true,
+            useExisting: UserFormComponent
+        }
+    ],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class UserFormComponent implements ControlValueAccessor, OnInit, OnDestroy {
 
@@ -42,12 +44,12 @@ export class UserFormComponent implements ControlValueAccessor, OnInit, OnDestro
   }
 
   ngOnDestroy() {
-    for (let sub of this.onChangeSubs) {
+    for (const sub of this.onChangeSubs) {
       sub.unsubscribe();
     }
   }
 
-  registerOnChange(onChange: any) {
+  registerOnChange(onChange: (value: User) => void) {
     const sub = this.form?.valueChanges.subscribe({
       next: (valueChange) => onChange(valueChange)
     });
@@ -56,7 +58,7 @@ export class UserFormComponent implements ControlValueAccessor, OnInit, OnDestro
     }
   }
 
-  registerOnTouched(onTouched: Function) {
+  registerOnTouched(onTouched: () => void) {
     this.onTouched = onTouched;
   }
 
@@ -69,15 +71,15 @@ export class UserFormComponent implements ControlValueAccessor, OnInit, OnDestro
     }
   }
 
-  writeValue(value: any) {
+  writeValue(value: User | null) {
     if (value) {
       this.form?.setValue(value, {emitEvent: false});
     }
   }
 
-  onChange = (user: User) => {};
+  onChange = (_user: User) => {};
 
-  onTouched: Function = () => {};
+  onTouched: () => void = () => {};
 
   markAsTouched() {
     if (!this.touched) {
@@ -86,19 +88,19 @@ export class UserFormComponent implements ControlValueAccessor, OnInit, OnDestro
     }
   }
 
-  validate(control: AbstractControl) {
+  validate(_control: AbstractControl) {
 
     if (this.form.valid) {
       return null;
     }
 
-    let errors : any = {};
+    let errors : ValidationErrors = {};
     errors = this.addControlErrors(errors, "name");
 
     return errors;
   }
 
-  addControlErrors(allErrors: any, controlName:string) {
+  addControlErrors(allErrors: ValidationErrors, controlName:string) {
 
     const errors = {...allErrors};
 

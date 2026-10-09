@@ -2,7 +2,7 @@ import { NgModule } from "@angular/core";
 import { RouterLink, RouterModule, RouterOutlet, Routes } from "@angular/router";
 import { StatsComponent } from "./stats.component";
 import { SongsComponent } from "./stats/songs/songs.component";
-import { AsyncPipe, CommonModule, JsonPipe, NgIf } from "@angular/common";
+import { CommonModule } from "@angular/common";
 import {
   MatCell,
   MatCellDef,

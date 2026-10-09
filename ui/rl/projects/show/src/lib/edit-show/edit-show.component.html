@@ -1,44 +1,40 @@
-<div *ngIf="form && show" [formGroup]="form">
-
-  <h2>Update of Show #{{showId}} ({{show.name}})</h2>
-
-  <div>
+@if (form && show) {
+  <div [formGroup]="form">
+    <h2>Update of Show #{{showId}} ({{show.name}})</h2>
+    <div>
       <mat-form-field appearance="outline">
-          <mat-label>Show Name</mat-label>
-          <input matInput placeholder="i.e. PT @PAPP Dez 2023" formControlName="name">
+        <mat-label>Show Name</mat-label>
+        <input matInput placeholder="i.e. PT @PAPP Dez 2023" formControlName="name">
       </mat-form-field>
-  </div>
-
-  <div>
+    </div>
+    <div>
       <mat-form-field appearance="outline">
-          <mat-label>Date</mat-label>
-          <input matInput [matDatepicker]="picker" formControlName="date">
-          <mat-hint>MM/DD/YYYY</mat-hint>
-          <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
-          <mat-datepicker #picker></mat-datepicker>
+        <mat-label>Date</mat-label>
+        <input matInput [matDatepicker]="picker" formControlName="date">
+        <mat-hint>MM/DD/YYYY</mat-hint>
+        <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
+        <mat-datepicker #picker></mat-datepicker>
       </mat-form-field>
-  </div>
-
-  <div>
-    <mat-form-field appearance="outline">
-      <mat-label>Start Time</mat-label>
-      <input matInput placeholder="i.e. 22:00" formControlName="time" type="time">
-    </mat-form-field>
-  </div>
-
-  <div>
+    </div>
+    <div>
       <mat-form-field appearance="outline">
-          <mat-label>Duration (in Minutes)</mat-label>
-          <input matInput placeholder="i.e. 120 for 2 hours" formControlName="duration" type="number">
+        <mat-label>Start Time</mat-label>
+        <input matInput placeholder="i.e. 22:00" formControlName="time" type="time">
       </mat-form-field>
-    <ui-button-list>
-      <button (click)="setDuration(60)" color="accent" class="duration-helper-button" mat-stroked-button>1h</button>
-      <button (click)="setDuration(90)" color="accent" class="duration-helper-button" mat-stroked-button>1:30h</button>
-      <button (click)="setDuration(120)" color="accent" class="duration-helper-button" mat-stroked-button>2h</button>
-      <button (click)="setDuration(150)" color="accent" class="duration-helper-button" mat-stroked-button>2:30h</button>
-      <button (click)="setDuration(180)" color="accent" class="duration-helper-button" mat-stroked-button>3h</button>
-    </ui-button-list>
+    </div>
+    <div>
+      <mat-form-field appearance="outline">
+        <mat-label>Duration (in Minutes)</mat-label>
+        <input matInput placeholder="i.e. 120 for 2 hours" formControlName="duration" type="number">
+      </mat-form-field>
+      <ui-button-list>
+        <button (click)="setDuration(60)" color="accent" class="duration-helper-button" mat-stroked-button>1h</button>
+        <button (click)="setDuration(90)" color="accent" class="duration-helper-button" mat-stroked-button>1:30h</button>
+        <button (click)="setDuration(120)" color="accent" class="duration-helper-button" mat-stroked-button>2h</button>
+        <button (click)="setDuration(150)" color="accent" class="duration-helper-button" mat-stroked-button>2:30h</button>
+        <button (click)="setDuration(180)" color="accent" class="duration-helper-button" mat-stroked-button>3h</button>
+      </ui-button-list>
+    </div>
+    <button mat-flat-button color="primary" [disabled]="!form.valid" (click)="updateShow()">Speichern</button>
   </div>
-
-  <button mat-flat-button color="primary" [disabled]="!form.valid" (click)="updateShow()">Speichern</button>
-</div>
+}

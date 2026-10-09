@@ -1,6 +1,8 @@
-<div *ngIf="form" [formGroup]="form">
+@if (form) {
+  <div [formGroup]="form">
     <mat-form-field appearance="outline">
       <mat-label>Username</mat-label>
       <input matInput placeholder="i.e. Dustin..." formControlName="name">
     </mat-form-field>
-</div>
+  </div>
+}

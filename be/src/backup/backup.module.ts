@@ -6,5 +6,4 @@ import { CronModule } from "../cron/cron.module";
   controllers: [BackupController],
   imports: [CronModule],
 })
-export class BackupModule {
-}
+export class BackupModule {}

@@ -1,11 +1,13 @@
-import {Component} from '@angular/core';
+import {Component, ChangeDetectionStrategy} from '@angular/core';
 import {Race, RaceService} from 'projects/backend-api/src/lib/race.service';
 import {Observable} from "rxjs";
 
 @Component({
-  selector: 'lib-next-race',
-  templateUrl: './next-race.component.html',
-  styleUrls: ['./next-race.component.css']
+    selector: 'lib-next-race',
+    templateUrl: './next-race.component.html',
+    styleUrls: ['./next-race.component.css'],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class NextRaceComponent {
 

@@ -46,6 +46,23 @@ export class SongService {
     });
   }
 
+  /** Bulk insert; rows that already exist (unique constraint) are skipped. */
+  async createManySongs(
+    data: Prisma.SongCreateManyInput[],
+  ): Promise<Prisma.BatchPayload> {
+    if (data.length === 0) {
+      return { count: 0 };
+    }
+    return this.prisma.song.createMany({ data, skipDuplicates: true });
+  }
+
+  async updateManySongs(params: {
+    where: Prisma.SongWhereInput;
+    data: Prisma.SongUpdateManyMutationInput;
+  }): Promise<Prisma.BatchPayload> {
+    return this.prisma.song.updateMany(params);
+  }
+
   async updateSong(params: {
     where: Prisma.SongWhereUniqueInput;
     data: Prisma.SongUpdateInput;
@@ -61,9 +78,5 @@ export class SongService {
     return this.prisma.song.delete({
       where,
     });
-  }
-
-  async syncWithSingleSourceOfTruth(): Promise<boolean> {
-    return false;
   }
 }

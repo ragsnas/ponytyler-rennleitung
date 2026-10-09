@@ -1,12 +1,14 @@
-import {Component} from '@angular/core';
+import {Component, ChangeDetectionStrategy} from '@angular/core';
 import {FormControl, FormGroup} from '@angular/forms';
 import {Origin, SongService} from '../../public-api';
 import {Router} from '@angular/router';
 
 @Component({
-  selector: 'lib-song-input',
-  templateUrl: './create-song.component.html',
-  styleUrls: ['./create-song.component.scss']
+    selector: 'lib-song-input',
+    templateUrl: './create-song.component.html',
+    styleUrls: ['./create-song.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class CreateSongComponent {
 

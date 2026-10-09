@@ -22,10 +22,10 @@ table th {
 }
 
 .race-state-waiting-for-opponent td {
-  background-color: #e6bff5;
+  background-color: #ffede5;
 }
 
-.race-state-waiting-to-race td {
+.race-state-listed td {
   background-color: #f5f5f5;
 }
 
@@ -37,6 +37,16 @@ table th {
 
 .race-state-raced td {
   background-color: #c3e8ff;
+}
+
+.race-state-waiting-to-race td {
+  background-color: #c201de;
+  color: #ffffff;
+}
+
+.race-state-racing td {
+  background-color: #8d00a1;
+  color: #ffffff;
 }
 
 tr.race-state-waiting-to-race + tr.race-state-waiting-for-opponent td,
@@ -124,3 +134,21 @@ tr.race-state-raced + tr.race-state-canceled td {
 }
 
 
+
+.refresh-countdown {
+  height: 4px;
+  background-color: var(--mat-sys-surface-variant, #e0e0e0);
+  overflow: hidden;
+}
+
+.refresh-countdown-fill {
+  height: 100%;
+  background-color: var(--mat-sys-primary, #3f51b5);
+  transform-origin: left;
+  animation: refresh-countdown linear forwards;
+}
+
+@keyframes refresh-countdown {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}

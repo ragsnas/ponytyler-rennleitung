@@ -55,6 +55,6 @@ export class ShiftsService {
   }
 
   shiftsForShow(showId: string) {
-    return this.shifts({where: {showId: Number(showId)}});
+    return this.shifts({ where: { showId: Number(showId) } });
   }
 }

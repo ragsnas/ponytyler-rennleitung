@@ -1,4 +1,4 @@
-import {Component, forwardRef, Input, OnDestroy, OnInit} from '@angular/core';
+import {Component, forwardRef, Input, OnDestroy, OnInit, ChangeDetectionStrategy} from '@angular/core';
 import {
   AbstractControl,
   ControlValueAccessor,
@@ -18,21 +18,23 @@ export interface SongWithRaceInfo extends Song {
 }
 
 @Component({
-  selector: 'lib-song-auto-complete',
-  templateUrl: './input.component.html',
-  styleUrls: ['./input.component.scss'],
-  providers: [
-    {
-      provide: NG_VALUE_ACCESSOR,
-      multi: true,
-      useExisting: forwardRef(() => InputComponent),
-    },
-    {
-      provide: NG_VALIDATORS,
-      multi: true,
-      useExisting: forwardRef(() => InputComponent),
-    },
-  ],
+    selector: 'lib-song-auto-complete',
+    templateUrl: './input.component.html',
+    styleUrls: ['./input.component.scss'],
+    providers: [
+        {
+            provide: NG_VALUE_ACCESSOR,
+            multi: true,
+            useExisting: forwardRef(() => InputComponent),
+        },
+        {
+            provide: NG_VALIDATORS,
+            multi: true,
+            useExisting: forwardRef(() => InputComponent),
+        },
+    ],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class InputComponent implements OnInit, OnDestroy, ControlValueAccessor, Validator {
   @Input()
@@ -48,7 +50,7 @@ export class InputComponent implements OnInit, OnDestroy, ControlValueAccessor, 
   unsubscribe$: Subject<void> = new Subject<void>();
 
   disabled = false;
-  onChange = (value: Song) => {};
+  onChange = (_value: Song) => {};
   onTouched = () => {};
 
   constructor(private songsService: SongService, private raceService: RaceService) {}
@@ -66,7 +68,7 @@ export class InputComponent implements OnInit, OnDestroy, ControlValueAccessor, 
       takeUntil(this.unsubscribe$),
       map(([songs, races]: [Song[], Race[]]) => {
         const racesFinished = races.filter(race => race.raceState === RaceState.RACED);
-        const racesUpcoming = races.filter(race => race.raceState === RaceState.WAITING_TO_RACE || race.raceState === RaceState.WAITING_FOR_OPPONENT);
+        const racesUpcoming = races.filter(race => race.raceState === RaceState.LISTED || race.raceState === RaceState.WAITING_FOR_OPPONENT);
         const songIdsAlreadyPlayed = racesFinished.map(race => {
           if (race.bikeWon === 1) {
             return race.song1Id;
@@ -119,16 +121,16 @@ export class InputComponent implements OnInit, OnDestroy, ControlValueAccessor, 
       this.songControl.patchValue(song.artist + ' - ' + song.name);
     }
   }
-  registerOnChange(fn: any): void {
+  registerOnChange(fn: (value: Song) => void): void {
     this.onChange = fn;
   }
-  registerOnTouched(fn: any): void {
+  registerOnTouched(fn: () => void): void {
     this.onTouched = fn;
   }
   setDisabledState?(isDisabled: boolean): void {
     this.disabled = isDisabled;
   }
-  validate(control: AbstractControl): ValidationErrors | null {
+  validate(_control: AbstractControl): ValidationErrors | null {
     return null;
   }
   markAsTouched(): void {

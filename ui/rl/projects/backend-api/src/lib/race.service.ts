@@ -17,14 +17,21 @@ export interface Race {
   orderNumber: string;
   raced?: boolean;
   raceState?: RaceState;
+  raceStartedAt?: Date | string;
+  raceFinishedAt?: Date | string;
   bikeWon: number;
 }
 
 export enum RaceState {
-  WAITING_FOR_OPPONENT = 'WAITING_FOR_OPPONENT',
-  WAITING_TO_RACE = 'WAITING_TO_RACE',
-  CANCELED = 'CANCELED',
-  RACED = 'RACED',
+  WAITING_FOR_OPPONENT = "WAITING_FOR_OPPONENT",
+  CANCELED = "CANCELED",
+  LISTED = "LISTED",
+  WAITING_TO_RACE = "WAITING_TO_RACE",
+  RACING = "RACING",
+  RACED = "RACED",
+  ERROR = "ERROR",
+  VIDEO_PLAYING = "VIDEO_PLAYING",
+  DONE = "DONE"
 }
 
 @Injectable({
@@ -39,7 +46,7 @@ export class RaceService {
     );
   }
 
-  getAllRacesForShow(showId: string, raced: boolean = false): Observable<Race[]> {
+  getAllRacesForShow(showId: string): Observable<Race[]> {
     return this.http.get<Race[]>(
       `${environment.apiUrl}api/race/for-show/${showId}/all`
     );
@@ -93,6 +100,12 @@ export class RaceService {
   averageRacesPerHour() {
     return this.http.get<number>(
       environment.apiUrl + `api/race/average-races-per-hour`
+    );
+  }
+
+  getCurrentRace(showId: string) {
+    return this.http.get<Race>(
+      environment.apiUrl + `api/race/current/${showId}`
     );
   }
 }

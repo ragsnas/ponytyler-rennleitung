@@ -1,15 +1,15 @@
-import { Component, OnInit } from "@angular/core";
+import { Component, OnInit, ChangeDetectionStrategy } from "@angular/core";
 import { User, UserService } from "projects/backend-api/src/lib/user.service";
-import { Form, FormControl, FormGroup, ReactiveFormsModule, Validators } from "@angular/forms";
-import { MatButton } from "@angular/material/button";
-import { NgIf } from "@angular/common";
+import { FormControl, FormGroup, Validators } from "@angular/forms";
 import { WizzardService } from "../../wizzard.service";
 import { ActivatedRoute, Router } from "@angular/router";
 
 @Component({
-  selector: "lib-choose-users",
-  templateUrl: "./choose-users.component.html",
-  styleUrl: "./choose-users.component.css",
+    selector: "lib-choose-users",
+    templateUrl: "./choose-users.component.html",
+    styleUrl: "./choose-users.component.css",
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class ChooseUsersComponent implements OnInit {
 
