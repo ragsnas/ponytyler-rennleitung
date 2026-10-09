@@ -14,7 +14,7 @@ exports.DbBackupService = void 0;
 const common_1 = require("@nestjs/common");
 const schedule_1 = require("@nestjs/schedule");
 const fs_1 = require("fs");
-const ts_md5_1 = require("ts-md5");
+const crypto_1 = require("crypto");
 const pad_1 = require("../../utils/pad");
 const isDir_1 = require("../../utils/isDir");
 const shared_utils_1 = require("@nestjs/common/utils/shared.utils");
@@ -62,11 +62,14 @@ let DbBackupService = DbBackupService_1 = class DbBackupService {
             (0, fs_1.mkdirSync)(backupFilePathDay);
         }
     }
+    hashFile(path) {
+        return (0, crypto_1.createHash)("md5").update((0, fs_1.readFileSync)(path)).digest("hex");
+    }
     isBackupNecessary() {
         const lastBackupFileFilename = this.getLastBackupFileFilename();
         if (lastBackupFileFilename) {
-            const currentDbFileHash = ts_md5_1.Md5.hashStr((0, fs_1.readFileSync)(`${this.prismaFolder}/rl.db`).toString());
-            const lastBackupFileFilenameHash = ts_md5_1.Md5.hashStr((0, fs_1.readFileSync)(lastBackupFileFilename).toString());
+            const currentDbFileHash = this.hashFile(`${this.prismaFolder}/rl.db`);
+            const lastBackupFileFilenameHash = this.hashFile(lastBackupFileFilename);
             if (currentDbFileHash === lastBackupFileFilenameHash) {
                 return false;
             }

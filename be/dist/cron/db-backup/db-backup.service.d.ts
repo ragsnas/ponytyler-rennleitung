@@ -7,6 +7,7 @@ export declare class DbBackupService {
     private createBackup;
     getDestinationPath(backupDate: Date): string;
     private createDirIfNotExists;
+    private hashFile;
     private isBackupNecessary;
     private getLastBackupFileFilename;
 }
