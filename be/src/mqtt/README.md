@@ -93,7 +93,10 @@ mosquitto_pub -h localhost -p 3001 -t 'Bike/1' -m '{"pulsecount":10,"sequenz":1,
 
 - `Bike/1`, `Bike/2` — bike status messages: `{ pulsecount, sequenz, timestamp }`.
   Once `pulsecount` exceeds the finish threshold, the broker tracks the
-  finish and winner detection in memory (see `mqtt-broker.service.ts`).
+  finish and winner detection in memory (see `bike-race-tracker.ts`). The
+  tracker holds one race at a time and is reset when a `RaceStateChange`
+  message announces `WAITING_TO_RACE` or `RACING`, so every race gets a fresh
+  winner detection.
 - `Bike/1/cmd`, `Bike/2/cmd` — free-form commands for a bike, just logged.
 - Anything else is logged as an unrecognized message (no error — publishing
   is not restricted to these topics).

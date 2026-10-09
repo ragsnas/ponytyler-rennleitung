@@ -1,25 +1,19 @@
-import { Component, OnDestroy, OnInit, ChangeDetectionStrategy } from "@angular/core";
+import { Component, OnDestroy, OnInit, ChangeDetectionStrategy, computed, signal } from "@angular/core";
 import { ActivatedRoute, ParamMap, Router } from "@angular/router";
 import { Race, RaceService, RaceState } from "projects/backend-api/src/lib/race.service";
 import { StatisticsService } from "projects/backend-api/src/lib/statistics.service";
 import { Show, ShowService, ShowState } from "projects/backend-api/src/lib/show.service";
 import { EncoreSong, EncoreSongService } from "projects/backend-api/src/lib/encore-song.service";
 import {
-  BehaviorSubject,
   combineLatest,
   delay,
   interval,
-  map,
-  Observable,
-  of,
   startWith,
   Subject,
   Subscription,
   switchMap,
   takeUntil,
-  takeWhile,
   tap,
-  timer,
 } from "rxjs";
 import { MatSnackBar } from "@angular/material/snack-bar";
 import { FormControl } from "@angular/forms";
@@ -84,26 +78,31 @@ function sortRacesForList() {
     selector: "lib-show-dashboard",
     templateUrl: "./show-dashboard.component.html",
     styleUrls: ["./show-dashboard.component.scss"],
-    changeDetection: ChangeDetectionStrategy.Eager,
+    changeDetection: ChangeDetectionStrategy.OnPush,
     standalone: false
 })
 export class ShowDashboardComponent implements OnInit, OnDestroy {
-  show: Show | undefined;
-  races$: BehaviorSubject<RaceWithSongPlayedInfo[]> = new BehaviorSubject<RaceWithSongPlayedInfo[]>([]);
-  finishedRaces$: BehaviorSubject<Race[]> = new BehaviorSubject<Race[]>([]);
-  encoreSongs$: BehaviorSubject<EncoreSong[]> = new BehaviorSubject<EncoreSong[]>([]);
-  firstRaceWaitingToRaceId: string | undefined;
-  lastRaceWaitingToRaceId: string | undefined;
-  refreshing: boolean = false;
+  readonly show = signal<Show | undefined>(undefined);
+  readonly races = signal<RaceWithSongPlayedInfo[]>([]);
+  readonly finishedRaces = signal<Race[]>([]);
+  readonly encoreSongs = signal<EncoreSong[]>([]);
+  readonly firstRaceWaitingToRaceId = signal<string | undefined>(undefined);
+  readonly lastRaceWaitingToRaceId = signal<string | undefined>(undefined);
+  readonly refreshing = signal(false);
   refreshIntervalFormControl: FormControl<string> = new FormControl<string>(localStorage.getItem(PONTY_TYPER_REFRESH_TIMER_INTERVAL) || "5000", { nonNullable: true });
   refresh$: Subject<void> = new Subject<void>();
   unsubscribe$: Subject<void> = new Subject<void>();
   timerSubscription: Subscription = new Subscription();
   loadRacesSubscription: Subscription = new Subscription();
-  secondsRemainingPercentage$: Observable<string> = of("");
-  isListFull: boolean = false;
-  moreThanOnePersonWaitingForOpponent: boolean = false;
-  lastUpdated: Date | undefined;
+  /** Refresh interval in ms that drives the countdown bar animation; 0 while refreshing is stopped. */
+  readonly refreshIntervalMs = signal(0);
+  /** Incremented every refresh cycle so the countdown bar animation restarts. */
+  private readonly refreshCycle = signal(0);
+  /** Single-element list, so `@for ... track` re-creates the bar (and restarts its animation) per cycle. */
+  readonly refreshCycles = computed(() => [this.refreshCycle()]);
+  readonly isListFull = signal(false);
+  readonly moreThanOnePersonWaitingForOpponent = signal(false);
+  readonly lastUpdated = signal<Date | undefined>(undefined);
 
   constructor(
     private showService: ShowService,
@@ -126,7 +125,7 @@ export class ShowDashboardComponent implements OnInit, OnDestroy {
     this.statisticsService.isListFull(
       this.route.snapshot.paramMap.get("showId")!,
     ).subscribe(isListFull =>
-      this.isListFull = isListFull);
+      this.isListFull.set(isListFull));
     this.setTimer(Number(this.refreshIntervalFormControl.getRawValue()));
     this.loadRaces();
   }
@@ -148,20 +147,20 @@ export class ShowDashboardComponent implements OnInit, OnDestroy {
       }),
     ).subscribe({
       next: ([show, races, encoreSongs]) => {
-        this.show = show;
-        this.encoreSongs$.next(encoreSongs);
+        this.show.set(show);
+        this.encoreSongs.set(encoreSongs);
         const finishedRaces = races.filter(race => race.raceState === RaceState.RACED);
         const racesWaitingToRace = races.filter(race => race.raceState === RaceState.LISTED);
-        this.lastRaceWaitingToRaceId = racesWaitingToRace[racesWaitingToRace.length - 1]?.id;
-        this.firstRaceWaitingToRaceId = racesWaitingToRace[0]?.id;
-        this.finishedRaces$.next(finishedRaces);
-        this.races$.next(this.addAlreadyPlayedInfoToRacesFromFinishedRaces(
+        this.lastRaceWaitingToRaceId.set(racesWaitingToRace[racesWaitingToRace.length - 1]?.id);
+        this.firstRaceWaitingToRaceId.set(racesWaitingToRace[0]?.id);
+        this.finishedRaces.set(finishedRaces);
+        this.races.set(this.addAlreadyPlayedInfoToRacesFromFinishedRaces(
           races.sort(sortRacesForList()),
           finishedRaces,
         ));
-        this.moreThanOnePersonWaitingForOpponent = races.filter((race: Race) => race.raceState === RaceState.WAITING_FOR_OPPONENT).length > 1;
-        this.refreshing = false;
-        this.lastUpdated = new Date();
+        this.moreThanOnePersonWaitingForOpponent.set(races.filter((race: Race) => race.raceState === RaceState.WAITING_FOR_OPPONENT).length > 1);
+        this.refreshing.set(false);
+        this.lastUpdated.set(new Date());
       },
       error: (error) => {
         this.snackBar.open(`Error during loading of Data: ${JSON.stringify(error)}`, "OK", {
@@ -295,40 +294,32 @@ export class ShowDashboardComponent implements OnInit, OnDestroy {
   }
 
   private setTimer(timerInterval: number): void {
-    this.secondsRemainingPercentage$ = this.resetSecondsRemainingPercentage(timerInterval);
+    this.refreshIntervalMs.set(timerInterval);
     this.timerSubscription.unsubscribe();
     this.timerSubscription = interval(timerInterval).pipe(
       takeUntil(this.unsubscribe$),
-      tap(() => this.refreshing = true),
+      tap(() => this.refreshing.set(true)),
       delay(600),
     ).subscribe(() => {
       this.refresh$.next();
-      this.secondsRemainingPercentage$ = this.resetSecondsRemainingPercentage(timerInterval);
+      this.refreshCycle.update(cycle => cycle + 1);
     });
   }
 
-  private resetSecondsRemainingPercentage(timerInterval: number) {
-    const milisecondsInterval = 250;
-    return timer(0, milisecondsInterval).pipe(
-      takeWhile(n => (n * milisecondsInterval) < timerInterval),
-      map(timerValue => ((timerValue * milisecondsInterval / timerInterval) * 100).toString()),
-    );
-  }
-
   private stopTimer(): void {
-    this.secondsRemainingPercentage$ = of("");
+    this.refreshIntervalMs.set(0);
     this.timerSubscription.unsubscribe();
   }
 
   manualRefresh(): void {
-    this.refreshing = true;
+    this.refreshing.set(true);
     this.refresh$.next();
   }
 
   deleteShow() {
     const dialog = this.dialog.open(YesNoDialogComponent, {
       data: {
-        title: `Do you want to delete the Show "${this.show?.name}"?`,
+        title: `Do you want to delete the Show "${this.show()?.name}"?`,
         text: `This will delete the Show and all the related Races.`,
         optionYes: "Yes, Delete",
         optionNo: "No, Cancel",
@@ -336,7 +327,7 @@ export class ShowDashboardComponent implements OnInit, OnDestroy {
     });
     dialog.afterClosed().subscribe(result => {
       if (result) {
-        this.showService.deleteShow(this.show?.id as string).subscribe({
+        this.showService.deleteShow(this.show()?.id as string).subscribe({
           next: () => {
             this.snackBar.open(`Show was deleted`, "OK", { panelClass: "success", duration: 250 });
             this.router.navigate(["../"]);
@@ -353,7 +344,7 @@ export class ShowDashboardComponent implements OnInit, OnDestroy {
 
   mergeTopWaitingForOpponentRaces(race: Race) {
     const race1: Race = race;
-    const otherRaceWaitingForOpponent: Race | undefined = this.races$.value.find((otherRace: Race) => race.id !== otherRace.id && otherRace.raceState === RaceState.WAITING_FOR_OPPONENT);
+    const otherRaceWaitingForOpponent: Race | undefined = this.races().find((otherRace: Race) => race.id !== otherRace.id && otherRace.raceState === RaceState.WAITING_FOR_OPPONENT);
     if (race && otherRaceWaitingForOpponent) {
       const person1 = race.person1 || race.person2;
       const song1Id = race.song1Id || race.song2Id;
@@ -405,17 +396,17 @@ export class ShowDashboardComponent implements OnInit, OnDestroy {
   }
 
   isRaceLastWaitingToRace(race: Race): boolean {
-    return (this.lastRaceWaitingToRaceId === race.id);
+    return (this.lastRaceWaitingToRaceId() === race.id);
   }
 
   isRaceFirstWaitingToRace(race: Race) {
-    return (this.firstRaceWaitingToRaceId === race.id);
+    return (this.firstRaceWaitingToRaceId() === race.id);
   }
 
   startRace(race: Race): void {
     combineLatest([
       this.raceService.updateRace({ ...race, raceState: RaceState.WAITING_TO_RACE } as Race),
-      this.showService.updateShow({ ...this.show, showState: ShowState.BEFORE_RACE } as Show),
+      this.showService.updateShow({ ...this.show(), showState: ShowState.BEFORE_RACE } as Show),
     ]).subscribe({
       next: () => {
         this.snackBar.open(`Race started`, "OK", { panelClass: "success", duration: 250 });
@@ -430,7 +421,7 @@ export class ShowDashboardComponent implements OnInit, OnDestroy {
   }
 
   repairOrder() {
-    this.raceService.repairOrder(this.show?.id || "").subscribe({
+    this.raceService.repairOrder(this.show()?.id || "").subscribe({
       next: () => {
         this.snackBar.open(`Race Order Repaired"`, "OK", { panelClass: "success", duration: 250 });
         this.loadRaces();

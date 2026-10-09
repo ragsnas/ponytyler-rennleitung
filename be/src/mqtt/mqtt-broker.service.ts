@@ -14,40 +14,24 @@ import { RaceService } from "../prisma-api/race.service";
 import { ShowService } from "../prisma-api/show.service";
 import mqtt from "mqtt";
 import * as os from "os";
+import {
+  BikeId,
+  BikeRaceTracker,
+  BikeStatusMessage,
+  Winner,
+} from "./bike-race-tracker";
 
-type BikeStatusMessage = {
-  pulsecount: number;
-  sequenz: number;
-  timestamp: number;
-};
-
-interface BikeState {
-  finished: boolean;
-  finishObservedAtSequenz: number | undefined;
-  mostRecentStatus: BikeStatusMessage;
-  won: boolean | undefined;
-}
-
-type BikeId = "1" | "2" | "3";
-
-const MAX_BIKE_ADVANCE = 120; // 5 milliseconds
-const ADDITIONAL_SEQUENCE_STORAGE = 4;
 const DEFAULT_MQTT_PORT = 3001;
 const DEFAULT_MQTT_WS_PORT = 3002;
 
 const BIKE_STATUS_TOPIC = /^Bike\/[1-2]{1}$/i;
 const BIKE_CMD_TOPIC = /^Bike\/[1-2]{1}\/cmd$/i;
 const RACE_STATE_CHANGE_TOPIC = /^RaceStateChange$/i;
+const RACE_START_STATES: string[] = [
+  RaceState.WAITING_TO_RACE,
+  RaceState.RACING,
+];
 const SHOW_STATE_CHANGE_TOPIC = /^ShowStateChange$/i;
-
-function initialBikeState(): BikeState {
-  return {
-    finished: false,
-    finishObservedAtSequenz: undefined,
-    won: undefined,
-    mostRecentStatus: { pulsecount: 0, sequenz: 0, timestamp: 0 },
-  };
-}
 
 /**
  * Hosts an embedded MQTT broker (Aedes) inside the NestJS process so bike
@@ -70,14 +54,10 @@ export class MqttBrokerService
   private wsServer: HttpServer | undefined;
   private client: mqtt.MqttClient | undefined;
 
-  private readonly bikeState: Map<BikeId, BikeState> = new Map([
-    ["1", initialBikeState()],
-    ["2", initialBikeState()],
-  ]);
-  private readonly bikeStates: Map<BikeId, BikeStatusMessage[]> = new Map([
-    ["1", []],
-    ["2", []],
-  ]);
+  private readonly raceTracker = new BikeRaceTracker({
+    onWinner: (winner) => this.announceWinner(winner),
+    log: (message) => this.logger.log(message),
+  });
 
   constructor(
     private readonly configService: ConfigService,
@@ -142,6 +122,7 @@ export class MqttBrokerService
   }
 
   async onModuleDestroy() {
+    this.raceTracker.reset();
     if (this.client) {
       await new Promise<void>((resolve) =>
         this.client!.end(true, {}, () => resolve()),
@@ -207,6 +188,10 @@ export class MqttBrokerService
       );
     } else if (payloadObject && RACE_STATE_CHANGE_TOPIC.test(topic)) {
       this.logger.log(`📝 RaceStateChange:`, payloadObject);
+      if (RACE_START_STATES.includes(payloadObject.state)) {
+        // a new race is about to start: forget the finish flags of the last one
+        this.raceTracker.reset();
+      }
     } else if (payloadObject && SHOW_STATE_CHANGE_TOPIC.test(topic)) {
       this.logger.log(`📝 ShowStateChange:`, payloadObject);
     } else {
@@ -217,78 +202,31 @@ export class MqttBrokerService
   }
 
   private handleBikeStatus(bikeId: BikeId, payloadObject: BikeStatusMessage) {
-    if (payloadObject.pulsecount <= MAX_BIKE_ADVANCE) {
-      this.addBikeState(bikeId, payloadObject);
-      return;
-    }
-
-    let thisBikeState = this.bikeState.get(bikeId)!;
-    if (!thisBikeState.finished) {
-      this.logger.log(
-        `🏁 Bike ${bikeId} finished: ${JSON.stringify(payloadObject)}`,
-      );
-      if (!this.bikeState.get(this.theOtherBike(bikeId)).finished) {
-        setTimeout(() => {
-          this.logger.log(`Analyzing Bike ${bikeId}:`);
-          const bike1State = this.bikeState.get("1");
-          const bike2State = this.bikeState.get("2");
-          let winnerBikeId = null;
-          if (
-            (bike1State.finished && !bike2State.finished) ||
-            bike1State.finishObservedAtSequenz <
-              bike2State.finishObservedAtSequenz
-          ) {
-            winnerBikeId = "1";
-            this.updatePartialBikeState("1", { won: true });
-            void this.markCurrentRaceAsWonBy("1");
-          } else if (
-            (!bike1State.finished && bike2State.finished) ||
-            bike1State.finishObservedAtSequenz >
-              bike2State.finishObservedAtSequenz
-          ) {
-            winnerBikeId = "2";
-            this.updatePartialBikeState("2", { won: true });
-            void this.markCurrentRaceAsWonBy("2");
-          } else {
-            this.updatePartialBikeState("1", { won: true });
-            this.updatePartialBikeState("2", { won: true });
-            void this.markCurrentRaceAsWonBy("3");
-            winnerBikeId = "3";
-          }
-
-          const bikeWonTopic = `Bike/${winnerBikeId}/won`;
-          if (this.client) {
-            this.client.publish(bikeWonTopic, "", { qos: 1 }, (err) => {
-              if (err) {
-                console.error("❌ Failed to publish:", err);
-              } else {
-                console.log(`🚀 Message sent to ${bikeWonTopic}`);
-              }
-            });
-          }
-          this.logger.log(
-            `🏆 Bike ${winnerBikeId === "1" ? "1️⃣" : "2️⃣"} won! 🎉`,
-          );
-        }, 1000);
-      }
-      thisBikeState = this.updatePartialBikeState(bikeId, {
-        finishObservedAtSequenz: payloadObject.sequenz,
-        finished: true,
-      });
-    }
-
-    const maxSequenzToRecord =
-      thisBikeState.finishObservedAtSequenz! + ADDITIONAL_SEQUENCE_STORAGE;
-    if (payloadObject.sequenz < maxSequenzToRecord) {
-      this.logger.log(
-        `📝 Adding additional state (seq ${payloadObject.sequenz}) for Bike ${bikeId}`,
-      );
-      this.addBikeState(bikeId, payloadObject);
-      return;
-    }
+    this.raceTracker.handleStatus(bikeId, payloadObject);
   }
 
-  private async markCurrentRaceAsWonBy(bikeId: BikeId): Promise<void> {
+  private announceWinner(winner: Winner) {
+    this.logger.log(`Analyzed finish: winner is ${winner}`);
+    void this.markCurrentRaceAsWonBy(winner);
+
+    const bikeWonTopic = `Bike/${winner}/won`;
+    if (this.client) {
+      this.client.publish(bikeWonTopic, "", { qos: 1 }, (err) => {
+        if (err) {
+          this.logger.error(`❌ Failed to publish ${bikeWonTopic}: ${err}`);
+        } else {
+          this.logger.log(`🚀 Message sent to ${bikeWonTopic}`);
+        }
+      });
+    }
+    this.logger.log(
+      winner === "3"
+        ? `🏆 Both bikes won! 🎉`
+        : `🏆 Bike ${winner === "1" ? "1️⃣" : "2️⃣"} won! 🎉`,
+    );
+  }
+
+  private async markCurrentRaceAsWonBy(bikeId: Winner): Promise<void> {
     try {
       const show: Show = await this.showService.currentShow();
       const race: Race = await this.raceService.currentRace(show.id);
@@ -328,46 +266,5 @@ export class MqttBrokerService
       hasOwn.call(payloadObject, "timestamp") &&
       hasOwn.call(payloadObject, "sequenz")
     );
-  }
-
-  private updatePartialBikeState(
-    bikeId: BikeId,
-    element: Partial<BikeState>,
-  ): BikeState {
-    this.logger.log(
-      `📝 updatePartialBikeState for Bike ${bikeId}: ${JSON.stringify(element)}`,
-    );
-    const updated: BikeState = {
-      ...this.bikeState.get(bikeId),
-      ...element,
-    } as BikeState;
-    this.bikeState.set(bikeId, updated);
-    return updated;
-  }
-
-  private addBikeState(bikeId: BikeId, bikeStatusMessage: BikeStatusMessage) {
-    const bikeStatusMessages = this.bikeStates.get(bikeId) || [];
-    const bikeStateForThisBike: BikeState =
-      this.bikeState.get(bikeId) || initialBikeState();
-    bikeStatusMessages.push(bikeStatusMessage);
-    if (
-      (!bikeStateForThisBike.finished &&
-        bikeStatusMessage.sequenz >
-          bikeStateForThisBike.mostRecentStatus?.sequenz) ||
-      (bikeStateForThisBike.finished &&
-        bikeStatusMessage.pulsecount > MAX_BIKE_ADVANCE &&
-        bikeStatusMessage.sequenz <
-          bikeStateForThisBike.mostRecentStatus?.sequenz)
-    ) {
-      this.updatePartialBikeState(bikeId, {
-        mostRecentStatus: bikeStatusMessage,
-      });
-    }
-    this.bikeStates.set(bikeId, bikeStatusMessages);
-    this.bikeState.set(bikeId, bikeStateForThisBike);
-  }
-
-  private theOtherBike(bikeId: BikeId) {
-    return bikeId == "1" ? "2" : "1";
   }
 }

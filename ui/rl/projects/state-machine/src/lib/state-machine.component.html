@@ -1,18 +1,18 @@
 <ng-container>
   <div class="stateMachine_controlBar">
-    @if (currentShow) {
+    @if (currentShow(); as show) {
       <div class="showInfo">
-        <strong>{{currentShow.name}} (#{{currentShow.id}})</strong>
+        <strong>{{show.name}} (#{{show.id}})</strong>
         /
-        <strong>{{currentShow.showState}}</strong>
-        @if (currentRaceState) {
-          / <strong>{{currentRaceState}}</strong>
+        <strong>{{show.showState}}</strong>
+        @if (currentRaceState(); as raceState) {
+          / <strong>{{raceState}}</strong>
         }
       </div>
     }
     <ui-button-list>
       <button
-        [disabled]="['RACING', 'WAITING_TO_RACE'].includes(currentRaceState!)"
+        [disabled]="raceInProgress()"
         mat-mini-fab color="accent" (click)="startCountdown()">
         <mat-icon>play_circle</mat-icon>
       </button>
@@ -20,17 +20,17 @@
         <mat-icon>skip_next</mat-icon>
       </button>
       <button
-        [disabled]="!['RACING', 'WAITING_TO_RACE'].includes(currentRaceState!)"
+        [disabled]="!raceInProgress()"
         mat-mini-fab color="accent" (click)="stopRace()">
         <mat-icon>stop_circle</mat-icon>
       </button>
       <button
-        [disabled]="currentShowState !== 'RACE_FINISHED'"
+        [disabled]="currentShowState() !== 'RACE_FINISHED'"
         mat-mini-fab extended color="accent" (click)="setRaceDone()">
         <mat-icon>lyrics</mat-icon>
       </button>
       <button
-        [disabled]="!['PLAYING_VIDEO', 'VIDEO_FINISHED'].includes(currentShowState!)"
+        [disabled]="!videoDoneEnabled()"
         mat-mini-fab color="accent" (click)="setRaceDone()">
         <mat-icon>check_circle</mat-icon>
       </button>
@@ -40,18 +40,18 @@
 
 <mat-divider></mat-divider>
 
-@if (currentRace) {
+@if (currentRace(); as race) {
   <div class="raceInfo">
     <div class="raceInfo_bike1">
       <p>
-        {{ currentRace.person1 }}
-        <br/>{{ currentRace.song1?.artist }} - {{ currentRace.song1?.name }}
+        {{ race.person1 }}
+        <br/>{{ race.song1?.artist }} - {{ race.song1?.name }}
       </p>
     </div>
     <div class="raceInfo_bike2">
       <p>
-        {{ currentRace.person2 }}
-        <br/>{{ currentRace.song2?.artist }} - {{ currentRace.song2?.name }}
+        {{ race.person2 }}
+        <br/>{{ race.song2?.artist }} - {{ race.song2?.name }}
       </p>
     </div>
   </div>
@@ -59,56 +59,56 @@
 
 <mat-divider></mat-divider>
 
-@if (currentShowState) {
-  @if (currentShowState === 'BEFORE_SHOW') {
+@if (currentShowState(); as showState) {
+  @if (showState === 'BEFORE_SHOW') {
     <p>Waiting for Show to begin</p>
   }
-  @if (currentShowState === 'BEFORE_RACE') {
+  @if (showState === 'BEFORE_RACE') {
     <p>Waiting for Race to Start</p>
   }
-  @if (currentShowState === 'RACE') {
+  @if (showState === 'RACE') {
     RACE!
-    @if (currentRace) {
-      @if (currentRaceState === 'WAITING_TO_RACE') {
+    @if (currentRace() && currentRaceState(); as raceState) {
+      @if (raceState === 'WAITING_TO_RACE') {
         <lib-countdown
           [countDownFrom]="3"
           [startWord]="getRandomStartWord()"
         (countDownFinished)="startRace()"></lib-countdown>
       }
-      @if (currentRaceState === 'ERROR') {
+      @if (raceState === 'ERROR') {
         ERROR! FEHLSTART!
       }
-      @if (currentRaceState === 'RACING') {
+      @if (raceState === 'RACING') {
         <lib-race-track
           [bike1]="bike1$ | async"
           [bike2]="bike2$ | async"
-          [raceState]="currentRaceState" />
+          [raceState]="raceState" />
         RACE IS RUNNING! RACE TRACK!
       }
-      @if (currentRaceState === 'RACED') {
+      @if (raceState === 'RACED') {
         RACE IS OVER!
       }
     }
   }
-  @if (currentShowState === 'RACE_FINISHED') {
+  @if (showState === 'RACE_FINISHED') {
     Celebrate the winner!
   }
-  @if (currentShowState === 'PLAYING_VIDEO') {
+  @if (showState === 'PLAYING_VIDEO') {
     VIDEO IS PLAYING NOW
   }
-  @if (currentShowState === 'VIDEO_FINISHED') {
+  @if (showState === 'VIDEO_FINISHED') {
     VIDEO FINISHED!
   }
-  @if (currentShowState === 'BEFORE_ENCORE') {
+  @if (showState === 'BEFORE_ENCORE') {
     Goodbye! :wink:
   }
-  @if (currentShowState === 'PLAYING_ENCORE') {
+  @if (showState === 'PLAYING_ENCORE') {
     ENCORE!!!
   }
-  @if (currentShowState === 'ENCORE_FINISHED') {
+  @if (showState === 'ENCORE_FINISHED') {
     The Show is over! Go Home!
   }
-  @if (currentShowState === 'SHOW_FINISHED') {
+  @if (showState === 'SHOW_FINISHED') {
     The Show is now actually over! Go Home!
   }
 }

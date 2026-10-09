@@ -1,5 +1,6 @@
 import { NO_ERRORS_SCHEMA } from '@angular/core';
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed, discardPeriodicTasks, fakeAsync, tick } from '@angular/core/testing';
+import { MatSelectChange } from '@angular/material/select';
 import { ActivatedRoute, convertToParamMap, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -23,6 +24,7 @@ describe('ShowDashboardComponent', () => {
   let encoreSongService: jasmine.SpyObj<EncoreSongService>;
 
   beforeEach(async () => {
+    localStorage.removeItem('pontyTyperRefreshTimerInterval');
     showService = jasmine.createSpyObj('ShowService', ['getShow', 'deleteShow', 'updateShow']);
     showService.getShow.and.returnValue(of({ id: 'show-1', name: 'Test Show', date: new Date(), duration: 60 }));
     showService.updateShow.and.returnValue(of({ id: 'show-1', name: 'Test Show', date: new Date(), duration: 60 }));
@@ -69,13 +71,13 @@ describe('ShowDashboardComponent', () => {
   });
 
   it('has no lastUpdated timestamp before the first load completes', () => {
-    expect(component.lastUpdated).toBeUndefined();
+    expect(component.lastUpdated()).toBeUndefined();
   });
 
   it('sets lastUpdated once the initial load completes', () => {
     fixture.detectChanges();
 
-    expect(component.lastUpdated).toBeInstanceOf(Date);
+    expect(component.lastUpdated()).toBeInstanceOf(Date);
   });
 
   it('shows the lastUpdated time in the template', () => {
@@ -92,7 +94,7 @@ describe('ShowDashboardComponent', () => {
     component.manualRefresh();
 
     expect(raceService.getAllRacesForShow).toHaveBeenCalledTimes(1);
-    expect(component.lastUpdated).toBeInstanceOf(Date);
+    expect(component.lastUpdated()).toBeInstanceOf(Date);
   });
 
   it('marks refreshing as true while a manual refresh is in flight and false once it completes', () => {
@@ -101,11 +103,11 @@ describe('ShowDashboardComponent', () => {
     fixture.detectChanges();
 
     component.manualRefresh();
-    expect(component.refreshing).toBe(true);
+    expect(component.refreshing()).toBe(true);
 
     racesSubject.next([]);
     racesSubject.complete();
-    expect(component.refreshing).toBe(false);
+    expect(component.refreshing()).toBe(false);
   });
 
   it('triggers manualRefresh when the manual refresh button is clicked', () => {
@@ -186,7 +188,7 @@ describe('ShowDashboardComponent', () => {
     expect(encoreSongService.getEncoreSongsForShow).toHaveBeenCalledWith('show-1');
   });
 
-  it('publishes the loaded encore songs on encoreSongs$', () => {
+  it('publishes the loaded encore songs on encoreSongs', () => {
     const encoreSongs: EncoreSong[] = [
       { id: 1, showId: 'show-1', order: 0, song: { id: 1, name: 'Song A', artist: 'Artist A', deleted: false, selectable: true, origin: Origin.LEGACY } },
     ];
@@ -194,7 +196,7 @@ describe('ShowDashboardComponent', () => {
 
     fixture.detectChanges();
 
-    expect(component.encoreSongs$.value).toEqual(encoreSongs);
+    expect(component.encoreSongs()).toEqual(encoreSongs);
   });
 
   it('renders the loaded encore songs in the template', () => {
@@ -208,5 +210,54 @@ describe('ShowDashboardComponent', () => {
     const compiled = fixture.nativeElement as HTMLElement;
     expect(compiled.textContent).toContain('Artist A');
     expect(compiled.textContent).toContain('Song A');
+  });
+
+  describe('refresh countdown bar', () => {
+    const fill = () => (fixture.nativeElement as HTMLElement).querySelector<HTMLElement>('.refresh-countdown-fill');
+
+    afterEach(() => localStorage.removeItem('pontyTyperRefreshTimerInterval'));
+
+    it('is animated by CSS over the refresh interval instead of a timer-driven value', fakeAsync(() => {
+      fixture.detectChanges();
+
+      expect(fill()?.style.animationDuration).toBe('5000ms');
+      expect((fixture.nativeElement as HTMLElement).querySelector('mat-progress-bar')).toBeNull();
+
+      discardPeriodicTasks();
+    }));
+
+    it('restarts the animation with every refresh cycle', fakeAsync(() => {
+      fixture.detectChanges();
+      const firstBar = fill();
+
+      tick(5000 + 600);
+      fixture.detectChanges();
+
+      expect(fill()).not.toBe(firstBar);
+
+      discardPeriodicTasks();
+    }));
+
+    it('does not schedule any periodic render work between refreshes', fakeAsync(() => {
+      fixture.detectChanges();
+      raceService.getAllRacesForShow.calls.reset();
+
+      tick(4000);
+
+      expect(raceService.getAllRacesForShow).not.toHaveBeenCalled();
+
+      discardPeriodicTasks();
+    }));
+
+    it('is hidden while the refresh is stopped', fakeAsync(() => {
+      fixture.detectChanges();
+
+      component.refreshIntervalChange({ value: 'stop' } as MatSelectChange);
+      fixture.detectChanges();
+
+      expect(fill()).toBeNull();
+
+      discardPeriodicTasks();
+    }));
   });
 });

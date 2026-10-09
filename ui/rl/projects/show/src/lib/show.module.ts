@@ -24,7 +24,6 @@ import { UpdateRaceComponent } from "./update-race/update-race.component";
 import { MatSnackBarModule } from "@angular/material/snack-bar";
 import { DirectorDashboardComponent } from "./director-dashboard/director-dashboard.component";
 import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
-import { MatProgressBarModule } from "@angular/material/progress-bar";
 import { MatSelectModule } from "@angular/material/select";
 import { MatDialogModule } from "@angular/material/dialog";
 import { EditShowComponent } from "./edit-show/edit-show.component";
@@ -88,7 +87,6 @@ const routes: Routes = [
     ButtonListModule,
     MatSnackBarModule,
     MatProgressSpinnerModule,
-    MatProgressBarModule,
     MatSelectModule,
     MatDialogModule,
     YesNoDialogModule,

@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit, ChangeDetectionStrategy } from "@angular/core";
+import { Component, OnDestroy, OnInit, ChangeDetectionStrategy, computed, signal } from "@angular/core";
 import { Race, RaceService, RaceState } from "projects/backend-api/src/lib/race.service";
 import { Show, ShowService, ShowState } from "projects/backend-api/src/lib/show.service";
 import { MqttBrokerMessage, MqttBrokerService } from "projects/mqtt-broker/src/lib/mqtt-broker.service";
@@ -33,15 +33,24 @@ interface ShowStateChangeMessage {
     selector: "lib-state-machine",
     templateUrl: "state-machine.component.html",
     providers: [MqttBrokerService],
-    changeDetection: ChangeDetectionStrategy.Eager,
+    changeDetection: ChangeDetectionStrategy.OnPush,
     standalone: false
 })
 export class StateMachineComponent implements OnInit, OnDestroy {
 
-  public currentRace: Race | undefined;
-  public currentRaceState: RaceState | undefined;
-  public currentShow: Show | undefined;
-  public currentShowState: ShowState | undefined;
+  public readonly currentRace = signal<Race | undefined>(undefined);
+  public readonly currentRaceState = signal<RaceState | undefined>(undefined);
+  public readonly currentShow = signal<Show | undefined>(undefined);
+  public readonly currentShowState = signal<ShowState | undefined>(undefined);
+
+  public readonly raceInProgress = computed(() => {
+    const state = this.currentRaceState();
+    return state === RaceState.RACING || state === RaceState.WAITING_TO_RACE;
+  });
+  public readonly videoDoneEnabled = computed(() => {
+    const state = this.currentShowState();
+    return state === ShowState.PLAYING_VIDEO || state === ShowState.VIDEO_FINISHED;
+  });
 
   public bike1$: Subject<BikeData> = new Subject<BikeData>();
   public bike2$: Subject<BikeData> = new Subject<BikeData>();
@@ -72,12 +81,14 @@ export class StateMachineComponent implements OnInit, OnDestroy {
     if (message.topic === RACE_STATE_CHANGE_TOPIC) {
       const raceStateChange: RaceStateChangeMessage = JSON.parse(message.payload);
       // ids arrive as numbers from the REST API but as strings in MQTT payloads
-      if (this.currentRace?.id != null && String(raceStateChange.raceId) === String(this.currentRace.id)) {
+      const currentRaceId = this.currentRace()?.id;
+      if (currentRaceId != null && String(raceStateChange.raceId) === String(currentRaceId)) {
         this.reloadCurrentRace();
       }
     } else if (message.topic === SHOW_STATE_CHANGE_TOPIC) {
       const showStateChange: ShowStateChangeMessage = JSON.parse(message.payload);
-      if (this.currentShow?.id != null && String(showStateChange.showId) === String(this.currentShow.id)) {
+      const currentShowId = this.currentShow()?.id;
+      if (currentShowId != null && String(showStateChange.showId) === String(currentShowId)) {
         this.reloadCurrentShow();
       }
     } else if (message.topic === BIKE_1_TOPIC) {
@@ -104,13 +115,15 @@ export class StateMachineComponent implements OnInit, OnDestroy {
   }
 
   private async reloadCurrentRace() {
-    this.currentRace = await firstValueFrom(this.raceService.getRace(this.currentRace?.id));
-    this.currentRaceState = this.currentRace.raceState;
+    const race = await firstValueFrom(this.raceService.getRace(this.currentRace()?.id));
+    this.currentRace.set(race);
+    this.currentRaceState.set(race.raceState);
   }
 
   private async reloadCurrentShow() {
-    this.currentShow = await firstValueFrom(this.showService.getShow(this.currentShow!.id!));
-    this.currentShowState = this.currentShow.showState;
+    const show = await firstValueFrom(this.showService.getShow(this.currentShow()!.id!));
+    this.currentShow.set(show);
+    this.currentShowState.set(show.showState);
   }
 
   private static brokerUrl(): string {
@@ -120,23 +133,27 @@ export class StateMachineComponent implements OnInit, OnDestroy {
 
   async getCurrentShowAndRace() {
     console.log(`Loading current show / race`);
-    this.currentShow = await firstValueFrom(this.showService.getCurrentShow());
-    if (this.currentShow && this.currentShow.id) {
-      console.log(`Current Show:`, this.currentShow);
-      this.currentShowState = this.currentShow.showState;
-      this.currentRace = await firstValueFrom(this.raceService.getCurrentRace(this.currentShow.id));
+    const show = await firstValueFrom(this.showService.getCurrentShow());
+    this.currentShow.set(show);
+    if (show && show.id) {
+      console.log(`Current Show:`, show);
+      this.currentShowState.set(show.showState);
+      this.currentRace.set(await firstValueFrom(this.raceService.getCurrentRace(show.id)));
     }
-    if (this.currentRace) {
-      console.log(`Current Race:`, this.currentRace);
-      this.currentRaceState = this.currentRace.raceState;
+    const race = this.currentRace();
+    if (race) {
+      console.log(`Current Race:`, race);
+      this.currentRaceState.set(race.raceState);
     }
   }
 
   async startCountdown() {
-    if (this.currentShow && this.currentRace) {
+    const race = this.currentRace();
+    const show = this.currentShow();
+    if (show && race) {
       this.updateRaceAndShow(
-        { ...this.currentRace, raced: true, raceState: RaceState.WAITING_TO_RACE },
-        { ...this.currentShow, showState: ShowState.RACE },
+        { ...race, raced: true, raceState: RaceState.WAITING_TO_RACE },
+        { ...show, showState: ShowState.RACE },
         () => {
         },
         `Error Starting Race`,
@@ -145,10 +162,12 @@ export class StateMachineComponent implements OnInit, OnDestroy {
   }
 
   async startRace() {
-    if (this.currentShow && this.currentRace) {
+    const race = this.currentRace();
+    const show = this.currentShow();
+    if (show && race) {
       this.updateRaceAndShow(
-        { ...this.currentRace, raced: true, raceState: RaceState.RACING, raceStartedAt: new Date() },
-        { ...this.currentShow, showState: ShowState.RACE },
+        { ...race, raced: true, raceState: RaceState.RACING, raceStartedAt: new Date() },
+        { ...show, showState: ShowState.RACE },
         () => {
         },
         `Error Starting Race`,
@@ -157,10 +176,12 @@ export class StateMachineComponent implements OnInit, OnDestroy {
   }
 
   async finishRace() {
-    if (this.currentShow && this.currentRace) {
+    const race = this.currentRace();
+    const show = this.currentShow();
+    if (show && race) {
       this.updateRaceAndShow(
-        { ...this.currentRace, raced: true, raceState: RaceState.RACED },
-        { ...this.currentShow, showState: ShowState.RACE_FINISHED },
+        { ...race, raced: true, raceState: RaceState.RACED },
+        { ...show, showState: ShowState.RACE_FINISHED },
         () => {
         },
         `Error Starting Race`,
@@ -169,10 +190,12 @@ export class StateMachineComponent implements OnInit, OnDestroy {
   }
 
   stopRace() {
-    if (this.currentShow && this.currentRace) {
+    const race = this.currentRace();
+    const show = this.currentShow();
+    if (show && race) {
       this.updateRaceAndShow(
-        { ...this.currentRace, raced: true, raceState: RaceState.LISTED },
-        { ...this.currentShow, showState: ShowState.BEFORE_RACE },
+        { ...race, raced: true, raceState: RaceState.LISTED },
+        { ...show, showState: ShowState.BEFORE_RACE },
         () => {
         },
         `Error Stopping Race`,
@@ -181,10 +204,12 @@ export class StateMachineComponent implements OnInit, OnDestroy {
   }
 
   skipRace() {
-    if (this.currentShow && this.currentRace) {
+    const race = this.currentRace();
+    const show = this.currentShow();
+    if (show && race) {
       this.updateRaceAndShow(
-        { ...this.currentRace, raced: true, raceState: RaceState.CANCELED },
-        { ...this.currentShow, showState: ShowState.BEFORE_RACE },
+        { ...race, raced: true, raceState: RaceState.CANCELED },
+        { ...show, showState: ShowState.BEFORE_RACE },
         () => {
           this.getCurrentShowAndRace();
         },
@@ -194,10 +219,12 @@ export class StateMachineComponent implements OnInit, OnDestroy {
   }
 
   setRaceDone() {
-    if (this.currentShow && this.currentRace) {
+    const race = this.currentRace();
+    const show = this.currentShow();
+    if (show && race) {
       this.updateRaceAndShow(
-        { ...this.currentRace, raced: true, raceState: RaceState.DONE },
-        { ...this.currentShow, showState: ShowState.BEFORE_RACE },
+        { ...race, raced: true, raceState: RaceState.DONE },
+        { ...show, showState: ShowState.BEFORE_RACE },
         () => {
           this.getCurrentShowAndRace();
         },
@@ -230,8 +257,8 @@ export class StateMachineComponent implements OnInit, OnDestroy {
   private async updateShow(show: Show, successFunction: () => void, errorMessage: string) {
     await this.showService.updateShow(show).subscribe({
       next: () => {
-        this.currentShow = show;
-        this.currentShowState = show.showState;
+        this.currentShow.set(show);
+        this.currentShowState.set(show.showState);
         successFunction();
       },
       error: (error) => {
@@ -248,8 +275,8 @@ export class StateMachineComponent implements OnInit, OnDestroy {
     errorMessage: string) {
     await this.raceService.updateRace(race).subscribe({
       next: () => {
-        this.currentRace = race;
-        this.currentRaceState = race.raceState;
+        this.currentRace.set(race);
+        this.currentRaceState.set(race.raceState);
         successFunction();
       },
       error: (error) => {

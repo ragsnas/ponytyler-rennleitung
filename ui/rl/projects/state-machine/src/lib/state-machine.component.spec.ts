@@ -76,16 +76,16 @@ describe('StateMachineComponent', () => {
     await fixture.whenStable();
 
     expect(raceService.getRace).toHaveBeenCalledWith('race-1');
-    expect(component.currentRace).toEqual(reloadedRace);
-    expect(component.currentRaceState).toEqual(RaceState.RACED);
+    expect(component.currentRace()).toEqual(reloadedRace);
+    expect(component.currentRaceState()).toEqual(RaceState.RACED);
   });
 
   it('reloads the current race when the backend returns a numeric id but the message carries it as string', async () => {
     const numericIdRace = { ...currentRace, id: 60 as unknown as string };
-    component.currentRace = numericIdRace;
+    component.currentRace.set(numericIdRace);
     fixture.detectChanges();
     await fixture.whenStable();
-    component.currentRace = numericIdRace;
+    component.currentRace.set(numericIdRace);
 
     const reloadedRace: Race = { ...numericIdRace, raceState: RaceState.RACED };
     raceService.getRace.and.returnValue(of(reloadedRace));
@@ -98,7 +98,7 @@ describe('StateMachineComponent', () => {
     await fixture.whenStable();
 
     expect(raceService.getRace).toHaveBeenCalled();
-    expect(component.currentRaceState).toEqual(RaceState.RACED);
+    expect(component.currentRaceState()).toEqual(RaceState.RACED);
   });
 
   it('does not reload when the RaceStateChange message is for a different race', async () => {
@@ -112,7 +112,7 @@ describe('StateMachineComponent', () => {
     });
 
     expect(raceService.getRace).not.toHaveBeenCalled();
-    expect(component.currentRace).toEqual(currentRace);
+    expect(component.currentRace()).toEqual(currentRace);
   });
 
   it('ignores messages on unrelated topics', async () => {
@@ -143,8 +143,8 @@ describe('StateMachineComponent', () => {
     await fixture.whenStable();
 
     expect(showService.getShow).toHaveBeenCalledWith('show-1');
-    expect(component.currentShow).toEqual(reloadedShow);
-    expect(component.currentShowState).toEqual(ShowState.RACE);
+    expect(component.currentShow()).toEqual(reloadedShow);
+    expect(component.currentShowState()).toEqual(ShowState.RACE);
   });
 
   it('does not reload when the ShowStateChange message is for a different show', async () => {
@@ -158,7 +158,7 @@ describe('StateMachineComponent', () => {
     });
 
     expect(showService.getShow).not.toHaveBeenCalled();
-    expect(component.currentShow).toEqual(currentShow);
+    expect(component.currentShow()).toEqual(currentShow);
   });
 
   describe('control buttons', () => {
@@ -170,8 +170,8 @@ describe('StateMachineComponent', () => {
     async function render(raceState: RaceState | undefined, showState: ShowState | undefined) {
       fixture.detectChanges();
       await fixture.whenStable();
-      component.currentRaceState = raceState;
-      component.currentShowState = showState;
+      component.currentRaceState.set(raceState);
+      component.currentShowState.set(showState);
       fixture.detectChanges();
       return Array.from<HTMLButtonElement>(fixture.nativeElement.querySelectorAll('button'));
     }
