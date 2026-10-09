@@ -87,6 +87,24 @@ describe("RaceService", () => {
       expect(mqttClient.publish).not.toHaveBeenCalled();
     });
 
+    it("persists raceStartedAt and raceFinishedAt", async () => {
+      const raceStartedAt = "2026-10-09T20:00:00.000Z";
+      const raceFinishedAt = "2026-10-09T20:00:25.000Z";
+      findUniqueMock.mockResolvedValue({ id: 1, raceState: RaceState.RACING });
+      updateMock.mockResolvedValue({ id: 1, raceState: RaceState.RACED });
+
+      await service.updateRace({
+        where: { id: 1 },
+        data: { raceState: RaceState.RACED, raceStartedAt, raceFinishedAt },
+      });
+
+      expect(updateMock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({ raceStartedAt, raceFinishedAt }),
+        }),
+      );
+    });
+
     it("does not publish when there is no existing race to compare against", async () => {
       findUniqueMock.mockResolvedValue(null);
       updateMock.mockResolvedValue({ id: 1, raceState: RaceState.LISTED });

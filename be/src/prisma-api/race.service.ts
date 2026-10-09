@@ -135,6 +135,8 @@ export class RaceService implements OnModuleDestroy {
         createdAt: data.createdAt,
         orderNumber: data.orderNumber,
         raced: data.raced,
+        raceStartedAt: data.raceStartedAt,
+        raceFinishedAt: data.raceFinishedAt,
         raceState: this.calculateRaceState(data),
         bikeWon: data.bikeWon,
         show: {
