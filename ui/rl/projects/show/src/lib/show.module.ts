@@ -19,21 +19,16 @@ import { AddEncoreComponent } from "./add-encore/add-encore.component";
 import { CreateRaceComponent } from "./create-race/create-race.component";
 import { CreateShowComponent } from "./create-show/create-show.component";
 import { ShowDashboardComponent } from "./show-dashboard/show-dashboard.component";
-import { ShowComponent } from "./show/show.component";
 import { ShowsComponent } from "./shows/shows.component";
 import { UpdateRaceComponent } from "./update-race/update-race.component";
 import { MatSnackBarModule } from "@angular/material/snack-bar";
 import { DirectorDashboardComponent } from "./director-dashboard/director-dashboard.component";
-import {
-  DirectorDashboardRedirectComponent,
-} from "./director-dashboard-redirect/director-dashboard-redirect.component";
 import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
 import { MatProgressBarModule } from "@angular/material/progress-bar";
 import { MatSelectModule } from "@angular/material/select";
 import { MatDialogModule } from "@angular/material/dialog";
 import { EditShowComponent } from "./edit-show/edit-show.component";
 import { MessageModule } from "projects/ui/message/src/public-api";
-import { BackupModule } from "projects/backup/src/public-api";
 import { ShiftFormComponent } from "./shift/shift-form.component";
 import { ShiftRoleFormComponent } from "./shift/shift-role-form.component";
 import { ShiftsDashboardComponent } from "./shifts/dashboard/shifts-dashboard.component";
@@ -41,11 +36,9 @@ import { ChooseUsersComponent } from "./shifts/wizzard/steps/choose-users/choose
 import { WizzardComponent } from "./shifts/wizzard/wizzard.component";
 import { MatCheckboxModule } from "@angular/material/checkbox";
 import { ChooseShiftsComponent } from "./shifts/wizzard/steps/choose-shifts/choose-shifts.component";
-import { ChooseRolesComponent } from "./shifts/wizzard/steps/choose-roles/choose-roles.component";
 
 const routes: Routes = [
   { path: "", component: ShowsComponent },
-  { path: "director-dashboard-redirect", component: DirectorDashboardRedirectComponent },
   { path: "create", component: CreateShowComponent },
   { path: ":showId/edit", component: EditShowComponent },
   { path: ":showId/create-race", component: CreateRaceComponent },
@@ -67,7 +60,6 @@ const routes: Routes = [
 
 @NgModule({
   declarations: [
-    ShowComponent,
     ShowsComponent,
     CreateShowComponent,
     EditShowComponent,
@@ -76,13 +68,11 @@ const routes: Routes = [
     AddEncoreComponent,
     UpdateRaceComponent,
     DirectorDashboardComponent,
-    DirectorDashboardRedirectComponent,
     ShiftFormComponent,
     ShiftRoleFormComponent,
     ShiftsDashboardComponent,
     ChooseUsersComponent,
-    ChooseShiftsComponent,
-    ChooseRolesComponent
+    ChooseShiftsComponent
   ],
   imports: [CommonModule,
     RouterModule.forChild(routes),
@@ -106,10 +96,8 @@ const routes: Routes = [
     MatSelectModule,
     MatDialogModule,
     YesNoDialogModule,
-    MessageModule,
-    BackupModule
+    MessageModule
   ],
-  exports: [ShowComponent],
   providers: [provideHttpClient(withXhr(), withInterceptorsFromDi())],
 })
 export class ShowModule {

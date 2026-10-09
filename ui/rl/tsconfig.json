@@ -24,27 +24,12 @@
       "@ui/yes-no-dialog": [
         "./dist/ui/yes-no-dialog"
       ],
-      "@utilities/form-control-pipe": [
-        "./dist/utilities/form-control-pipe"
-      ],
-      "audio-player": [
-        "./dist/audio-player"
-      ],
-      "auth": [
-        "./dist/auth"
-      ],
       "backend-api": [
         "./dist/backend-api"
-      ],
-      "backup": [
-        "./dist/backup"
       ],
       "countdown": [
         "./dist/countdown",
         "./dist/countdown"
-      ],
-      "race-admin": [
-        "./dist/race-admin"
       ],
       "race-track": [
         "./dist/race-track"
@@ -69,9 +54,6 @@
       ],
       "users": [
         "./dist/users"
-      ],
-      "video-player": [
-        "./dist/video-player"
       ],
       "views": [
         "./dist/views"

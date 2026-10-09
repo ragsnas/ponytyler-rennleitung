@@ -17,7 +17,6 @@ import { SongSyncOriginModule } from "projects/ui/song-sync-origin/src/public-ap
 import { SongService } from "projects/backend-api/src/lib/song.service";
 import { CreateSongComponent } from "./song-input/create-song.component";
 import { SongSyncComponent } from "./song-sync/song-sync.component";
-import { SongComponent } from "./song/song.component";
 import { SongsComponent } from "./songs.component";
 import { EditSongComponent } from "./song-edit/edit-song.component";
 import { MatSnackBarModule } from "@angular/material/snack-bar";
@@ -37,7 +36,6 @@ const routes: Routes = [
 @NgModule({
   declarations: [
     SongsComponent,
-    SongComponent,
     CreateSongComponent,
     SongSyncComponent,
     EditSongComponent,

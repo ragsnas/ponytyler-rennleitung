@@ -23,5 +23,4 @@ export declare class SongService {
         data: Prisma.SongUpdateInput;
     }): Promise<Song>;
     deleteSong(where: Prisma.SongWhereUniqueInput): Promise<Song>;
-    syncWithSingleSourceOfTruth(): Promise<boolean>;
 }

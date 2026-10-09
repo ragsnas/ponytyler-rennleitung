@@ -13,23 +13,17 @@ import { MatInputModule } from "@angular/material/input";
 import { MatFormFieldModule } from "@angular/material/form-field";
 import { ReactiveFormsModule } from "@angular/forms";
 import { CreateUserComponent } from "./create-user/create-user.component";
-import { EditUserComponent } from "./edit-user/edit-user.component";
-import { DeleteUserComponent } from "./delete-user/delete-user.component";
 
 
 const routes: Routes = [
   { path: '', component: UsersListComponent },
-  { path: 'create', component: CreateUserComponent },
-  { path: 'edit/:id', component: EditUserComponent },
-  { path: 'delete/:id', component: DeleteUserComponent }
+  { path: 'create', component: CreateUserComponent }
 ];
 
 @NgModule({
   declarations: [
     UsersListComponent,
     CreateUserComponent,
-    EditUserComponent,
-    DeleteUserComponent,
     UserFormComponent
   ],
   imports: [

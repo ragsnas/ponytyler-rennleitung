@@ -85,11 +85,6 @@ export class SongController {
     });
   }
 
-  @Get("sync-with-single-source-of-truth")
-  syncWithSingleSourceOfTruth() {
-    return this.songService.syncWithSingleSourceOfTruth();
-  }
-
   @Post("cloud-sync")
   triggerCloudSync() {
     return this.songSyncService.triggerSync();

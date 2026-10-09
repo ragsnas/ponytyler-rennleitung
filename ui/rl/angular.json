@@ -111,39 +111,6 @@
         }
       }
     },
-    "auth": {
-      "projectType": "library",
-      "root": "projects/auth",
-      "sourceRoot": "projects/auth/src",
-      "prefix": "lib",
-      "architect": {
-        "build": {
-          "builder": "@angular/build:ng-packagr",
-          "options": {
-            "project": "projects/auth/ng-package.json"
-          },
-          "configurations": {
-            "production": {
-              "tsConfig": "projects/auth/tsconfig.lib.prod.json"
-            },
-            "development": {
-              "tsConfig": "projects/auth/tsconfig.lib.json"
-            }
-          },
-          "defaultConfiguration": "production"
-        },
-        "test": {
-          "builder": "@angular/build:karma",
-          "options": {
-            "browsers": "ChromeHeadless",
-            "watch": false,
-            "polyfills": ["zone.js", "zone.js/testing"],
-            "tsConfig": "projects/auth/tsconfig.spec.json",
-            "karmaConfig": "projects/auth/karma.conf.js"
-          }
-        }
-      }
-    },
     "song": {
       "projectType": "library",
       "root": "projects/song",
@@ -236,10 +203,7 @@
           "options": {
             "browsers": "ChromeHeadless",
             "watch": false,
-            "polyfills": [
-              "zone.js",
-              "zone.js/testing"
-            ],
+            "polyfills": ["zone.js", "zone.js/testing"],
             "tsConfig": "projects/backend-api/tsconfig.spec.json",
             "karmaConfig": "projects/backend-api/karma.conf.js"
           }
@@ -286,29 +250,6 @@
             },
             "development": {
               "tsConfig": "projects/ui/button-list/tsconfig.lib.json"
-            }
-          },
-          "defaultConfiguration": "production"
-        }
-      }
-    },
-    "@utilities/form-control-pipe": {
-      "projectType": "library",
-      "root": "projects/utilities/form-control-pipe",
-      "sourceRoot": "projects/utilities/form-control-pipe/src",
-      "prefix": "lib",
-      "architect": {
-        "build": {
-          "builder": "@angular/build:ng-packagr",
-          "options": {
-            "project": "projects/utilities/form-control-pipe/ng-package.json"
-          },
-          "configurations": {
-            "production": {
-              "tsConfig": "projects/utilities/form-control-pipe/tsconfig.lib.prod.json"
-            },
-            "development": {
-              "tsConfig": "projects/utilities/form-control-pipe/tsconfig.lib.json"
             }
           },
           "defaultConfiguration": "production"
@@ -410,105 +351,6 @@
             "polyfills": ["zone.js", "zone.js/testing"],
             "tsConfig": "projects/mqtt-broker/tsconfig.spec.json",
             "karmaConfig": "projects/mqtt-broker/karma.conf.js"
-          }
-        }
-      }
-    },
-    "video-player": {
-      "projectType": "library",
-      "root": "projects/video-player",
-      "sourceRoot": "projects/video-player/src",
-      "prefix": "lib",
-      "architect": {
-        "build": {
-          "builder": "@angular/build:ng-packagr",
-          "options": {
-            "project": "projects/video-player/ng-package.json"
-          },
-          "configurations": {
-            "production": {
-              "tsConfig": "projects/video-player/tsconfig.lib.prod.json"
-            },
-            "development": {
-              "tsConfig": "projects/video-player/tsconfig.lib.json"
-            }
-          },
-          "defaultConfiguration": "production"
-        },
-        "test": {
-          "builder": "@angular/build:karma",
-          "options": {
-            "browsers": "ChromeHeadless",
-            "watch": false,
-            "polyfills": ["zone.js", "zone.js/testing"],
-            "tsConfig": "projects/video-player/tsconfig.spec.json",
-            "karmaConfig": "projects/video-player/karma.conf.js"
-          }
-        }
-      }
-    },
-    "audio-player": {
-      "projectType": "library",
-      "root": "projects/audio-player",
-      "sourceRoot": "projects/audio-player/src",
-      "prefix": "lib",
-      "architect": {
-        "build": {
-          "builder": "@angular/build:ng-packagr",
-          "options": {
-            "project": "projects/audio-player/ng-package.json"
-          },
-          "configurations": {
-            "production": {
-              "tsConfig": "projects/audio-player/tsconfig.lib.prod.json"
-            },
-            "development": {
-              "tsConfig": "projects/audio-player/tsconfig.lib.json"
-            }
-          },
-          "defaultConfiguration": "production"
-        },
-        "test": {
-          "builder": "@angular/build:karma",
-          "options": {
-            "browsers": "ChromeHeadless",
-            "watch": false,
-            "polyfills": ["zone.js", "zone.js/testing"],
-            "tsConfig": "projects/audio-player/tsconfig.spec.json",
-            "karmaConfig": "projects/audio-player/karma.conf.js"
-          }
-        }
-      }
-    },
-    "race-admin": {
-      "projectType": "library",
-      "root": "projects/race-admin",
-      "sourceRoot": "projects/race-admin/src",
-      "prefix": "lib",
-      "architect": {
-        "build": {
-          "builder": "@angular/build:ng-packagr",
-          "options": {
-            "project": "projects/race-admin/ng-package.json"
-          },
-          "configurations": {
-            "production": {
-              "tsConfig": "projects/race-admin/tsconfig.lib.prod.json"
-            },
-            "development": {
-              "tsConfig": "projects/race-admin/tsconfig.lib.json"
-            }
-          },
-          "defaultConfiguration": "production"
-        },
-        "test": {
-          "builder": "@angular/build:karma",
-          "options": {
-            "browsers": "ChromeHeadless",
-            "watch": false,
-            "polyfills": ["zone.js", "zone.js/testing"],
-            "tsConfig": "projects/race-admin/tsconfig.spec.json",
-            "karmaConfig": "projects/race-admin/karma.conf.js"
           }
         }
       }
@@ -639,10 +481,7 @@
             "browsers": "ChromeHeadless",
             "watch": false,
             "tsConfig": "projects/users/tsconfig.spec.json",
-            "polyfills": [
-              "zone.js",
-              "zone.js/testing"
-            ]
+            "polyfills": ["zone.js", "zone.js/testing"]
           }
         }
       }
@@ -674,45 +513,7 @@
             "browsers": "ChromeHeadless",
             "watch": false,
             "tsConfig": "projects/stats/tsconfig.spec.json",
-            "polyfills": [
-              "zone.js",
-              "zone.js/testing"
-            ]
-          }
-        }
-      }
-    },
-    "backup": {
-      "projectType": "library",
-      "root": "projects/backup",
-      "sourceRoot": "projects/backup/src",
-      "prefix": "lib",
-      "architect": {
-        "build": {
-          "builder": "@angular/build:ng-packagr",
-          "options": {
-            "project": "projects/backup/ng-package.json"
-          },
-          "configurations": {
-            "production": {
-              "tsConfig": "projects/backup/tsconfig.lib.prod.json"
-            },
-            "development": {
-              "tsConfig": "projects/backup/tsconfig.lib.json"
-            }
-          },
-          "defaultConfiguration": "production"
-        },
-        "test": {
-          "builder": "@angular/build:karma",
-          "options": {
-            "browsers": "ChromeHeadless",
-            "watch": false,
-            "tsConfig": "projects/backup/tsconfig.spec.json",
-            "polyfills": [
-              "zone.js",
-              "zone.js/testing"
-            ]
+            "polyfills": ["zone.js", "zone.js/testing"]
           }
         }
       }
@@ -744,10 +545,7 @@
             "browsers": "ChromeHeadless",
             "watch": false,
             "tsConfig": "projects/state-machine/tsconfig.spec.json",
-            "polyfills": [
-              "zone.js",
-              "zone.js/testing"
-            ]
+            "polyfills": ["zone.js", "zone.js/testing"]
           }
         }
       }
@@ -779,10 +577,7 @@
             "browsers": "ChromeHeadless",
             "watch": false,
             "tsConfig": "projects/ui/countdown/tsconfig.spec.json",
-            "polyfills": [
-              "zone.js",
-              "zone.js/testing"
-            ]
+            "polyfills": ["zone.js", "zone.js/testing"]
           }
         }
       }

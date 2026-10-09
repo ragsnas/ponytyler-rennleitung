@@ -62,8 +62,4 @@ export class SongService {
       where,
     });
   }
-
-  async syncWithSingleSourceOfTruth(): Promise<boolean> {
-    return false;
-  }
 }

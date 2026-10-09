@@ -98,10 +98,4 @@ describe("SongService", () => {
       expect(deleteMock).toHaveBeenCalledWith({ where });
     });
   });
-
-  describe("syncWithSingleSourceOfTruth", () => {
-    it("resolves to false", async () => {
-      await expect(service.syncWithSingleSourceOfTruth()).resolves.toBe(false);
-    });
-  });
 });

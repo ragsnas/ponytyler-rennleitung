@@ -127,7 +127,7 @@ test.describe.serial('Songs', () => {
 
     await page.goto('/song', { waitUntil: 'networkidle' });
     await expect(rowByText(page, duplicateName as string)).toContainText('block');
-    await expect(rowByText(page, originalName)).toContainText('check-box');
+    await expect(rowByText(page, originalName)).toContainText('check_box');
   });
 
   test('syncs songs via the cloud songlist', async () => {

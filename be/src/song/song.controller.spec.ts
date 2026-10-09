@@ -10,7 +10,6 @@ describe("SongController", () => {
   let songMock: jest.Mock;
   let updateSongMock: jest.Mock;
   let deleteSongMock: jest.Mock;
-  let syncWithSingleSourceOfTruthMock: jest.Mock;
   let triggerSyncMock: jest.Mock;
   let updateSelectabilityMock: jest.Mock;
 
@@ -20,7 +19,6 @@ describe("SongController", () => {
     songMock = jest.fn();
     updateSongMock = jest.fn();
     deleteSongMock = jest.fn();
-    syncWithSingleSourceOfTruthMock = jest.fn();
     triggerSyncMock = jest.fn();
     updateSelectabilityMock = jest.fn();
 
@@ -35,7 +33,6 @@ describe("SongController", () => {
             song: songMock,
             updateSong: updateSongMock,
             deleteSong: deleteSongMock,
-            syncWithSingleSourceOfTruth: syncWithSingleSourceOfTruthMock,
           },
         },
         {
@@ -102,12 +99,6 @@ describe("SongController", () => {
         name: "asc",
       },
     });
-  });
-
-  it("delegates syncing with the single source of truth to the SongService", () => {
-    controller.syncWithSingleSourceOfTruth();
-
-    expect(syncWithSingleSourceOfTruthMock).toHaveBeenCalledWith();
   });
 
   it("delegates triggering a cloud sync to the SongSyncService", () => {

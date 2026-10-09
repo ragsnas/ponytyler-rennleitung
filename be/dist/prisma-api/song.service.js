@@ -55,9 +55,6 @@ let SongService = class SongService {
             where,
         });
     }
-    async syncWithSingleSourceOfTruth() {
-        return false;
-    }
 };
 exports.SongService = SongService;
 exports.SongService = SongService = __decorate([

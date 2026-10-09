@@ -39,7 +39,7 @@ test('syncs songs selectability against the cloud songlist', async ({ page, requ
   await page.goto('/song', { waitUntil: 'networkidle' });
   const row = rowByText(page, name);
   await expect(row).toBeVisible({ timeout: 10000 });
-  await expect(row).toContainText('check-box');
+  await expect(row).toContainText('check_box');
 
   await page.locator('button:has-text("Update Selecability")').click();
   await expect(page.getByText('Selectability updated.')).toBeVisible({ timeout: 30000 });
