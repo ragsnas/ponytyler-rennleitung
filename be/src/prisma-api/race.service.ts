@@ -312,7 +312,7 @@ export class RaceService implements OnModuleDestroy {
       include: { song1: true, song2: true },
     });
     if (!currentRace) {
-      console.log(`No active Race found, loading next Listed Race instead`);
+      console.log(`No active Race found, loading latest added Race instead`);
       currentRace = await this.prisma.race.findFirst({
         where: {
           raceState: {
