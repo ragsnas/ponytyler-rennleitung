@@ -3,7 +3,7 @@ import { firstValueFrom, of } from "rxjs";
 import { RaceController } from "./race.controller";
 import { RaceService } from "../prisma-api/race.service";
 import { ShowService } from "../prisma-api/show.service";
-import { RaceState } from "./race-state.enum";
+import { RaceState } from "@prisma/client";
 
 describe("RaceController", () => {
   let controller: RaceController;

@@ -9,6 +9,8 @@ describe("SongService", () => {
   let createMock: jest.Mock;
   let updateMock: jest.Mock;
   let deleteMock: jest.Mock;
+  let createManyMock: jest.Mock;
+  let updateManyMock: jest.Mock;
 
   beforeEach(async () => {
     findUniqueMock = jest.fn();
@@ -16,6 +18,8 @@ describe("SongService", () => {
     createMock = jest.fn();
     updateMock = jest.fn();
     deleteMock = jest.fn();
+    createManyMock = jest.fn();
+    updateManyMock = jest.fn();
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -29,6 +33,8 @@ describe("SongService", () => {
               create: createMock,
               update: updateMock,
               delete: deleteMock,
+              createMany: createManyMock,
+              updateMany: updateManyMock,
             },
           },
         },
@@ -85,6 +91,41 @@ describe("SongService", () => {
 
       await expect(service.updateSong({ where, data })).resolves.toBe(updated);
       expect(updateMock).toHaveBeenCalledWith({ data, where });
+    });
+  });
+
+  describe("createManySongs", () => {
+    it("creates all songs in one call and skips duplicates", async () => {
+      const data = [{ name: "A", artist: "B" }];
+      createManyMock.mockResolvedValue({ count: 1 });
+
+      await expect(service.createManySongs(data)).resolves.toEqual({
+        count: 1,
+      });
+      expect(createManyMock).toHaveBeenCalledWith({
+        data,
+        skipDuplicates: true,
+      });
+    });
+
+    it("does not hit the database for an empty list", async () => {
+      await expect(service.createManySongs([])).resolves.toEqual({ count: 0 });
+      expect(createManyMock).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("updateManySongs", () => {
+    it("updates all matching songs in one call", async () => {
+      const params = {
+        where: { id: { in: [1, 2] } },
+        data: { selectable: true },
+      };
+      updateManyMock.mockResolvedValue({ count: 2 });
+
+      await expect(service.updateManySongs(params)).resolves.toEqual({
+        count: 2,
+      });
+      expect(updateManyMock).toHaveBeenCalledWith(params);
     });
   });
 

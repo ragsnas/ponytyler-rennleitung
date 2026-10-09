@@ -7,7 +7,7 @@ Nest provider: [`MqttBrokerService`](./mqtt-broker.service.ts), wired up by
 
 It uses [Aedes](https://github.com/moscajs/aedes) to host a real MQTT broker
 on a plain TCP socket (not an MQTT client connecting to some other broker —
-this *is* the broker). Bike sensors, the show-control hardware, and any
+this _is_ the broker). Bike sensors, the show-control hardware, and any
 helper/test scripts all connect to it the same way they connected to the old
 standalone broker.
 
@@ -25,13 +25,13 @@ backend itself:
   broker cleanly as part of Nest's shutdown hooks.
 
 There's no separate `npm run` script for the broker — starting/stopping the
-NestJS app *is* starting/stopping the broker.
+NestJS app _is_ starting/stopping the broker.
 
 ## Configuration
 
-| Env var        | Default | Description                                        |
-|----------------|---------|-----------------------------------------------------|
-| `MQTT_PORT`    | `3001`  | TCP port the embedded broker listens on.             |
+| Env var        | Default | Description                                              |
+| -------------- | ------- | -------------------------------------------------------- |
+| `MQTT_PORT`    | `3001`  | TCP port the embedded broker listens on.                 |
 | `MQTT_WS_PORT` | `3002`  | Port the same broker listens on for MQTT-over-WebSocket. |
 
 Set it like any other backend env var (`.env`, shell, or the `environment:`

@@ -42,4 +42,23 @@ describe("StatsService", () => {
     await expect(service.whichBikeWonMost()).resolves.toEqual(rows);
     expect(queryRawMock).toHaveBeenCalledTimes(1);
   });
+
+  it("limits the top lists to 100 rows by default", async () => {
+    queryRawMock.mockResolvedValue([]);
+
+    await service.mostPlayedSongs();
+    await service.mostWishedSongs();
+
+    for (const [query] of queryRawMock.mock.calls) {
+      expect(query.values).toContain(100);
+    }
+  });
+
+  it("passes an explicit limit on to the query", async () => {
+    queryRawMock.mockResolvedValue([]);
+
+    await service.mostPlayedSongs(5);
+
+    expect(queryRawMock.mock.calls[0][0].values).toContain(5);
+  });
 });

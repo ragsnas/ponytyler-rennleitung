@@ -10,9 +10,8 @@ import {
 } from "@nestjs/common";
 import { RaceService } from "../prisma-api/race.service";
 import { ShowService } from "../prisma-api/show.service";
-import { Prisma } from "@prisma/client";
+import { Prisma, RaceState } from "@prisma/client";
 import { combineLatest, map } from "rxjs";
-import { RaceState } from "./race-state.enum";
 
 @Controller("api/race")
 export class RaceController {

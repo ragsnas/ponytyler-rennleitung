@@ -22,7 +22,7 @@ import { RaceModule } from "../src/race/race.module";
 import { SongModule } from "../src/song/song.module";
 import { ExportModule } from "../src/export/export.module";
 import { ImportModule } from "../src/import/import.module";
-import { RaceState } from "../src/race/race-state.enum";
+import { RaceState } from "@prisma/client";
 import { DatabaseExport } from "../src/export/export.types";
 
 describe("Backend REST API lifecycle (e2e)", () => {

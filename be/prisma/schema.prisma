@@ -2,8 +2,7 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
-  provider        = "prisma-client-js"
-  previewFeatures = ["typedSql"]
+  provider = "prisma-client-js"
 }
 
 datasource db {
@@ -42,7 +41,7 @@ model Show {
 
 model Shift {
   id            Int         @id @default(autoincrement())
-  show          Show        @relation(name: "ShowToShift", fields: [showId], references: [id])
+  show          Show        @relation(name: "ShowToShift", fields: [showId], references: [id], onDelete: Cascade)
   showId        Int
   order         Int
   duration      Int?
@@ -54,13 +53,12 @@ model Shift {
 }
 
 model ShiftRole {
-  id           Int     @id @default(autoincrement())
-  shift        Shift   @relation(name: "ShiftToShiftRole", fields: [shiftId], references: [id])
-  shiftId      Int
-  roleTitle    String
-  user         User    @relation(name: "ShiftRoleToUser", fields: [userId], references: [id])
-  userId       Int
-  pastUserName String? // for saving userName of deleted users
+  id        Int    @id @default(autoincrement())
+  shift     Shift  @relation(name: "ShiftToShiftRole", fields: [shiftId], references: [id], onDelete: Cascade)
+  shiftId   Int
+  roleTitle String
+  user      User   @relation(name: "ShiftRoleToUser", fields: [userId], references: [id], onDelete: Restrict)
+  userId    Int
 
   @@index([shiftId])
   @@index([userId])
@@ -80,35 +78,37 @@ model Song {
 
 model EncoreSong {
   id     Int  @id @default(autoincrement())
-  show   Show @relation(name: "ShowToEncoreSong", fields: [showId], references: [id])
+  show   Show @relation(name: "ShowToEncoreSong", fields: [showId], references: [id], onDelete: Cascade)
   showId Int
-  song   Song @relation(name: "SongToEncoreSong", fields: [songId], references: [id])
+  song   Song @relation(name: "SongToEncoreSong", fields: [songId], references: [id], onDelete: Restrict)
   songId Int
   order  Int
 
+  @@unique([showId, order])
   @@index([showId])
   @@index([songId])
   @@map("encore_songs")
 }
 
 model Race {
-  id             Int      @id @default(autoincrement())
-  show           Show     @relation(name: "ShowToRace", fields: [showId], references: [id])
+  id             Int       @id @default(autoincrement())
+  show           Show      @relation(name: "ShowToRace", fields: [showId], references: [id], onDelete: Cascade)
   showId         Int
   orderNumber    Int
-  createdAt      DateTime @default(now())
+  createdAt      DateTime  @default(now())
   raceStartedAt  DateTime?
   raceFinishedAt DateTime?
-  raced          Boolean  @default(false)
-  raceState      String   @default("LISTED")
+  raced          Boolean   @default(false)
+  raceState      RaceState @default(LISTED)
   person1        String?
-  song1          Song?    @relation(name: "SongForPerson1", fields: [song1Id], references: [id])
+  song1          Song?     @relation(name: "SongForPerson1", fields: [song1Id], references: [id], onDelete: SetNull)
   song1Id        Int?
   person2        String?
-  song2          Song?    @relation(name: "SongForPerson2", fields: [song2Id], references: [id])
+  song2          Song?     @relation(name: "SongForPerson2", fields: [song2Id], references: [id], onDelete: SetNull)
   song2Id        Int?
-  bikeWon        Int      @default(0)
+  bikeWon        Int       @default(0)
 
+  @@unique([showId, orderNumber])
   @@index([showId, raceState, orderNumber])
   @@index([song1Id])
   @@index([song2Id])

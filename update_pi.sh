@@ -23,7 +23,6 @@ cd ~/ponytyler-rennleitung/be
 npm i
 printf "\n- BUILD/MIGRATE DATABASE --------------------------\n"
 npx prisma generate
-npx prisma generate --sql
 npx prisma migrate deploy
 printf "\n- BUILD ACTUAL BACKEND ----------------------------\n"
 npm run build

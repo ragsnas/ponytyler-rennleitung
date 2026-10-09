@@ -3,7 +3,7 @@ import { ConfigService } from "@nestjs/config";
 import * as mqtt from "mqtt";
 import { RaceService } from "./race.service";
 import { PrismaService } from "./prisma.service";
-import { RaceState } from "../race/race-state.enum";
+import { RaceState } from "@prisma/client";
 
 jest.mock("mqtt", () => ({
   connect: jest.fn(),
@@ -14,12 +14,14 @@ describe("RaceService", () => {
   let findUniqueMock: jest.Mock;
   let updateMock: jest.Mock;
   let findManyMock: jest.Mock;
+  let transactionMock: jest.Mock;
   let mqttClient: { publish: jest.Mock; end: jest.Mock };
 
   beforeEach(async () => {
     findUniqueMock = jest.fn();
     updateMock = jest.fn();
     findManyMock = jest.fn().mockResolvedValue([]);
+    transactionMock = jest.fn();
     mqttClient = { publish: jest.fn(), end: jest.fn() };
     (mqtt.connect as jest.Mock).mockReturnValue(mqttClient);
 
@@ -34,6 +36,7 @@ describe("RaceService", () => {
               update: updateMock,
               findMany: findManyMock,
             },
+            $transaction: transactionMock,
           },
         },
         { provide: ConfigService, useValue: { get: jest.fn() } },
@@ -115,6 +118,85 @@ describe("RaceService", () => {
       });
 
       expect(mqttClient.publish).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("moveRacePosition", () => {
+    /**
+     * Stands in for Postgres: runs the queued updates one after another and
+     * rejects as soon as two races of a show share an orderNumber, like the
+     * `@@unique([showId, orderNumber])` constraint does.
+     */
+    function fakeDatabase(
+      races: { id: number; showId: number; orderNumber: number }[],
+    ) {
+      findUniqueMock.mockImplementation(
+        async ({ where }: { where: { id: number } }) =>
+          races.find((race) => race.id === where.id),
+      );
+      updateMock.mockImplementation(
+        ({
+          where,
+          data,
+        }: {
+          where: { id: number };
+          data: { orderNumber: number };
+        }) =>
+          async () => {
+            const race = races.find((candidate) => candidate.id === where.id)!;
+            race.orderNumber = data.orderNumber;
+            const seen = new Set<number>();
+            for (const other of races.filter((r) => r.showId === race.showId)) {
+              if (seen.has(other.orderNumber)) {
+                throw new Error(
+                  `Unique constraint failed on (showId, orderNumber) = (${other.showId}, ${other.orderNumber})`,
+                );
+              }
+              seen.add(other.orderNumber);
+            }
+          },
+      );
+      transactionMock.mockImplementation(
+        async (operations: (() => Promise<void>)[]) => {
+          for (const operation of operations) {
+            await operation();
+          }
+        },
+      );
+    }
+
+    it.each([
+      ["up", 11, 10],
+      ["down", 10, 11],
+    ])(
+      "swaps with the neighbouring race when moving %s without ever duplicating an orderNumber",
+      async (upOrDown, raceToMoveId, neighbourId) => {
+        const races = [
+          { id: 10, showId: 1, orderNumber: 0 },
+          { id: 11, showId: 1, orderNumber: 1 },
+        ];
+        fakeDatabase(races);
+        findManyMock.mockResolvedValue([
+          races.find((race) => race.id === neighbourId),
+        ]);
+
+        await service.moveRacePosition({
+          raceToMoveId: String(raceToMoveId),
+          upOrDown,
+        });
+
+        expect(races.find((race) => race.id === 10)!.orderNumber).toBe(1);
+        expect(races.find((race) => race.id === 11)!.orderNumber).toBe(0);
+      },
+    );
+
+    it("does nothing when there is no race to swap with", async () => {
+      fakeDatabase([{ id: 10, showId: 1, orderNumber: 0 }]);
+      findManyMock.mockResolvedValue([]);
+
+      await service.moveRacePosition({ raceToMoveId: "10", upOrDown: "up" });
+
+      expect(transactionMock).not.toHaveBeenCalled();
     });
   });
 

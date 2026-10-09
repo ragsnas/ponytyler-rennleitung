@@ -1,8 +1,7 @@
 import { Injectable, OnModuleDestroy } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { PrismaService } from "./prisma.service";
-import { Prisma, Race } from "@prisma/client";
-import { RaceState } from "../race/race-state.enum";
+import { Prisma, Race, RaceState } from "@prisma/client";
 import mqtt from "mqtt";
 import * as os from "os";
 
@@ -181,7 +180,7 @@ export class RaceService implements OnModuleDestroy {
     }
   }
 
-  private static readonly ALLOWED_INACTIVE_RACE_STATES = [
+  private static readonly ALLOWED_INACTIVE_RACE_STATES: RaceState[] = [
     RaceState.CANCELED,
     RaceState.LISTED,
     RaceState.DONE,
@@ -248,20 +247,24 @@ export class RaceService implements OnModuleDestroy {
 
       console.log(`raceToMove:`, raceToMove);
       console.log(`raceToSwitchWith:`, raceToSwitchWith);
-      const updateRaceToMove = this.prisma.race.update({
-        data: {
-          orderNumber: raceToSwitchWith.orderNumber,
-        },
+      // (showId, orderNumber) is unique, so the two numbers cannot be swapped
+      // directly: park the moved race on a temporary negative number (its own
+      // id, which no real race uses) while the other one takes its place.
+      const parkRaceToMove = this.prisma.race.update({
+        data: { orderNumber: -raceToMove.id },
         where: { id: raceToMove.id },
       });
       const updateRaceToSwitchWith = this.prisma.race.update({
-        data: {
-          orderNumber: raceToMove.orderNumber,
-        },
+        data: { orderNumber: raceToMove.orderNumber },
         where: { id: raceToSwitchWith.id },
+      });
+      const updateRaceToMove = this.prisma.race.update({
+        data: { orderNumber: raceToSwitchWith.orderNumber },
+        where: { id: raceToMove.id },
       });
 
       return this.prisma.$transaction([
+        parkRaceToMove,
         updateRaceToSwitchWith,
         updateRaceToMove,
       ]);

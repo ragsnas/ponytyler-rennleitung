@@ -1,9 +1,15 @@
 import { ConflictException, Injectable, Logger } from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
 import { Cron, CronExpression } from "@nestjs/schedule";
 import { HttpService } from "@nestjs/axios";
 import { Origin, SongService } from "../../prisma-api/song.service";
 import { Song } from "@prisma/client";
 import { firstValueFrom } from "rxjs";
+
+const DEFAULT_SONGLIST_URL = "https://songlist.ponytyler.de/";
+const HTTP_TIMEOUT_MS = 15000;
+
+type CloudSong = { artist: string; title: string; status: string };
 
 @Injectable()
 export class SongSyncService {
@@ -13,6 +19,7 @@ export class SongSyncService {
   constructor(
     private readonly httpService: HttpService,
     private readonly songService: SongService,
+    private readonly configService: ConfigService,
   ) {}
 
   @Cron(CronExpression.EVERY_30_MINUTES)
@@ -21,14 +28,19 @@ export class SongSyncService {
       this.logger.log("Song Sync already running, skipping scheduled run.");
       return;
     }
-    await this.runSync();
+    try {
+      await this.runSync();
+    } catch (error) {
+      this.logger.error(`Scheduled Song Sync failed: ${error}`);
+    }
   }
 
   /**
    * Lets the frontend trigger the same sync the cron job runs, on demand.
    * Throws instead of queueing so a second click while one is already
    * running (from the cron job or a previous trigger) surfaces immediately
-   * rather than silently piling up.
+   * rather than silently piling up. Failures (cloud unreachable, database
+   * errors) are rethrown so the caller sees them.
    */
   async triggerSync(): Promise<void> {
     if (this.syncInProgress) {
@@ -41,56 +53,83 @@ export class SongSyncService {
     this.syncInProgress = true;
     try {
       this.logger.log("Running Song Sync Cron-Job.");
-      let songsFromCloud = undefined;
-      try {
-        songsFromCloud = await firstValueFrom(
-          this.httpService.get("https://songlist.ponytyler.de/api/index.php"),
-        );
-      } catch (e) {
-        this.logger.error(`could not receive songs from cloud: `, e);
-      }
+      const response = await firstValueFrom(
+        this.httpService.get<CloudSong[]>(
+          `${this.songlistUrl()}api/index.php`,
+          { timeout: HTTP_TIMEOUT_MS },
+        ),
+      );
       const localSongs = await this.songService.songs({});
 
-      if (songsFromCloud && localSongs) {
-        songsFromCloud.data.forEach((song) => {
-          const fullCloudSongName = `${song.artist} - ${song.title}`;
+      // Index the local songs once instead of re-normalising every name for
+      // every cloud song; new songs are added to it so a song that appears
+      // twice in the cloud list is only created once.
+      const localSongsByName = new Map<string, Song | undefined>(
+        localSongs.map((song: Song) => [
+          this.cleanSongname(this.songToString(song)),
+          song,
+        ]),
+      );
 
-          const localSongMatch = localSongs.find(
-            (localSong: Song) =>
-              this.cleanSongname(this.songToString(localSong)) ===
-              this.cleanSongname(fullCloudSongName),
+      const songsToCreate: Parameters<SongService["createManySongs"]>[0] = [];
+      const idsToMakeSelectable: number[] = [];
+      const idsToMakeUnselectable: number[] = [];
+
+      for (const cloudSong of response.data) {
+        const key = this.cleanSongname(
+          `${cloudSong.artist} - ${cloudSong.title}`,
+        );
+        const selectable = cloudSong.status === "listed";
+        const localSong = localSongsByName.get(key);
+        if (!localSong) {
+          songsToCreate.push({
+            name: cloudSong.title,
+            artist: cloudSong.artist,
+            selectable,
+            deleted: false,
+            origin: Origin.FROM_CLOUD_SYNC,
+          });
+          localSongsByName.set(key, {
+            selectable,
+          } as Song);
+        } else if (localSong.selectable !== selectable) {
+          (selectable ? idsToMakeSelectable : idsToMakeUnselectable).push(
+            localSong.id,
           );
-          if (!localSongMatch) {
-            this.logger.log("Need to create Song:" + JSON.stringify(song));
-            this.songService
-              .createSong({
-                name: song.title,
-                artist: song.artist,
-                selectable: song.status === "listed",
-                deleted: false,
-                origin: Origin.FROM_CLOUD_SYNC,
-              })
-              .then((createdSong: Song) => {
-                this.logger.log("Song Created:" + JSON.stringify(createdSong));
-              });
-          } else {
-            this.songService
-              .updateSong({
-                where: { id: localSongMatch.id },
-                data: {
-                  ...localSongMatch,
-                  selectable: song.status === "listed",
-                },
-              })
-              .then((song: Song) => {
-                this.logger.log("Song Created:" + JSON.stringify(song));
-              });
-          }
-        });
+          localSong.selectable = selectable;
+        }
       }
+
+      if (songsToCreate.length > 0) {
+        await this.songService.createManySongs(songsToCreate);
+      }
+      await this.updateSelectable(idsToMakeSelectable, true);
+      await this.updateSelectable(idsToMakeUnselectable, false);
+
+      this.logger.log(
+        `Song Sync finished: ${songsToCreate.length} created, ${
+          idsToMakeSelectable.length + idsToMakeUnselectable.length
+        } updated.`,
+      );
     } finally {
       this.syncInProgress = false;
     }
+  }
+
+  private async updateSelectable(ids: number[], selectable: boolean) {
+    if (ids.length === 0) {
+      return;
+    }
+    await this.songService.updateManySongs({
+      where: { id: { in: ids } },
+      data: { selectable },
+    });
+  }
+
+  private songlistUrl(): string {
+    const url =
+      this.configService.get<string>("SONGLIST_URL") ?? DEFAULT_SONGLIST_URL;
+    return url.endsWith("/") ? url : `${url}/`;
   }
 
   /**
@@ -99,8 +138,9 @@ export class SongSyncService {
    */
   async updateSelectability(): Promise<void> {
     const songlistPage = await firstValueFrom(
-      this.httpService.get("https://songlist.ponytyler.de/", {
+      this.httpService.get(this.songlistUrl(), {
         responseType: "text",
+        timeout: HTTP_TIMEOUT_MS,
       }),
     );
     const localSongs = await this.songService.songs({});
@@ -112,29 +152,30 @@ export class SongSyncService {
       ),
     );
 
-    await Promise.all(
-      localSongs
-        .map((localSong: Song) => ({
-          localSong,
-          shouldBeSelectable: cloudSongNames.has(
-            this.cleanSongname(this.songToString(localSong)),
-          ),
-        }))
-        .filter(
-          ({ localSong, shouldBeSelectable }) =>
-            localSong.selectable !== shouldBeSelectable,
-        )
-        .map(({ localSong, shouldBeSelectable }) =>
-          this.songService.updateSong({
-            where: { id: localSong.id },
-            data: { selectable: shouldBeSelectable },
-          }),
-        ),
-    );
+    const idsToMakeSelectable: number[] = [];
+    const idsToMakeUnselectable: number[] = [];
+    for (const localSong of localSongs) {
+      const shouldBeSelectable = cloudSongNames.has(
+        this.cleanSongname(this.songToString(localSong)),
+      );
+      if (localSong.selectable !== shouldBeSelectable) {
+        (shouldBeSelectable ? idsToMakeSelectable : idsToMakeUnselectable).push(
+          localSong.id,
+        );
+      }
+    }
+
+    await this.updateSelectable(idsToMakeSelectable, true);
+    await this.updateSelectable(idsToMakeUnselectable, false);
   }
 
   private cleanSongname(name: string): string {
-    return name.replace("[PT]", "").replace("[PTHQ]", "").toLowerCase().trim();
+    return name
+      .replaceAll("[PT]", "")
+      .replaceAll("[PTHQ]", "")
+      .replace(/\s+/g, " ")
+      .toLowerCase()
+      .trim();
   }
 
   /**

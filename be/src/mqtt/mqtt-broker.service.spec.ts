@@ -1,11 +1,10 @@
 import { Test, TestingModule } from "@nestjs/testing";
 import { ConfigService } from "@nestjs/config";
-import { ShowState } from "@prisma/client";
+import { RaceState, ShowState } from "@prisma/client";
 import * as mqtt from "mqtt";
 import { MqttBrokerService } from "./mqtt-broker.service";
 import { RaceService } from "../prisma-api/race.service";
 import { ShowService } from "../prisma-api/show.service";
-import { RaceState } from "../race/race-state.enum";
 
 const TEST_MQTT_PORT = 18830;
 const TEST_MQTT_WS_PORT = 18831;

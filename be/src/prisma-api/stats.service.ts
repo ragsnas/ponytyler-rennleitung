@@ -18,6 +18,8 @@ export interface BikeWonCount {
   timesWon: number;
 }
 
+const DEFAULT_RANKING_LIMIT = 100;
+
 @Injectable()
 export class StatsService {
   constructor(private prisma: PrismaService) {}
@@ -25,109 +27,58 @@ export class StatsService {
   private readonly logger = new Logger(StatsService.name);
 
   /**
-   * Mirrors prisma/sql/mostPlayedSongs.sql. Kept as a plain $queryRaw
-   * (rather than Prisma's typedSql codegen) because typedSql needs a live,
-   * schema-matching database at `prisma generate` time, which isn't
-   * available during the backend's Docker build (see be/Dockerfile).
+   * Every time a song was picked, from either position of a race: one row per
+   * pick. All ranking queries are built on this so song 1 and song 2 picks
+   * are always counted together.
    */
-  mostPlayedSongs() {
+  private static readonly PICKS = Prisma.sql`
+    picks AS (
+      SELECT r."song1Id" AS "songId", r.raced FROM "Race" r WHERE r."song1Id" IS NOT NULL
+      UNION ALL
+      SELECT r."song2Id" AS "songId", r.raced FROM "Race" r WHERE r."song2Id" IS NOT NULL
+    )
+  `;
+
+  /** Songs ranked by how often they were raced; at most `limit` rows. */
+  mostPlayedSongs(limit = DEFAULT_RANKING_LIMIT) {
     return this.prisma.$queryRaw<SongPlayCount[]>(Prisma.sql`
-      SELECT
-        s.artist, s.name, stats."totalCount" AS "totalCount"
-      FROM "Song" s
-        INNER JOIN (
-          SELECT
-            (COALESCE(s1."songId", s2."songId")) AS "songId",
-            (COALESCE(s1."countSong1",0)+COALESCE(s2."countSong2",0)) AS "totalCount"
-          FROM (
-            SELECT
-              r."song1Id" AS "songId",
-              COUNT(r."song1Id")::int AS "countSong1"
-            FROM "Race" r
-            WHERE r.raced = true
-            GROUP BY r."song1Id"
-          ) AS s1
-          LEFT OUTER JOIN (
-            SELECT
-              r."song2Id" AS "songId",
-              COUNT(r."song2Id")::int AS "countSong2"
-            FROM "Race" r
-            WHERE r.raced = true
-            GROUP BY r."song2Id"
-          ) AS s2 ON (s1."songId" = s2."songId")
-        ) as stats ON (s.id = stats."songId")
-      ORDER BY stats."totalCount" DESC
+      WITH ${StatsService.PICKS}
+      SELECT s.artist, s.name, COUNT(*)::int AS "totalCount"
+      FROM picks p
+        INNER JOIN "Song" s ON s.id = p."songId"
+      WHERE p.raced = true
+      GROUP BY s.id, s.artist, s.name
+      ORDER BY "totalCount" DESC, s.artist, s.name
+      LIMIT ${limit}
     `);
   }
 
-  /**
-   * Mirrors prisma/sql/mostWishedSongs.sql. Kept as a plain $queryRaw (see
-   * mostPlayedSongs() above for why).
-   */
-  mostWishedSongs() {
+  /** Songs ranked by how often they were picked (raced or not); at most `limit` rows. */
+  mostWishedSongs(limit = DEFAULT_RANKING_LIMIT) {
     return this.prisma.$queryRaw<SongPlayCount[]>(Prisma.sql`
-      SELECT
-        s.artist, s.name, stats."totalCount" AS "totalCount"
-      FROM "Song" s
-        INNER JOIN (
-          SELECT
-            (COALESCE(s1."songId", s2."songId")) AS "songId",
-            (COALESCE(s1."countSong1",0)+COALESCE(s2."countSong2",0)) AS "totalCount"
-          FROM (
-            SELECT
-              r."song1Id" AS "songId",
-              COUNT(r."song1Id")::int AS "countSong1"
-            FROM "Race" r
-            GROUP BY r."song1Id"
-          ) AS s1
-          LEFT OUTER JOIN (
-            SELECT
-              r."song2Id" AS "songId",
-              COUNT(r."song2Id")::int AS "countSong2"
-            FROM "Race" r
-            GROUP BY r."song2Id"
-          ) AS s2 ON (s1."songId" = s2."songId")
-        ) as stats ON (s.id = stats."songId")
-      ORDER BY stats."totalCount" DESC
+      WITH ${StatsService.PICKS}
+      SELECT s.artist, s.name, COUNT(*)::int AS "totalCount"
+      FROM picks p
+        INNER JOIN "Song" s ON s.id = p."songId"
+      GROUP BY s.id, s.artist, s.name
+      ORDER BY "totalCount" DESC, s.artist, s.name
+      LIMIT ${limit}
     `);
   }
 
-  /**
-   * Mirrors prisma/sql/neverWishedSongs.sql. Kept as a plain $queryRaw (see
-   * mostPlayedSongs() above for why).
-   */
+  /** Selectable songs nobody has ever picked, in either position. */
   neverWishedSongs() {
     return this.prisma.$queryRaw<Song[]>(Prisma.sql`
-      SELECT
-        s.artist, s.name
+      WITH ${StatsService.PICKS}
+      SELECT s.artist, s.name
       FROM "Song" s
-        LEFT JOIN (
-          SELECT
-            (COALESCE(s1."songId", s2."songId")) AS "songId",
-            (COALESCE(s1."countSong1",0)+COALESCE(s2."countSong2",0)) AS "totalCount"
-          FROM (
-            SELECT
-              r."song1Id" AS "songId",
-              COUNT(r."song1Id")::int AS "countSong1"
-            FROM "Race" r
-            GROUP BY r."song1Id"
-          ) AS s1
-          LEFT OUTER JOIN (
-            SELECT
-              r."song2Id" AS "songId",
-              COUNT(r."song2Id")::int AS "countSong2"
-            FROM "Race" r
-            GROUP BY r."song2Id"
-          ) AS s2 ON (s1."songId" = s2."songId")
-        ) as stats ON (s.id = stats."songId")
-      WHERE s.selectable = true AND s.deleted = false AND stats."totalCount" IS NULL
+      WHERE s.selectable = true
+        AND s.deleted = false
+        AND NOT EXISTS (SELECT 1 FROM picks p WHERE p."songId" = s.id)
+      ORDER BY s.artist, s.name
     `);
   }
 
-  /**
-   * Mirrors prisma/sql/whichBikeWonMost.sql. Kept as a plain $queryRaw (see
-   * mostPlayedSongs() above for why).
-   */
   whichBikeWonMost() {
     return this.prisma.$queryRaw<BikeWonCount[]>(Prisma.sql`
       SELECT
