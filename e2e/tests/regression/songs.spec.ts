@@ -1,4 +1,4 @@
-import { test, expect, Page, Locator, BrowserContext } from '@playwright/test';
+import { test, expect, rowByText, dismissSuccessSnackBar, uniqueName } from '../fixtures';
 
 /**
  * Exercises the Songs page end to end through the Angular frontend: adding a
@@ -11,51 +11,21 @@ import { test, expect, Page, Locator, BrowserContext } from '@playwright/test';
  * Syncing songs' selectability lives in song-selectability.spec.ts, since it
  * mutates every song globally.
  *
- * Ordering matters here: "finds and
- * merges duplicate songs" runs before the cloud sync so the duplicate
- * detection (an O(n^2) scan over all selectable songs) isn't slowed down by
- * however many songs the real cloud list happens to contain.
+ * Each test is independent (own page, unique names, seeding through the
+ * fixtures' API helper), so they can run in parallel.
  */
-
-const BACKEND_URL = 'http://localhost:3010';
 
 // Fixture songs served by the songlist stub (e2e/songlist-stub/songs.json).
 const STUB_ARTIST = 'Stub Artist';
 const STUB_LISTED_SONG = 'Stub Listed Song';
 const STUB_UNLISTED_SONG = 'Stub Unlisted Song';
 
-function rowByText(page: Page, text: string): Locator {
-  return page.locator('table tr', { hasText: text });
-}
-
-async function dismissSuccessSnackBar(page: Page): Promise<void> {
-  // .last(): a still-closing snackbar from a preceding action can briefly
-  // overlap with a freshly opened one, so anchor on the most recent.
-  const snackBarAction = page.locator('.mat-mdc-snack-bar-action button, button:has-text("OK")').last();
-  await snackBarAction.waitFor({ state: 'visible', timeout: 10000 });
-  await snackBarAction.click();
-}
-
-test.describe.serial('Songs', () => {
+test.describe('Songs', () => {
   test.setTimeout(120000);
 
-  const uniqueSuffix = Date.now();
-
-  let context: BrowserContext;
-  let page: Page;
-
-  test.beforeAll(async ({ browser }) => {
-    context = await browser.newContext();
-    page = await context.newPage();
-  });
-
-  test.afterAll(async () => {
-    await context.close();
-  });
-
-  test('adds a song', async () => {
-    const name = `E2E Song ${uniqueSuffix}`;
-    const artist = `E2E Artist ${uniqueSuffix}`;
+  test('adds a song', async ({ page }) => {
+    const name = uniqueName('E2E Song');
+    const artist = uniqueName('E2E Artist');
 
     await page.goto('/song', { waitUntil: 'networkidle' });
 
@@ -75,9 +45,9 @@ test.describe.serial('Songs', () => {
     await expect(row).toContainText('keyboard');
   });
 
-  test('syncs songs via file upload', async () => {
-    const artist = `E2E Upload Artist ${uniqueSuffix}`;
-    const name = `E2E Upload Song ${uniqueSuffix}`;
+  test('syncs songs via file upload', async ({ page }) => {
+    const artist = uniqueName('E2E Upload Artist');
+    const name = uniqueName('E2E Upload Song');
     const fileName = `${artist} - ${name}.mp3`;
 
     await page.goto('/song/sync', { waitUntil: 'networkidle' });
@@ -102,19 +72,17 @@ test.describe.serial('Songs', () => {
     await expect(row).toContainText('file_upload');
   });
 
-  test('finds and merges duplicate songs', async ({ request }) => {
-    const artist = `E2E Duplicate Artist ${uniqueSuffix}`;
+  test('finds and merges duplicate songs', async ({ page, api }) => {
+    const artist = uniqueName('E2E Duplicate Artist');
+    const suffix = uniqueName('');
     // A single middle-character edit (e -> o) gives a Levenshtein distance
     // of 1, well under the page's default threshold of 6, while keeping
     // neither name a substring of the other.
-    const nameA = `Thunder Strike ${uniqueSuffix}`;
-    const nameB = `Thundor Strike ${uniqueSuffix}`;
+    const nameA = `Thunder Strike${suffix}`;
+    const nameB = `Thundor Strike${suffix}`;
 
     for (const name of [nameA, nameB]) {
-      const response = await request.post(`${BACKEND_URL}/api/song`, {
-        data: { name, artist, selectable: true },
-      });
-      expect(response.status()).toBe(201);
+      await api.createSong({ name, artist, selectable: true });
     }
 
     await page.goto('/song/duplicates', { waitUntil: 'networkidle' });
@@ -137,7 +105,7 @@ test.describe.serial('Songs', () => {
     await expect(rowByText(page, originalName)).toContainText('check_box');
   });
 
-  test('syncs songs via the cloud songlist', async () => {
+  test('syncs songs via the cloud songlist', async ({ page }) => {
     await page.goto('/song', { waitUntil: 'networkidle' });
 
     await page.locator('button:has-text("Sync Songs")').click();

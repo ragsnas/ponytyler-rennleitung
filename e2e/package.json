@@ -6,7 +6,7 @@
     "test": "npm run test:smoke",
     "test:smoke": "cross-env E2E_SUITE=smoke playwright test",
     "test:regression": "cross-env E2E_SUITE=regression playwright test",
-    "test:all": "cross-env E2E_SUITE=all playwright test",
+    "test:all": "npm run docker:down && cross-env E2E_SUITE=all playwright test",
     "test:ui": "cross-env E2E_SUITE=all playwright test --ui",
     "test:debug": "cross-env E2E_SUITE=all playwright test --debug",
     "docker:up": "docker-compose -f ../docker-compose.e2e.yml up --build --abort-on-container-exit",

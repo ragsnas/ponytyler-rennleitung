@@ -35,21 +35,27 @@ Plan for splitting the Playwright e2e tests into two suites. Status as of 2026-1
 - Cloud sync and selectability specs now assert fixed fixture songs ("Stub Listed Song", "Stub Unlisted Song"). Written test-first: they failed against the live site, then passed with the stub.
 - New spec: a blocked song that is on the cloud list is re-enabled. It also covers `[PT]` name normalisation.
 
+### Step 3: shared fixtures
+
+- `tests/fixtures/` (import `test`/`expect` from there): `api` (seed and clean up show, song, race, winner), `mqttPublisher` (TCP port 3011: bike status, finish, race and show state changes, raw payloads), `uniqueName`, `exclusiveRaceState`, plus the shared UI helpers `rowByText` and `dismissSuccessSnackBar`. Documented in `e2e/README.md`.
+- `tests/regression/fixtures.spec.ts` tests the fixtures themselves (written first and watched fail). It caught two wrong assumptions about the backend: deleting a missing show returns 500, and the backend derives `LISTED` vs `WAITING_FOR_OPPONENT` itself.
+- `songs.spec.ts` and `show-dashboard.spec.ts` no longer use `describe.serial`. Every test is independent and seeds through the API. The dashboard tests use the UI only for the action under test, which answers the open question about API seeding.
+- **Global backend invariant found:** setting a race to an active state (`RACING`, `RACED`) resets every other such race in the whole DB to `LISTED` (`RaceService.resetOtherActiveRaces`). Parallel winner tests failed intermittently because of it (2 of 5 `all` runs). Tests that set or read such a race now request the `exclusiveRaceState` lock fixture. Every future winner/MQTT spec in step 4 must do the same.
+- `uniqueName` has no hyphens: the song file sync mangles them in `<artist> - <name>.mp3`.
+- `pickSong` retypes until the option shows up, to survive a rare autocomplete filter race.
+
+### Fresh database for `test:all`
+
+- `test:all` runs `docker:down` first (`down -v`), so a release run always starts from an empty database instead of reusing a warm stack. Verified with a marker show created before the run: gone afterwards, 45 passed on the fresh stack. `test`, `test:smoke` and `test:regression` still reuse a running stack for quick iteration.
+
 ### Verification
 
-- `npm run test:all` on a fresh stack: 30 passed.
-- `npm run test:regression` run twice on the warm stack: 16 passed both times.
+- `npm run test:all` on a fresh stack: 30 passed (after steps 1 and 2).
+- After step 3, `test:all` on the warm stack: 45 passed, 7 runs in a row. The dashboard spec repeated 12 times in parallel: 120 passed.
 
 ## Next steps
 
 Write the regression specs one area at a time, test-first. Each new spec should first be shown to fail against a deliberately missing or broken behaviour.
-
-### 3. Shared fixtures (`tests/fixtures/`)
-
-- API seeding helpers (show, song, race) so regression tests set up state through REST and use the UI only for the thing under test.
-- MQTT publisher helper (TCP port 3011).
-- Unique-name helper to isolate tests from each other.
-- Convert `show-dashboard.spec.ts` and `songs.spec.ts` away from `describe.serial` chains where practical.
 
 ### 4. Scenario matrix for `tests/regression/`
 
@@ -64,14 +70,9 @@ Write the regression specs one area at a time, test-first. Each new spec should 
 - Retries (1–2 in CI) with traces on.
 - `workers: 1` for the state-heavy specs, since they share the DB.
 - Longer timeouts (120s+) where needed.
-- Decide whether regression should always start from a fresh DB (`npm run docker:down` first, or a script wrapper).
 
 ### 6. Optional
 
 - A single `@live` smoke test against the real `songlist.ponytyler.de`, off by default.
 - CI wiring: smoke on every push, `test:all` on release branches or tags.
 
-## Open questions
-
-- Should `show-dashboard` keep its UI-driven setup, or move to API seeding once the fixtures exist (step 3)?
-- Should `test:all` always tear the stack down first for a clean database?

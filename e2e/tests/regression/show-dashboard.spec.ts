@@ -1,29 +1,17 @@
-import { test, expect, Page, Locator, BrowserContext } from '@playwright/test';
+import { test, expect, rowByText, dismissSuccessSnackBar, uniqueName, Page, Show, Song } from '../fixtures';
 
 /**
  * Exercises the Show Dashboard page end to end through the Angular frontend:
- * creating a show, adding races, editing a race's songs and rider names,
+ * creating a show, adding a race, editing a race's songs and rider names,
  * merging two races that are waiting for an opponent, reordering races,
  * marking each bike (and both bikes) as the winner, and deleting (canceling)
  * a race.
  *
- * The suite runs as one serial journey against a single page/show, mirroring
- * ../../be/test/rest-api-lifecycle.e2e-spec.ts on the frontend side. Songs
- * are seeded directly via the backend REST API (see backend-rest-api.spec.ts)
- * since song selection isn't itself under test here - the goal is to drive
- * the dashboard's own actions through the UI.
+ * Every test is independent: it seeds its own show, songs and races through
+ * the backend REST API (the `api` fixture, cleaned up afterwards) and uses
+ * the UI only for the action under test. The first two tests create their
+ * show / race through the UI, since that is what they cover.
  */
-
-const BACKEND_URL = 'http://localhost:3010';
-
-interface SeededSong {
-  name: string;
-  artist: string;
-}
-
-function rowByText(page: Page, text: string): Locator {
-  return page.locator('table tr', { hasText: text });
-}
 
 function waitForSongOptionsLoaded(page: Page) {
   // The song autocomplete only (re-)filters its options when its own input
@@ -35,14 +23,22 @@ function waitForSongOptionsLoaded(page: Page) {
   return page.waitForResponse((response) => response.url().includes('/api/song/selectable') && response.ok());
 }
 
-async function pickSong(page: Page, songFieldLabel: string, song: SeededSong): Promise<void> {
+async function pickSong(page: Page, songFieldLabel: string, song: Pick<Song, 'name'>): Promise<void> {
   const input = page.locator('lib-song-auto-complete', { hasText: songFieldLabel }).locator('input');
-  await input.click();
-  await input.fill(song.name);
   // Match on the (unique) song name rather than the full "artist - name" role
   // name: an option can carry extra icon text (e.g. a "warning" icon for a
   // song already wished for elsewhere), which breaks an exact accessible-name match.
-  await page.locator('mat-option').filter({ hasText: song.name }).first().click();
+  const option = page.locator('mat-option').filter({ hasText: song.name }).first();
+  // Retyping re-runs the autocomplete's filter, which recovers the rare case
+  // where it was first applied before the selectable-songs list had arrived
+  // (see waitForSongOptionsLoaded).
+  await expect(async () => {
+    await input.click();
+    await input.fill('');
+    await input.fill(song.name);
+    await expect(option).toBeVisible({ timeout: 3000 });
+  }).toPass({ timeout: 30000 });
+  await option.click();
 }
 
 async function waitForRaceFormLoaded(page: Page): Promise<void> {
@@ -55,45 +51,24 @@ async function waitForRaceFormLoaded(page: Page): Promise<void> {
   await expect(person1Input).not.toHaveValue('', { timeout: 10000 });
 }
 
-async function dismissSuccessSnackBar(page: Page): Promise<void> {
-  // .last(): a still-closing snackbar from a preceding action can briefly
-  // overlap with a freshly opened one, so anchor on the most recent.
-  const snackBarAction = page.locator('.mat-mdc-snack-bar-action button, button:has-text("OK")').last();
-  await snackBarAction.waitFor({ state: 'visible', timeout: 10000 });
-  await snackBarAction.click();
+/**
+ * Opens the dashboard of a seeded show. The dashboard's own polling refresh
+ * is turned off so it can't interfere with the interactions; every action
+ * already reloads the race list itself once it completes.
+ */
+async function openDashboard(page: Page, show: Pick<Show, 'id' | 'name'>): Promise<void> {
+  await page.goto(`/show/${show.id}`, { waitUntil: 'networkidle' });
+  await expect(page.getByText(show.name)).toBeVisible({ timeout: 10000 });
+  await page.locator('#show-dashboard-refresh-setting-dropdown mat-select').click();
+  await page.getByRole('option', { name: 'Stopp' }).click();
 }
 
-test.describe.serial('Show Dashboard', () => {
+test.describe('Show Dashboard', () => {
   test.setTimeout(120000);
 
-  const uniqueSuffix = Date.now();
-  const showName = `E2E Dashboard Show ${uniqueSuffix}`;
+  test('creates a new show', async ({ page, api }) => {
+    const showName = uniqueName('E2E Dashboard Show');
 
-  const songs: SeededSong[] = Array.from({ length: 9 }, (_, i) => ({
-    name: `E2E Dashboard Song ${uniqueSuffix}-${i}`,
-    artist: `E2E Dashboard Artist ${uniqueSuffix}`,
-  }));
-
-  let context: BrowserContext;
-  let page: Page;
-
-  test.beforeAll(async ({ browser, request }) => {
-    for (const song of songs) {
-      const response = await request.post(`${BACKEND_URL}/api/song`, {
-        data: { name: song.name, artist: song.artist },
-      });
-      expect(response.status()).toBe(201);
-    }
-
-    context = await browser.newContext();
-    page = await context.newPage();
-  });
-
-  test.afterAll(async () => {
-    await context.close();
-  });
-
-  test('creates a new show', async () => {
     await page.goto('/', { waitUntil: 'networkidle' });
     await page.waitForTimeout(1500);
 
@@ -110,48 +85,48 @@ test.describe.serial('Show Dashboard', () => {
 
     await dismissSuccessSnackBar(page);
     await page.waitForURL(/\/show\/\d+$/, { timeout: 15000 });
+    api.adoptShow(Number(page.url().match(/\/show\/(\d+)$/)![1]));
     await expect(page.getByText(showName)).toBeVisible({ timeout: 10000 });
-
-    // Avoid the dashboard's own polling refresh interfering with the
-    // interactions below by turning it off; every action already reloads
-    // the race list itself once it completes.
-    await page.locator('#show-dashboard-refresh-setting-dropdown mat-select').click();
-    await page.getByRole('option', { name: 'Stopp' }).click();
   });
 
-  test('creates races for the show', async () => {
-    const races = [
-      { person1: `Runner A1 ${uniqueSuffix}`, song1: songs[0], person2: `Runner A2 ${uniqueSuffix}`, song2: songs[1] },
-      { person1: `Runner B1 ${uniqueSuffix}`, song1: songs[2], person2: `Runner B2 ${uniqueSuffix}`, song2: songs[3] },
-      { person1: `Runner F1 ${uniqueSuffix}`, song1: songs[4], person2: `Runner F2 ${uniqueSuffix}`, song2: songs[5] },
-    ];
+  test('creates a race for the show', async ({ page, api }) => {
+    const show = await api.createShow();
+    const song1 = await api.createSong();
+    const song2 = await api.createSong();
+    const person1 = uniqueName('Runner A1');
+    const person2 = uniqueName('Runner A2');
+    await openDashboard(page, show);
 
-    for (const race of races) {
-      const songOptionsLoaded = waitForSongOptionsLoaded(page);
-      await page.locator('button:has-text("Add Race for this Show")').click();
-      await page.waitForSelector('input[formControlName="person1"]', { timeout: 10000 });
-      await songOptionsLoaded;
+    const songOptionsLoaded = waitForSongOptionsLoaded(page);
+    await page.locator('button:has-text("Add Race for this Show")').click();
+    await page.waitForSelector('input[formControlName="person1"]', { timeout: 10000 });
+    await songOptionsLoaded;
 
-      await page.locator('input[formControlName="person1"]').fill(race.person1);
-      await pickSong(page, 'Song for Black Bike', race.song1);
-      await page.locator('input[formControlName="person2"]').fill(race.person2);
-      await pickSong(page, 'Song for White Bike', race.song2);
+    await page.locator('input[formControlName="person1"]').fill(person1);
+    await pickSong(page, 'Song for Black Bike', song1);
+    await page.locator('input[formControlName="person2"]').fill(person2);
+    await pickSong(page, 'Song for White Bike', song2);
 
-      const saveButton = page.locator('button:has-text("Speichern")');
-      await expect(saveButton).toBeEnabled();
-      await saveButton.click();
-      await dismissSuccessSnackBar(page);
-      await page.waitForURL(/\/show\/\d+$/, { timeout: 15000 });
+    const saveButton = page.locator('button:has-text("Speichern")');
+    await expect(saveButton).toBeEnabled();
+    await saveButton.click();
+    await dismissSuccessSnackBar(page);
+    await page.waitForURL(/\/show\/\d+$/, { timeout: 15000 });
 
-      await expect(rowByText(page, race.person1)).toBeVisible({ timeout: 10000 });
-      await expect(rowByText(page, race.person1)).toContainText(race.person2);
-      await expect(rowByText(page, race.person1)).toContainText(race.song1.name);
-      await expect(rowByText(page, race.person1)).toContainText(race.song2.name);
-    }
+    const row = rowByText(page, person1);
+    await expect(row).toBeVisible({ timeout: 10000 });
+    await expect(row).toContainText(person2);
+    await expect(row).toContainText(song1.name);
+    await expect(row).toContainText(song2.name);
   });
 
-  test("edits a race's songs", async () => {
-    const person1 = `Runner A1 ${uniqueSuffix}`;
+  test("edits a race's songs", async ({ page, api }) => {
+    const show = await api.createShow();
+    const oldSong = await api.createSong();
+    const newSong = await api.createSong();
+    const person1 = uniqueName('Runner A1');
+    await api.createRace(show, { person1, song1: oldSong, person2: uniqueName('Runner A2'), song2: await api.createSong() });
+    await openDashboard(page, show);
     const row = rowByText(page, person1);
 
     const songOptionsLoaded = waitForSongOptionsLoaded(page);
@@ -159,23 +134,30 @@ test.describe.serial('Show Dashboard', () => {
     await waitForRaceFormLoaded(page);
     await songOptionsLoaded;
 
-    await pickSong(page, 'Song for Black Bike', songs[6]);
+    await pickSong(page, 'Song for Black Bike', newSong);
 
     await page.locator('button:has-text("Speichern")').click();
     await dismissSuccessSnackBar(page);
     await page.waitForURL(/\/show\/\d+$/, { timeout: 15000 });
 
-    await expect(row).toContainText(songs[6].name);
-    await expect(row).not.toContainText(songs[0].name);
+    await expect(row).toContainText(newSong.name);
+    await expect(row).not.toContainText(oldSong.name);
   });
 
-  test("edits a race's rider names", async () => {
-    const oldPerson1 = `Runner A1 ${uniqueSuffix}`;
-    const newPerson1 = `Runner A1 Updated ${uniqueSuffix}`;
-    const newPerson2 = `Runner A2 Updated ${uniqueSuffix}`;
-    const row = rowByText(page, oldPerson1);
+  test("edits a race's rider names", async ({ page, api }) => {
+    const show = await api.createShow();
+    const oldPerson1 = uniqueName('Runner A1');
+    await api.createRace(show, {
+      person1: oldPerson1,
+      song1: await api.createSong(),
+      person2: uniqueName('Runner A2'),
+      song2: await api.createSong(),
+    });
+    const newPerson1 = uniqueName('Runner A1 Updated');
+    const newPerson2 = uniqueName('Runner A2 Updated');
+    await openDashboard(page, show);
 
-    await row.getByRole('button', { name: 'Edit Race' }).click();
+    await rowByText(page, oldPerson1).getByRole('button', { name: 'Edit Race' }).click();
     await waitForRaceFormLoaded(page);
 
     await page.locator('input[formControlName="person1"]').fill(newPerson1);
@@ -190,25 +172,13 @@ test.describe.serial('Show Dashboard', () => {
     await expect(updatedRow).toContainText(newPerson2);
   });
 
-  test('merges two races that are waiting for an opponent', async () => {
-    const soloC = `Solo C ${uniqueSuffix}`;
-    const soloD = `Solo D ${uniqueSuffix}`;
-
-    for (const [person1, song] of [[soloC, songs[7]], [soloD, songs[8]]] as const) {
-      const songOptionsLoaded = waitForSongOptionsLoaded(page);
-      await page.locator('button:has-text("Add Race for this Show")').click();
-      await page.waitForSelector('input[formControlName="person1"]', { timeout: 10000 });
-      await songOptionsLoaded;
-
-      await page.locator('input[formControlName="person1"]').fill(person1);
-      await pickSong(page, 'Song for Black Bike', song);
-
-      const saveButton = page.locator('button:has-text("Speichern")');
-      await expect(saveButton).toBeEnabled();
-      await saveButton.click();
-      await dismissSuccessSnackBar(page);
-      await page.waitForURL(/\/show\/\d+$/, { timeout: 15000 });
-    }
+  test('merges two races that are waiting for an opponent', async ({ page, api }) => {
+    const show = await api.createShow();
+    const soloC = uniqueName('Solo C');
+    const soloD = uniqueName('Solo D');
+    await api.createRace(show, { person1: soloC, song1: await api.createSong() });
+    await api.createRace(show, { person1: soloD, song1: await api.createSong() });
+    await openDashboard(page, show);
 
     const soloCRow = rowByText(page, soloC);
     await expect(soloCRow).toContainText('WAITING_FOR_OPPONENT');
@@ -222,9 +192,19 @@ test.describe.serial('Show Dashboard', () => {
     await expect(mergedRow).toContainText('LISTED');
   });
 
-  test('moves a race up and down in the order', async () => {
-    const personB1 = `Runner B1 ${uniqueSuffix}`;
-    const personF1 = `Runner F1 ${uniqueSuffix}`;
+  test('moves a race up and down in the order', async ({ page, api }) => {
+    const show = await api.createShow();
+    const personB1 = uniqueName('Runner B1');
+    const personF1 = uniqueName('Runner F1');
+    for (const person1 of [personB1, personF1]) {
+      await api.createRace(show, {
+        person1,
+        song1: await api.createSong(),
+        person2: uniqueName('Runner 2'),
+        song2: await api.createSong(),
+      });
+    }
+    await openDashboard(page, show);
 
     const orderNumberOf = async (person: string): Promise<number> => {
       const text = await rowByText(page, person).locator('td').first().innerText();
@@ -242,14 +222,24 @@ test.describe.serial('Show Dashboard', () => {
     await expect.poll(() => orderNumberOf(personF1)).toEqual(orderBBefore);
     await expect.poll(() => orderNumberOf(personB1)).toEqual(orderFBefore);
 
-    // Move it back down so later tests can rely on a known order.
     await rowByText(page, personF1).getByRole('button', { name: 'Move Race Down' }).click();
     await dismissSuccessSnackBar(page);
+
+    await expect.poll(() => orderNumberOf(personF1)).toEqual(orderFBefore);
+    await expect.poll(() => orderNumberOf(personB1)).toEqual(orderBBefore);
   });
 
-  test('sets a race with bike 1 (black bike) won', async () => {
-    const personB1 = `Runner B1 ${uniqueSuffix}`;
-    const personB2 = `Runner B2 ${uniqueSuffix}`;
+  test('sets a race with bike 1 (black bike) won', async ({ page, api, exclusiveRaceState }) => {
+    const show = await api.createShow();
+    const personB1 = uniqueName('Runner B1');
+    const personB2 = uniqueName('Runner B2');
+    await api.createRace(show, {
+      person1: personB1,
+      song1: await api.createSong(),
+      person2: personB2,
+      song2: await api.createSong(),
+    });
+    await openDashboard(page, show);
     const row = rowByText(page, personB1);
 
     await row.locator('td.song-column button.bike-won-button').nth(0).click();
@@ -260,22 +250,38 @@ test.describe.serial('Show Dashboard', () => {
     await expect(row.locator('.losing-bike')).toContainText(personB2);
   });
 
-  test('sets a race with bike 2 (white bike) won', async () => {
-    const soloC = `Solo C ${uniqueSuffix}`;
-    const soloD = `Solo D ${uniqueSuffix}`;
-    const row = rowByText(page, soloC);
+  test('sets a race with bike 2 (white bike) won', async ({ page, api, exclusiveRaceState }) => {
+    const show = await api.createShow();
+    const person1 = uniqueName('Runner C1');
+    const person2 = uniqueName('Runner C2');
+    await api.createRace(show, {
+      person1,
+      song1: await api.createSong(),
+      person2,
+      song2: await api.createSong(),
+    });
+    await openDashboard(page, show);
+    const row = rowByText(page, person1);
 
     await row.locator('td.song-column button.bike-won-button').nth(1).click();
     await dismissSuccessSnackBar(page);
 
     await expect(row).toContainText('RACED');
-    await expect(row.locator('.winning-bike')).toContainText(soloD);
-    await expect(row.locator('.losing-bike')).toContainText(soloC);
+    await expect(row.locator('.winning-bike')).toContainText(person2);
+    await expect(row.locator('.losing-bike')).toContainText(person1);
   });
 
-  test('sets a race with both bikes won', async () => {
-    const person1 = `Runner A1 Updated ${uniqueSuffix}`;
-    const person2 = `Runner A2 Updated ${uniqueSuffix}`;
+  test('sets a race with both bikes won', async ({ page, api, exclusiveRaceState }) => {
+    const show = await api.createShow();
+    const person1 = uniqueName('Runner A1');
+    const person2 = uniqueName('Runner A2');
+    await api.createRace(show, {
+      person1,
+      song1: await api.createSong(),
+      person2,
+      song2: await api.createSong(),
+    });
+    await openDashboard(page, show);
     const row = rowByText(page, person1);
 
     await row.getByRole('button', { name: 'Songs Beide' }).click();
@@ -288,8 +294,16 @@ test.describe.serial('Show Dashboard', () => {
     await expect(winningBikes.nth(1)).toContainText(person2);
   });
 
-  test('deletes a race', async () => {
-    const person1 = `Runner F1 ${uniqueSuffix}`;
+  test('deletes a race', async ({ page, api }) => {
+    const show = await api.createShow();
+    const person1 = uniqueName('Runner F1');
+    await api.createRace(show, {
+      person1,
+      song1: await api.createSong(),
+      person2: uniqueName('Runner F2'),
+      song2: await api.createSong(),
+    });
+    await openDashboard(page, show);
     const row = rowByText(page, person1);
 
     await expect(row).not.toContainText('CANCELED');

@@ -28,7 +28,7 @@ regression.
 npm test                # = npm run test:smoke
 npm run test:smoke      # happy path only
 npm run test:regression # hardened suite only
-npm run test:all        # smoke, then regression (run this before a release)
+npm run test:all        # smoke, then regression, on a fresh stack and database (run this before a release)
 ```
 
 Each of these will:
@@ -63,6 +63,22 @@ This opens the Playwright inspector for step-by-step debugging.
   spec sees (e.g. flipping `selectable` on all songs) must be matched by the
   `global-mutations` project in `playwright.config.ts`, which runs last.
 
+### Shared fixtures (`tests/fixtures/`)
+
+Regression specs import `test` and `expect` from `../fixtures` instead of
+`@playwright/test`. Set state up through REST and use the UI only for the
+thing under test.
+
+- `api` - `createShow`, `createSong`, `createRace(show, { person1, song1, person2, song2 })`, `setWinner`, `adoptShow(id)` (for a show created through the UI). Names default to unique ones, and everything is deleted again after the test.
+- `mqttPublisher` - publishes to the broker on TCP port 3011: `publishBikeStatus`, `publishBikeFinished`, `publishRaceStateChange`, `publishShowStateChange`, or `publish(topic, payload)` for anything else (a string payload is sent as is, e.g. garbage).
+- `uniqueName(prefix)` - a name that is unique across tests, workers and re-runs. It contains no hyphens, because the song file sync mangles them.
+- `exclusiveRaceState` - **request it in any test that sets a race to `RACING`/`RACED` or reads one back.** The backend keeps only one such race in the whole database and resets every other one to `LISTED`, so two such tests in parallel would undo each other. The fixture holds a lock across workers for the duration of the test.
+- `rowByText` and `dismissSuccessSnackBar` - UI helpers shared by the specs.
+
+`tests/regression/fixtures.spec.ts` tests the fixtures themselves.
+
+Specs should not rely on each other: no `describe.serial` chains, each test seeds what it needs.
+
 ## Test Files
 
 ### `tests/smoke/`
@@ -75,7 +91,8 @@ This opens the Playwright inspector for step-by-step debugging.
 
 ### `tests/regression/`
 
-- `show-dashboard.spec.ts` - Exercises the Show Dashboard page end to end: creating a show, adding races, editing a race's songs and rider names, merging two races waiting for an opponent, reordering races, marking each bike (and both bikes) as the winner, and deleting (canceling) a race
+- `show-dashboard.spec.ts` - Exercises the Show Dashboard page end to end: creating a show, adding a race, editing a race's songs and rider names, merging two races waiting for an opponent, reordering races, marking each bike (and both bikes) as the winner, and deleting (canceling) a race. Independent tests, seeded through the `api` fixture
+- `fixtures.spec.ts` - Self-test of the shared fixtures (unique names, API seeding, race-state lock, MQTT publisher)
 - `songs.spec.ts` - Exercises the Songs page end to end: adding a song directly, syncing songs from local files ("DJ Notebook" upload), finding/merging duplicate songs, and syncing songs from the cloud songlist (the stub, see below)
 - `song-selectability.spec.ts` - Syncs songs' selectability against the cloud songlist. This flips the selectable flag on every song, so it runs in a separate `global-mutations` Playwright project after all other regression specs
 
