@@ -10,25 +10,43 @@ cd e2e
 npm install
 ```
 
+## Two Suites
+
+| Suite | Folder | Purpose | When to run |
+|---|---|---|---|
+| **smoke** | `tests/smoke/` | Happy path: checks basic functionality | Day to day, after every change |
+| **regression** | `tests/regression/` | Hardened scenarios (song sync, shows, races, state management, export, ...) | Before a production release |
+
+Both run against the same docker stack. The suite is selected through the
+`E2E_SUITE` env var, which the npm scripts set for you (a bare
+`npx playwright test` runs smoke only). `all` runs smoke first, then
+regression.
+
 ## Running Tests
 
-### Run all tests
 ```bash
-npm test
+npm test                # = npm run test:smoke
+npm run test:smoke      # happy path only
+npm run test:regression # hardened suite only
+npm run test:all        # smoke, then regression (run this before a release)
 ```
 
-This will:
-1. Start the dedicated e2e stack via `docker-compose.e2e.yml` (backend, frontend, postgres — the backend also hosts the embedded MQTT broker)
+Each of these will:
+1. Start the dedicated e2e stack via `docker-compose.e2e.yml` (backend, frontend, postgres, songlist stub — the backend also hosts the embedded MQTT broker), or reuse it if it is already up
 2. Wait for all services to be healthy
-3. Run all Playwright tests
+3. Run the selected tests
 4. Generate an HTML report in `playwright-report/`
+
+Because a running stack is reused, its database keeps whatever earlier runs
+left behind. For a clean regression run, tear it down first
+(`npm run docker:down`).
 
 ### Run tests in UI mode (interactive)
 ```bash
 npm run test:ui
 ```
 
-This opens an interactive Playwright UI where you can watch tests run and debug them.
+This opens an interactive Playwright UI (all suites) where you can watch tests run and debug them.
 
 ### Run tests in debug mode
 ```bash
@@ -37,16 +55,29 @@ npm run test:debug
 
 This opens the Playwright inspector for step-by-step debugging.
 
+### Where does a new test go?
+
+- Simple "does the basic thing work" check → `tests/smoke/`.
+- Edge cases, error paths, multi-step scenarios, anything that mutates
+  shared state → `tests/regression/`. Specs that change state every other
+  spec sees (e.g. flipping `selectable` on all songs) must be matched by the
+  `global-mutations` project in `playwright.config.ts`, which runs last.
+
 ## Test Files
 
-- `tests/create-show.spec.ts` - Tests creating a new show through the UI
-- `tests/show-dashboard.spec.ts` - Exercises the Show Dashboard page end to end: creating a show, adding races, editing a race's songs and rider names, merging two races waiting for an opponent, reordering races, marking each bike (and both bikes) as the winner, and deleting (canceling) a race
-- `tests/songs.spec.ts` - Exercises the Songs page end to end: adding a song directly, syncing songs from local files ("DJ Notebook" upload), finding/merging duplicate songs, and syncing songs from the real cloud songlist (songlist.ponytyler.de)
-- `tests/song-selectability.spec.ts` - Syncs songs' selectability against the cloud songlist. This flips the selectable flag on every song, so it runs in a separate `global-mutations` Playwright project after all other specs
-- `tests/main-navigation.spec.ts` - Happy path: all 6 main navigation entries (Shows, Songs, Views, Users, Statistiken, MQTT Broker) can be navigated to and each page shows its correct title
-- `tests/backend-rest-api.spec.ts` - Exercises the backend REST API directly (show/song/race create, update, race winner, delete lifecycle), bypassing the frontend
-- `tests/mqtt-broker.spec.ts` - Publishes a message directly to the backend's embedded MQTT broker (over plain TCP, port 3011) and verifies it shows up live on the "MQTT Broker" page
-- `tests/health-check.spec.ts` - Verifies the backend's `/api/health` endpoint returns 200 OK, and that the frontend header shows no warning while the backend is healthy
+### `tests/smoke/`
+
+- `health-check.spec.ts` - Verifies the backend's `/api/health` endpoint returns 200 OK, and that the frontend header shows no warning while the backend is healthy
+- `main-navigation.spec.ts` - All 6 main navigation entries (Shows, Songs, Views, Users, Statistiken, MQTT Broker) can be navigated to and each page shows its correct title
+- `create-show.spec.ts` - Tests creating a new show through the UI
+- `backend-rest-api.spec.ts` - Exercises the backend REST API directly (show/song/race create, update, race winner, delete lifecycle), bypassing the frontend
+- `mqtt-broker.spec.ts` - Publishes a message directly to the backend's embedded MQTT broker (over plain TCP, port 3011) and verifies it shows up live on the "MQTT Broker" page
+
+### `tests/regression/`
+
+- `show-dashboard.spec.ts` - Exercises the Show Dashboard page end to end: creating a show, adding races, editing a race's songs and rider names, merging two races waiting for an opponent, reordering races, marking each bike (and both bikes) as the winner, and deleting (canceling) a race
+- `songs.spec.ts` - Exercises the Songs page end to end: adding a song directly, syncing songs from local files ("DJ Notebook" upload), finding/merging duplicate songs, and syncing songs from the cloud songlist (the stub, see below)
+- `song-selectability.spec.ts` - Syncs songs' selectability against the cloud songlist. This flips the selectable flag on every song, so it runs in a separate `global-mutations` Playwright project after all other regression specs
 
 ## Prerequisites
 
@@ -62,10 +93,22 @@ suite — separate from the `docker-compose.yml` used for local development:
   the dev stack without clashing.
 - Different host ports (frontend `4210`, backend `3010`/`3011`, postgres
   `5433`) for the same reason.
-- No bind mounts — images are built fresh from the committed source, so the
-  suite runs against exactly what's in the repo (add `--build` if you've
-  changed code and containers are already up).
+- No bind mounts for application code — images are built fresh from the
+  committed source, so the suite runs against exactly what's in the repo
+  (add `--build` if you've changed code and containers are already up).
+  The one exception is the songlist stub's fixture folder, mounted read-only.
 - Postgres data lives in `tmpfs`, so every run starts from an empty database.
+
+### The songlist stub
+
+The backend syncs songs from a cloud songlist (`SONGLIST_URL`, default
+`https://songlist.ponytyler.de`). In the e2e stack `SONGLIST_URL` points at
+`songlist-stub` (`e2e/songlist-stub/`), a dependency-free Node server that
+serves the songs in `songs.json` in the same two formats as the real site
+(HTML page at `/`, JSON at `/api/index.php`). The tests therefore never
+depend on the live site being up or its content staying the same. To test
+another cloud scenario, add songs to `songs.json` (status `listed` or
+`unlisted`; only listed songs appear on the HTML page).
 
 ## How It Works
 

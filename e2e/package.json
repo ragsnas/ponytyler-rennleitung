@@ -3,14 +3,18 @@
   "version": "1.0.0",
   "description": "E2E tests for PonyTyler Rennleitung",
   "scripts": {
-    "test": "playwright test",
-    "test:ui": "playwright test --ui",
-    "test:debug": "playwright test --debug",
+    "test": "npm run test:smoke",
+    "test:smoke": "cross-env E2E_SUITE=smoke playwright test",
+    "test:regression": "cross-env E2E_SUITE=regression playwright test",
+    "test:all": "cross-env E2E_SUITE=all playwright test",
+    "test:ui": "cross-env E2E_SUITE=all playwright test --ui",
+    "test:debug": "cross-env E2E_SUITE=all playwright test --debug",
     "docker:up": "docker-compose -f ../docker-compose.e2e.yml up --build --abort-on-container-exit",
     "docker:down": "docker-compose -f ../docker-compose.e2e.yml down -v"
   },
   "devDependencies": {
     "@playwright/test": "^1.48.2",
+    "cross-env": "^10.1.0",
     "mqtt": "^5.16.0"
   }
 }

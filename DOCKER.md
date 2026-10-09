@@ -180,8 +180,9 @@ If ports are already in use:
 above (own container names, network, and host ports: frontend `4210`,
 backend `3010`/`3011`, postgres `5433`) so both can run at the same time, and
 its Postgres data lives in `tmpfs` so every run starts empty. Playwright
-starts and tears it down automatically via `npm test` in `e2e/`; to drive it
-by hand:
+starts it automatically via `npm run test:smoke` (happy path) or
+`npm run test:regression` / `npm run test:all` (hardened suite, before a release)
+in `e2e/`; to drive it by hand:
 
 ```bash
 cd e2e

@@ -3,9 +3,11 @@ import { test, expect, Page, Locator, BrowserContext } from '@playwright/test';
 /**
  * Exercises the Songs page end to end through the Angular frontend: adding a
  * song directly, syncing songs from local files ("DJ Notebook" upload),
- * finding/merging duplicate songs, syncing songs from the real cloud
- * songlist (https://songlist.ponytyler.de, the same site the app itself
- * integrates with - see be/src/cron/song-sync/song-sync.service.ts).
+ * finding/merging duplicate songs, syncing songs from the cloud
+ * songlist (https://songlist.ponytyler.de in production, the same site the app itself
+ * integrates with - see be/src/cron/song-sync/song-sync.service.ts). In the
+ * e2e stack the backend's SONGLIST_URL points at the songlist stub
+ * (e2e/songlist-stub), so the cloud list is a fixed, known set of songs.
  * Syncing songs' selectability lives in song-selectability.spec.ts, since it
  * mutates every song globally.
  *
@@ -16,6 +18,11 @@ import { test, expect, Page, Locator, BrowserContext } from '@playwright/test';
  */
 
 const BACKEND_URL = 'http://localhost:3010';
+
+// Fixture songs served by the songlist stub (e2e/songlist-stub/songs.json).
+const STUB_ARTIST = 'Stub Artist';
+const STUB_LISTED_SONG = 'Stub Listed Song';
+const STUB_UNLISTED_SONG = 'Stub Unlisted Song';
 
 function rowByText(page: Page, text: string): Locator {
   return page.locator('table tr', { hasText: text });
@@ -140,16 +147,22 @@ test.describe.serial('Songs', () => {
     await expect(page.getByText('Cloud Song Sync finished.')).toBeVisible({ timeout: 30000 });
     await dismissSuccessSnackBar(page);
 
-    // Not asserting "a new song appeared": the backend also runs this same
-    // sync on its own 30-minute cron (see SongSyncService.handleCron), so by
-    // the time this test runs, everything from the cloud list may already
-    // be present locally and this trigger is a no-op. Also, the sync
-    // creates missing songs in the background without awaiting each write
-    // before responding, so the list only catches up eventually. Instead,
-    // just confirm cloud-origin songs exist at all - proof the sync (this
-    // run's or the cron's) actually populated something.
-    await page.goto('/song', { waitUntil: 'networkidle' });
-    const cloudOriginIcons = page.locator('tr[mat-row] mat-icon', { hasText: 'cloud' });
-    await expect(cloudOriginIcons.first()).toBeVisible({ timeout: 30000 });
+    // The sync creates missing songs in the background without awaiting each
+    // write before responding, so the list only catches up eventually.
+    for (const { name, icon } of [
+      { name: STUB_LISTED_SONG, icon: 'check_box' },
+      { name: STUB_UNLISTED_SONG, icon: 'block' },
+    ]) {
+      await expect(async () => {
+        await page.goto('/song', { waitUntil: 'networkidle' });
+        // Exact match: a leftover "<name> [PT]" row from another spec must not count.
+        const row = page.locator('table tr').filter({ has: page.getByText(name, { exact: true }) });
+        await expect(row).toBeVisible({ timeout: 2000 });
+        await expect(row).toContainText(STUB_ARTIST);
+        // FROM_CLOUD_SYNC origin icon, plus selectable (listed) or blocked (unlisted).
+        await expect(row).toContainText('cloud');
+        await expect(row).toContainText(icon);
+      }).toPass({ timeout: 30000 });
+    }
   });
 });

@@ -24,12 +24,28 @@ services:
       - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/ponytyler
       - MQTT_PORT=3001
       - MQTT_WS_PORT=3002
+      # Fixed song list instead of the live https://songlist.ponytyler.de
+      - SONGLIST_URL=http://songlist-stub:8080
     depends_on:
       postgres:
         condition: service_healthy
+      songlist-stub:
+        condition: service_started
     networks:
       - ponytyler-e2e-network
     command: sh -c "npx prisma generate && npx prisma db push && npm run start:dev"
+
+  # Stand-in for the cloud songlist (e2e/songlist-stub), so the song sync
+  # specs don't depend on the live site being up or unchanged.
+  songlist-stub:
+    image: node:26-alpine
+    container_name: ponytyler-songlist-stub-e2e
+    working_dir: /app
+    command: node server.js
+    volumes:
+      - ./e2e/songlist-stub:/app:ro
+    networks:
+      - ponytyler-e2e-network
 
   frontend:
     build:
