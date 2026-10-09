@@ -36,6 +36,8 @@ model Show {
   races           Race[]       @relation(name: "ShowToRace")
   shifts          Shift[]      @relation(name: "ShowToShift")
   encoreSongs     EncoreSong[] @relation(name: "ShowToEncoreSong")
+
+  @@index([active])
 }
 
 model Shift {
@@ -47,6 +49,8 @@ model Shift {
   shiftStarted  DateTime?
   shiftFinished DateTime?
   shiftRoles    ShiftRole[] @relation(name: "ShiftToShiftRole")
+
+  @@index([showId])
 }
 
 model ShiftRole {
@@ -57,6 +61,9 @@ model ShiftRole {
   user         User    @relation(name: "ShiftRoleToUser", fields: [userId], references: [id])
   userId       Int
   pastUserName String? // for saving userName of deleted users
+
+  @@index([shiftId])
+  @@index([userId])
 }
 
 model Song {
@@ -79,6 +86,8 @@ model EncoreSong {
   songId Int
   order  Int
 
+  @@index([showId])
+  @@index([songId])
   @@map("encore_songs")
 }
 
@@ -99,6 +108,10 @@ model Race {
   song2          Song?    @relation(name: "SongForPerson2", fields: [song2Id], references: [id])
   song2Id        Int?
   bikeWon        Int      @default(0)
+
+  @@index([showId, raceState, orderNumber])
+  @@index([song1Id])
+  @@index([song2Id])
 }
 
 enum RaceState {
