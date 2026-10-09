@@ -29,8 +29,6 @@ import { MatSelectModule } from "@angular/material/select";
 import { MatDialogModule } from "@angular/material/dialog";
 import { EditShowComponent } from "./edit-show/edit-show.component";
 import { MessageModule } from "projects/ui/message/src/public-api";
-import { ShiftFormComponent } from "./shift/shift-form.component";
-import { ShiftRoleFormComponent } from "./shift/shift-role-form.component";
 import { ShiftsDashboardComponent } from "./shifts/dashboard/shifts-dashboard.component";
 import { ChooseUsersComponent } from "./shifts/wizzard/steps/choose-users/choose-users.component";
 import { WizzardComponent } from "./shifts/wizzard/wizzard.component";
@@ -68,8 +66,6 @@ const routes: Routes = [
     AddEncoreComponent,
     UpdateRaceComponent,
     DirectorDashboardComponent,
-    ShiftFormComponent,
-    ShiftRoleFormComponent,
     ShiftsDashboardComponent,
     ChooseUsersComponent,
     ChooseShiftsComponent

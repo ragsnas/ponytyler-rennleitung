@@ -63,7 +63,6 @@ export class EditShowComponent implements OnInit {
       name,
       date: newDate,
       duration: Number(duration) || 0,
-      active: true,
       finished: this.show?.finished || false,
     }).subscribe({
       next: () => {
