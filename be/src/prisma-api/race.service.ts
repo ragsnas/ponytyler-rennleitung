@@ -47,28 +47,28 @@ export class RaceService implements OnModuleDestroy {
     });
   }
 
+  /** The next LISTED race of the current show; null without a current show or race. */
   async upcomingRaceWithSongs() {
-    const show = await this.showService.getCurrentShow();
-    return this.prisma.race.findFirst({
-      where: {
-        showId: Number(show.id),
-        raceState: { equals: RaceState.LISTED },
-      },
-      include: { song1: true, song2: true },
-      orderBy: { orderNumber: "asc" },
-    });
+    const query = await this.upcomingRacesQuery();
+    return query ? this.prisma.race.findFirst(query) : null;
   }
 
+  /** All LISTED races of the current show in running order; empty without a current show. */
   async upcomingRacesWithSongs() {
+    const query = await this.upcomingRacesQuery();
+    return query ? this.prisma.race.findMany(query) : [];
+  }
+
+  private async upcomingRacesQuery() {
     const show = await this.showService.getCurrentShow();
-    return this.prisma.race.findMany({
-      where: {
-        showId: Number(show.id),
-        raceState: { equals: RaceState.LISTED },
-      },
+    if (!show) {
+      return null;
+    }
+    return {
+      where: { showId: show.id, raceState: { equals: RaceState.LISTED } },
       include: { song1: true, song2: true },
       orderBy: { orderNumber: "asc" },
-    });
+    } satisfies Prisma.RaceFindManyArgs;
   }
 
   async races(params: {

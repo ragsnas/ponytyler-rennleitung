@@ -120,6 +120,32 @@ describe("RaceService", () => {
       );
     });
 
+    it("upcomingRaceWithSongs is null, without touching races, when there is no current show", async () => {
+      getCurrentShowMock.mockResolvedValue(null);
+
+      expect(await service.upcomingRaceWithSongs()).toBeNull();
+      expect(findFirstMock).not.toHaveBeenCalled();
+      expect(findManyMock).not.toHaveBeenCalled();
+    });
+
+    it("upcomingRacesWithSongs is empty, without touching races, when there is no current show", async () => {
+      getCurrentShowMock.mockResolvedValue(null);
+
+      expect(await service.upcomingRacesWithSongs()).toEqual([]);
+      expect(findManyMock).not.toHaveBeenCalled();
+    });
+
+    it("upcomingRaceWithSongs is the first of the upcoming races, by orderNumber", async () => {
+      await service.upcomingRaceWithSongs();
+
+      expect(findFirstMock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          include: { song1: true, song2: true },
+          orderBy: { orderNumber: "asc" },
+        }),
+      );
+    });
+
     it("upcomingRacesWithSongs looks in that show", async () => {
       await service.upcomingRacesWithSongs();
 
