@@ -18,18 +18,19 @@ it.
 
 ```jsonc
 {
-  "formatVersion": 1,
+  "formatVersion": 2,
   "exportedAt": "2026-09-13T18:46:27.073Z",
   "shows": [ /* Show rows, as in prisma/schema.prisma */ ],
   "shifts": [ /* Shift rows */ ],
   "shiftRoles": [ /* ShiftRole rows */ ],
   "songs": [ /* Song rows */ ],
   "races": [ /* Race rows */ ],
-  "users": [ /* { "id": number, "name": string } — see note below */ ]
+  "users": [ /* { "id": number, "name": string } — see note below */ ],
+  "encoreSongs": [ /* EncoreSong rows (formatVersion 2+) */ ]
 }
 ```
 
-- `formatVersion` identifies the shape of this document. It is bumped
+- `formatVersion` is `2` (`1` had no `encoreSongs`; the import still accepts it). It identifies the shape of this document. It is bumped
   whenever a field is added, renamed, or removed, so anything consuming the
   export (a script, the import endpoint, a support request) can tell which
   shape it's looking at.

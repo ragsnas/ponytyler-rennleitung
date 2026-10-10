@@ -11,6 +11,7 @@ describe("ExportService", () => {
   let songFindManyMock: jest.Mock;
   let raceFindManyMock: jest.Mock;
   let userFindManyMock: jest.Mock;
+  let encoreSongFindManyMock: jest.Mock;
 
   const shows = [{ id: 1 }];
   const shifts = [{ id: 2 }];
@@ -18,6 +19,7 @@ describe("ExportService", () => {
   const songs = [{ id: 4 }];
   const races = [{ id: 5 }];
   const users = [{ id: 6, name: "Alice" }];
+  const encoreSongs = [{ id: 7 }];
 
   beforeEach(async () => {
     showFindManyMock = jest.fn().mockResolvedValue(shows);
@@ -26,6 +28,7 @@ describe("ExportService", () => {
     songFindManyMock = jest.fn().mockResolvedValue(songs);
     raceFindManyMock = jest.fn().mockResolvedValue(races);
     userFindManyMock = jest.fn().mockResolvedValue(users);
+    encoreSongFindManyMock = jest.fn().mockResolvedValue(encoreSongs);
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -39,6 +42,7 @@ describe("ExportService", () => {
             song: { findMany: songFindManyMock },
             race: { findMany: raceFindManyMock },
             user: { findMany: userFindManyMock },
+            encoreSong: { findMany: encoreSongFindManyMock },
           },
         },
       ],
@@ -61,6 +65,9 @@ describe("ExportService", () => {
       orderBy: { id: "asc" },
       select: { id: true, name: true },
     });
+    expect(encoreSongFindManyMock).toHaveBeenCalledWith({
+      orderBy: { id: "asc" },
+    });
   });
 
   it("returns the current format version, an ISO timestamp, and all fetched rows", async () => {
@@ -75,5 +82,6 @@ describe("ExportService", () => {
     expect(result.songs).toBe(songs);
     expect(result.races).toBe(races);
     expect(result.users).toBe(users);
+    expect(result.encoreSongs).toBe(encoreSongs);
   });
 });

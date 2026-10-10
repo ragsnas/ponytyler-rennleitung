@@ -7,17 +7,19 @@ export class ExportService {
   constructor(private readonly prisma: PrismaService) {}
 
   async exportDatabase(): Promise<DatabaseExport> {
-    const [shows, shifts, shiftRoles, songs, races, users] = await Promise.all([
-      this.prisma.show.findMany({ orderBy: { id: "asc" } }),
-      this.prisma.shift.findMany({ orderBy: { id: "asc" } }),
-      this.prisma.shiftRole.findMany({ orderBy: { id: "asc" } }),
-      this.prisma.song.findMany({ orderBy: { id: "asc" } }),
-      this.prisma.race.findMany({ orderBy: { id: "asc" } }),
-      this.prisma.user.findMany({
-        orderBy: { id: "asc" },
-        select: { id: true, name: true },
-      }),
-    ]);
+    const [shows, shifts, shiftRoles, songs, races, users, encoreSongs] =
+      await Promise.all([
+        this.prisma.show.findMany({ orderBy: { id: "asc" } }),
+        this.prisma.shift.findMany({ orderBy: { id: "asc" } }),
+        this.prisma.shiftRole.findMany({ orderBy: { id: "asc" } }),
+        this.prisma.song.findMany({ orderBy: { id: "asc" } }),
+        this.prisma.race.findMany({ orderBy: { id: "asc" } }),
+        this.prisma.user.findMany({
+          orderBy: { id: "asc" },
+          select: { id: true, name: true },
+        }),
+        this.prisma.encoreSong.findMany({ orderBy: { id: "asc" } }),
+      ]);
 
     return {
       formatVersion: DATABASE_EXPORT_FORMAT_VERSION,
@@ -28,6 +30,7 @@ export class ExportService {
       songs,
       races,
       users,
+      encoreSongs,
     };
   }
 }

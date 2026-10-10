@@ -167,7 +167,7 @@ describe("Backend REST API lifecycle (e2e)", () => {
       .expect(200);
 
     exportSnapshot = response.body;
-    expect(exportSnapshot.formatVersion).toBe(1);
+    expect(exportSnapshot.formatVersion).toBe(2);
     expect(exportSnapshot.shows.map((show) => show.id)).toContain(showId);
     expect(exportSnapshot.songs.map((song) => song.id)).toContain(songId);
     expect(exportSnapshot.races.map((race) => race.id)).toEqual(

@@ -8,5 +8,8 @@ export interface DatabaseImportSummary {
     songs: number;
     races: number;
     users: number;
+    encoreSongs: number;
   };
+  /** File name of the snapshot of the previous database taken before the import. */
+  snapshot: string;
 }
