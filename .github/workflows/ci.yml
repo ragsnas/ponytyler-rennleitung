@@ -1,0 +1,99 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+# A newer push to the same ref makes the older run obsolete.
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  backend:
+    name: Backend (lint, build, test)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: be
+    env:
+      # prisma.config.ts needs DATABASE_URL to resolve; `prisma generate` and the
+      # unit tests never connect to it.
+      DATABASE_URL: postgresql://user:password@localhost:5432/db
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: be/package-lock.json
+      - run: npm ci
+      - run: npx prisma generate
+      # `npm run lint` uses --fix, which would hide problems in CI: check only.
+      - run: npx eslint "{src,apps,libs,test}/**/*.ts"
+      - run: npm run build
+      - run: npx jest
+
+  ui:
+    name: UI (lint, build, test)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ui/rl
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: ui/rl/package-lock.json
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run build
+      # Ubuntu 24.04 restricts unprivileged user namespaces, which Chrome's
+      # sandbox needs ("No usable sandbox!" in ChromeHeadless).
+      - name: Allow Chrome sandbox
+        run: sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
+      # Runs the tests of all projects, headless, once (see angular.json).
+      - run: npx ng test
+
+  e2e-smoke:
+    name: E2E smoke tests
+    runs-on: ubuntu-latest
+    needs: [backend, ui]
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: e2e
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: e2e/package-lock.json
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      # Build the images up front so the stack Playwright starts (webServer in
+      # playwright.config.ts, 3 minute timeout) only has to boot.
+      - name: Build e2e stack
+        run: docker compose -f ../docker-compose.e2e.yml build
+      # Playwright starts the stack itself (webServer) and runs the smoke suite.
+      - run: npm run test:smoke
+      - name: Show stack logs
+        if: failure()
+        run: docker compose -f ../docker-compose.e2e.yml logs --no-color
+      - name: Upload Playwright report
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: |
+            e2e/playwright-report/
+            e2e/test-results/
+          retention-days: 14
+          if-no-files-found: ignore

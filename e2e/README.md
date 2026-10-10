@@ -72,14 +72,15 @@ Regression specs import `test` and `expect` from `../fixtures` instead of
 `@playwright/test`. Set state up through REST and use the UI only for the
 thing under test.
 
-- `api` - `createShow`, `createSong`, `createRace(show, { person1, song1, person2, song2 })`, `setWinner`, `adoptShow(id)` (for a show created through the UI). Names default to unique ones, and everything is deleted again after the test.
+- `api` - `createShow`, `createSong`, `createRace(show, { person1, song1, person2, song2 })`, `createCompleteRace(show)`, `setWinner`, `adoptShow(id)` (for a show created through the UI), `getShow`/`getRace`, and for the state machine `startShow(show, state?)` (makes it THE live show), `stopAllShows()`, `setShowState`, `setRaceState`. Names default to unique ones, and everything is deleted again after the test.
+- `mqttListener` - records everything published on the broker (`messages(topic?)`, `waitFor(topic, matches?, timeoutMs?)`, `clear()`), to assert on the backend's announcements (`RaceStateChange`, `ShowStateChange`, `Bike/<n>/won`). It connects while a test still queues for a lock, so call `clear()` once you hold it before counting messages that carry no id.
 - `mqttPublisher` - publishes to the broker on TCP port 3011: `publishBikeStatus`, `publishBikeFinished`, `publishRaceStateChange`, `publishShowStateChange`, or `publish(topic, payload)` for anything else (a string payload is sent as is, e.g. garbage).
 - `uniqueName(prefix)` - a name that is unique across tests, workers and re-runs. It contains no hyphens, because the song file sync mangles them.
 - `distinctName(prefix)` - like `uniqueName`, but also far apart in edit distance from every other name. Use it for songs in duplicate-detection tests: the duplicates page pairs each song with its nearest neighbour in the whole database, and `uniqueName` values of two parallel tests are only a few characters apart.
 - `exclusiveSongs` - lock for `*.global.spec.ts` tests that change every song at once (blocking all missing songs, flipping `selectable` globally).
 - `songlist` - sets what the cloud songlist stub serves (`songlist.set([{ artist, title, status }])`) and restores the default list afterwards. Includes `exclusiveSongs`. Only for `*.global.spec.ts`: the regression specs read the default list.
 - `api.adoptSongsByArtist(artist)` - returns the songs of a (unique) artist and registers them for cleanup, for songs created through the UI, a file or the cloud sync.
-- `exclusiveRaceState` - **request it in any test that sets a race to `RACING`/`RACED` or reads one back.** The backend keeps only one such race in the whole database and resets every other one to `LISTED`, so two such tests in parallel would undo each other. The fixture holds a lock across workers for the duration of the test.
+- `exclusiveRaceState` - **request it in any test that sets a race to an active state (`WAITING_TO_RACE`, `RACING`, `RACED`, `ERROR`, `VIDEO_PLAYING`) or reads one back, that makes a show live or changes a live show's state, or that relies on the bike tracker.** The backend keeps only one active race and one active show in the whole database and resets every other one to `LISTED`, and the MQTT broker tracks one race at a time, so two such tests in parallel would undo each other. The fixture holds a lock across workers for the duration of the test (queuing for it does not count against the test timeout).
 - `rowByText` and `dismissSuccessSnackBar` - UI helpers shared by the specs.
 
 `tests/regression/fixtures.spec.ts` tests the fixtures themselves.
@@ -100,6 +101,10 @@ Specs should not rely on each other: no `describe.serial` chains, each test seed
 
 - `show-dashboard.spec.ts` - Exercises the Show Dashboard page end to end: creating a show, adding a race, editing a race's songs and rider names, merging two races waiting for an opponent, reordering races, marking each bike (and both bikes) as the winner, and deleting (canceling) a race. Independent tests, seeded through the `api` fixture
 - `fixtures.spec.ts` and `fixtures-songlist.global.spec.ts` - Self-tests of the shared fixtures (unique names, API seeding, locks, MQTT publisher, songlist stub control)
+- `race-state-machine.spec.ts` - Race states in the backend: announcements, one active race at a time (every state), free transitions, `LISTED` vs `WAITING_FOR_OPPONENT`, the current-race lookup
+- `show-state-machine.spec.ts` - Show states: announcements, one active show at a time (every state), free transitions, current show, and the shows page lifecycle (Start, Stop, Set finished, Re-Activate)
+- `state-machine-page.spec.ts` - The `/state-machine` page: button gating by race and show state, what each button does to race and show, live updates, the countdown that starts the race
+- `state-machine-winner.spec.ts` - Winner through the bike sensors (MQTT): bike 1, 2, both, sequence order, finish threshold, double winner, restart mid-race, next race, show not live, cancelled race
 - `song-file-sync.spec.ts` - Local file sync: creating songs from several files or a single one, tag and extension stripping, existing songs not offered again, selectable songs missing from the files. Also five `test.fail` tests for known defects (see the plan file)
 - `song-file-sync.global.spec.ts` - "Block all Songs, missing from File List" (blocks every selectable song without a file)
 - `song-cloud-sync.global.spec.ts` - Cloud sync against the stub: new, renamed, removed and listed-twice songs, case/tag-insensitive matching, selectable flips, running twice, empty list

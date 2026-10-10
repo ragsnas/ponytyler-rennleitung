@@ -83,6 +83,30 @@ test.describe('cross-worker lock', () => {
     await release();
   });
 
+  test('lets only one of many waiters take over a stale lock', async () => {
+    // The window is narrow, so many rounds, each with a freshly abandoned lock.
+    let maxHolders = 0;
+    for (let round = 0; round < 40; round++) {
+      const name = uniqueName('e2e-lock-stale-race').replace(/ /g, '-');
+      await acquireLock(name); // abandoned
+      await new Promise((resolve) => setTimeout(resolve, 40));
+
+      let holders = 0;
+      await Promise.all(
+        Array.from({ length: 8 }, async () => {
+          const release = await acquireLock(name, { pollMs: 1, staleMs: 30 });
+          holders += 1;
+          maxHolders = Math.max(maxHolders, holders);
+          await new Promise((resolve) => setTimeout(resolve, 8)); // held shorter than staleMs
+          holders -= 1;
+          await release();
+        }),
+      );
+    }
+
+    expect(maxHolders).toBe(1);
+  });
+
   test('gives up with a clear error after the timeout', async () => {
     const name = uniqueName('e2e-lock-timeout').replace(/ /g, '-');
     const release = await acquireLock(name);
@@ -207,6 +231,130 @@ test.describe('api seeding', () => {
     await request.delete(`${BACKEND_URL}/api/show/${show.id}`);
 
     await expect(api.cleanup()).resolves.toBeUndefined();
+  });
+});
+
+test.describe('show and race states', () => {
+  test('startShow makes a show the only live one, whatever was live before', async ({ api, request, exclusiveRaceState }) => {
+    const first = await api.createShow();
+    const second = await api.createShow();
+
+    await api.startShow(first);
+    await api.startShow(second);
+
+    const live: Array<{ id: number; showState: string }> = await (await request.get(`${BACKEND_URL}/api/show/current-shows`)).json();
+    expect(live.map((show) => show.id)).toEqual([second.id]);
+    expect(live[0].showState).toBe('BEFORE_RACE');
+  });
+
+  test('state changes survive other shows being deleted at that very moment', async ({ api, request, exclusiveRaceState }) => {
+    // The backend lists every show in an active state (every new show is one)
+    // to reset it, and fails the whole update if one of them is deleted meanwhile.
+    const show = await api.createShow();
+
+    for (let i = 0; i < 40; i++) {
+      const other = await (await request.post(`${BACKEND_URL}/api/show`, { data: { name: uniqueName('E2E Vanishing Show') } })).json();
+      await Promise.all([api.setShowState(show, i % 2 ? 'RACE' : 'BEFORE_RACE'), request.delete(`${BACKEND_URL}/api/show/${other.id}`)]);
+    }
+
+    expect(await api.getShow(show)).toMatchObject({ showState: 'RACE' });
+  });
+
+  test('startShow can start a show in another state', async ({ api, request, exclusiveRaceState }) => {
+    const show = await api.createShow();
+
+    await api.startShow(show, 'RACE');
+
+    expect(await api.getShow(show)).toMatchObject({ active: true, showState: 'RACE' });
+  });
+
+  test('setRaceState sends the stored riders and songs like the UI does, so a complete race stays LISTED', async ({ api, exclusiveRaceState }) => {
+    const show = await api.createShow();
+    const race = await api.createCompleteRace(show);
+
+    await api.setRaceState(race, 'CANCELED');
+    const relisted = await api.setRaceState(race, 'LISTED');
+
+    expect(relisted.raceState).toBe('LISTED');
+  });
+
+  test('stopAllShows leaves no live show', async ({ api, request, exclusiveRaceState }) => {
+    await api.startShow(await api.createShow());
+
+    await api.stopAllShows();
+
+    const live = await (await request.get(`${BACKEND_URL}/api/show/current-shows`)).json();
+    expect(live).toEqual([]);
+  });
+
+  test('createCompleteRace makes a LISTED race with both riders and songs', async ({ api }) => {
+    const show = await api.createShow();
+
+    const race = await api.createCompleteRace(show);
+
+    expect(race).toMatchObject({ showId: show.id, raceState: 'LISTED' });
+    expect(race.person1).toBeTruthy();
+    expect(race.person2).toBeTruthy();
+    expect(race.song1Id).toBeTruthy();
+    expect(race.song2Id).toBeTruthy();
+    expect(race.person1).not.toBe(race.person2);
+  });
+
+  test('setRaceState and setShowState change one state and return the stored entity', async ({ api, exclusiveRaceState }) => {
+    const show = await api.createShow();
+    const race = await api.createRace(show, { person1: 'A', person2: 'B', song1: await api.createSong(), song2: await api.createSong() });
+
+    expect(await api.setShowState(show, 'BEFORE_RACE')).toMatchObject({ id: show.id, showState: 'BEFORE_RACE' });
+    expect(await api.setRaceState(race, 'RACING')).toMatchObject({ id: race.id, raceState: 'RACING' });
+    expect(await api.getRace(race)).toMatchObject({ raceState: 'RACING', person1: 'A', person2: 'B' });
+  });
+});
+
+test.describe('mqtt listener', () => {
+  test('records what is published and waits for a matching message', async ({ mqttListener, mqttPublisher }) => {
+    const topic = 'E2E/fixtures/listener';
+    const waiting = mqttListener.waitFor(topic, (body) => (body as { n: number }).n === 2);
+
+    await mqttPublisher.publish(topic, { n: 1 });
+    await mqttPublisher.publish(topic, { n: 2 });
+    await mqttPublisher.publish(topic, 'not json');
+
+    expect(await waiting).toEqual({ n: 2 });
+    await expect.poll(() => mqttListener.messages(topic).map((m) => m.body)).toEqual([{ n: 1 }, { n: 2 }, 'not json']);
+  });
+
+  test('clear forgets what arrived so far, so a test can count only what comes after', async ({ mqttListener, mqttPublisher }) => {
+    const topic = 'E2E/fixtures/listener-clear';
+    await mqttPublisher.publish(topic, { before: true });
+    await mqttListener.waitFor(topic);
+
+    mqttListener.clear();
+    expect(mqttListener.messages(topic)).toEqual([]);
+
+    await mqttPublisher.publish(topic, { after: true });
+    expect(await mqttListener.waitFor(topic)).toEqual({ after: true });
+    expect(mqttListener.messages(topic)).toHaveLength(1);
+  });
+
+  test('sees the state changes the backend announces for REST updates', async ({ api, mqttListener, exclusiveRaceState }) => {
+    const show = await api.createShow();
+    const race = await api.createRace(show, { person1: 'A', person2: 'B', song1: await api.createSong(), song2: await api.createSong() });
+
+    await api.setRaceState(race, 'CANCELED');
+    await api.setShowState(show, 'BEFORE_RACE');
+
+    expect(await mqttListener.waitFor('RaceStateChange', (body) => (body as { raceId: string }).raceId === String(race.id))).toEqual({
+      raceId: String(race.id),
+      state: 'CANCELED',
+    });
+    expect(await mqttListener.waitFor('ShowStateChange', (body) => (body as { showId: string }).showId === String(show.id))).toEqual({
+      showId: String(show.id),
+      state: 'BEFORE_RACE',
+    });
+  });
+
+  test('fails with a readable error when nothing matching arrives', async ({ mqttListener }) => {
+    await expect(mqttListener.waitFor('E2E/fixtures/never', undefined, 200)).rejects.toThrow(/E2E\/fixtures\/never.*within 200ms/);
   });
 });
 

@@ -2,19 +2,21 @@ import { test as base } from '@playwright/test';
 import { createApi, SeedingApi } from './api';
 import { acquireLock } from './lock';
 import { createSonglist, Songlist } from './songlist';
-import { connectMqttPublisher, MqttPublisher } from './mqtt';
+import { connectMqttListener, connectMqttPublisher, MqttListener, MqttPublisher } from './mqtt';
 
 export { expect } from '@playwright/test';
 export type { Page } from '@playwright/test';
 export { BACKEND_URL, createApi } from './api';
 export type { Race, RaceOptions, SeedingApi, Show, Song } from './api';
-export { connectMqttPublisher, FINISH_PULSECOUNT, MQTT_TCP_URL } from './mqtt';
-export type { BikeId, BikeStatus, MqttPublisher } from './mqtt';
+export { connectMqttListener, connectMqttPublisher, FINISH_PULSECOUNT, MQTT_TCP_URL, pause } from './mqtt';
+export type { BikeId, BikeStatus, MqttListener, MqttPublisher, ReceivedMessage } from './mqtt';
 export { acquireLock } from './lock';
 export { SONGLIST_URL } from './songlist';
 export type { CloudSong, Songlist } from './songlist';
 export { chooseSyncFiles, dismissSuccessSnackBar, rowByText, syncListItem } from './ui';
 export { distinctName, uniqueName } from './unique';
+
+const LOCK_FIXTURE_TIMEOUT_MS = 10 * 60 * 1000;
 
 /**
  * `test` with the shared fixtures:
@@ -24,13 +26,19 @@ export { distinctName, uniqueName } from './unique';
  *  - `mqttPublisher`: a connection to the backend broker for publishing
  *                     sensor and state messages, closed after the test.
  *
+ *  - `mqttListener`:  records what is published on the broker (state changes,
+ *                     "bike won"), for asserting on the backend's announcements.
  *  - `exclusiveRaceState`: opt-in. Holds a lock across all workers for the
  *                     duration of the test. Use it in any test that sets a
- *                     race to RACING or RACED, or that reads such a race back:
- *                     the backend allows only ONE such race in the whole
- *                     database and resets every other one to LISTED
- *                     (RaceService.resetOtherActiveRaces), so two of these
- *                     tests running in parallel would undo each other.
+ *                     race to RACING or RACED, or that reads such a race back,
+ *                     and in any test that makes a show live or changes a
+ *                     live show's state, or relies on the bike tracker. The
+ *                     backend allows only ONE active race and ONE active show
+ *                     in the whole database and resets every other one to
+ *                     LISTED (RaceService.resetOtherActiveRaces,
+ *                     ShowService.resetOtherActiveShows), and the MQTT broker
+ *                     tracks one race at a time, so two such tests running in
+ *                     parallel would undo each other.
  *
  *  - `exclusiveSongs`: opt-in lock across workers, for tests that change
  *                     every song at once (flipping `selectable` globally,
@@ -45,18 +53,32 @@ export { distinctName, uniqueName } from './unique';
 export const test = base.extend<{
   api: SeedingApi;
   mqttPublisher: MqttPublisher;
+  mqttListener: MqttListener;
   exclusiveRaceState: void;
   exclusiveSongs: void;
   songlist: Songlist;
 }>({
-  exclusiveSongs: async ({}, use) => {
-    const release = await acquireLock('songs');
+  mqttListener: async ({}, use) => {
+    const listener = await connectMqttListener();
     try {
-      await use();
+      await use(listener);
     } finally {
-      await release();
+      await listener.close();
     }
   },
+
+  exclusiveSongs: [
+    async ({}, use) => {
+      const release = await acquireLock('songs');
+      try {
+        await use();
+      } finally {
+        await release();
+      }
+    },
+    // Queuing for the lock must not eat the test's own timeout.
+    { timeout: LOCK_FIXTURE_TIMEOUT_MS },
+  ],
 
   songlist: async ({ request, exclusiveSongs }, use) => {
     const songlist = createSonglist(request);
@@ -67,14 +89,17 @@ export const test = base.extend<{
     }
   },
 
-  exclusiveRaceState: async ({}, use) => {
-    const release = await acquireLock('race-state');
-    try {
-      await use();
-    } finally {
-      await release();
-    }
-  },
+  exclusiveRaceState: [
+    async ({}, use) => {
+      const release = await acquireLock('race-state');
+      try {
+        await use();
+      } finally {
+        await release();
+      }
+    },
+    { timeout: LOCK_FIXTURE_TIMEOUT_MS },
+  ],
 
   api: async ({ request }, use) => {
     const api = createApi(request);

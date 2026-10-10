@@ -74,7 +74,7 @@ export default defineConfig({
   projects,
 
   webServer: {
-    command: `cd ${path.join(__dirname, '..')} && docker-compose -f docker-compose.e2e.yml up --build --abort-on-container-exit`,
+    command: `cd ${path.join(__dirname, '..')} && docker compose -f docker-compose.e2e.yml up --build --abort-on-container-exit`,
     url: 'http://localhost:4210',
     reuseExistingServer: !process.env.CI,
     timeout: 180 * 1000, // 3 minutes for services to start

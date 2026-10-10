@@ -70,6 +70,37 @@ Behaviour I characterised but did not call a defect (worth a look):
 - The cloud sync never blocks or removes a song that disappears from the cloud list, and a renamed cloud song becomes a second song; only "Update Selecability" blocks the old one.
 - The duplicates page pairs every song with its nearest neighbour in the whole database (O(n²)), so unrelated tests' songs can show up as pairs.
 
+### Step 4b: state machine scenario
+
+What the state machine is here: the backend has **no transition rules** (any state can be PATCHed from any other), so "valid and invalid transitions" are decided in three places, and each is covered.
+
+- **Backend invariants** (`race-state-machine.spec.ts`, 17 tests; `show-state-machine.spec.ts`, 18): a change is announced on MQTT once and a repeat is not; only one active race (and one active show) in the whole DB, tested for **every** state as the entering state (the others are reset to `LISTED` and announced); all 81 race transitions and 121 show transitions are accepted; `LISTED` vs `WAITING_FOR_OPPONENT` follows the riders and songs sent with the update; the current-race and current-show lookups.
+- **The `/state-machine` page** (`state-machine-page.spec.ts`, 11 tests): which buttons are enabled in every race state and every show state, the text for every show state and for the in-show race states, what play/stop/skip/lyrics/check do to race and show (and the announcements), live updates over MQTT, and the countdown that starts the race by itself.
+- **The shows page lifecycle**: Start Show, Stop Show, Set Show to finished, Re-Activate Show, and a second show taking over.
+- **Winner through the bike sensors** (`state-machine-winner.spec.ts`, 11 tests plus 1 known defect): bike 1, bike 2, both, lower sequence number wins, finish threshold 120/121, double winner, tracker restart mid-race (the pending decision is dropped), the next race gets its own winner, no winner when the show is not live, none on a cancelled race, and the page celebrates.
+- **Infrastructure:** fixtures `mqttListener`, `api.startShow/stopAllShows/setShowState/setRaceState/createCompleteRace/getRace/getShow`. `exclusiveRaceState` now also covers the live show and the bike tracker, and the lock fixtures have their own 10 minute timeout, because about 70 tests queue for them. The lock's stale takeover is now serialized (see below).
+- **Verified by mutation:** I broke fifteen behaviours on purpose (RACED not an active race state, announcing every PATCH, no show reset, a LISTED show counting as current, the fallback current race ascending, no LISTED normalisation, reversed winner order, no double-winner guard, tracker reset doing nothing, the page's play/stop gating, skip setting LISTED, "done" leaving the show in RACE, the lyrics button gate, no live reload on a race change, Stop Show keeping the show active) and confirmed tests failed for each (33 failures in the combined run, plus one mutation run on its own).
+
+Bugs found in the test infrastructure (fixed, with a regression test each):
+
+- `setRaceState` sent only the state, which the backend reads as "a race without riders" and turned into `WAITING_FOR_OPPONENT`. It now sends the stored riders and songs, as the UI does.
+- When several waiters found a stale lock at once, a late one could remove the lock another had just taken, so two tests held it together (seen once as a cascade of failures after an interrupted run). Takeovers now go one at a time. The self-test was red about one run in three before.
+- A live show listed by the next lock holder could be deleted at that moment by the previous test's cleanup; `startShow`/`stopAllShows` now tolerate a show that is gone.
+- **A backend race:** every new show starts as `BEFORE_SHOW`, which counts as an active state, so any show update lists and resets every such show of every test, and the whole update fails with a 500 when one of them is deleted in between. It showed up as `PATCH /api/show/<id>` failing in the `startShow` self-test (twice in about twelve full runs). The `patch` helper now retries a 500 (the updates are idempotent). The self-test "state changes survive other shows being deleted at that very moment" failed 3 of 3 before the fix and passes 5 of 5 after. The same code would fail a real operator's update if a show were deleted at that moment, which is unlikely in production.
+
+#### Defects found
+
+- **A winner can land on a race that never started** (`state-machine-winner.spec.ts`, `test.fail`): when the current race was cancelled and another race is waiting behind it, finish messages mark that waiting race `RACED` with a winner. "The current race" falls back to the last `LISTED` race when none is active.
+- **The page may keep showing the finished race** after "lyrics" or skip (`state-machine-page.spec.ts`, `test.fixme`, intermittent, 1 in 12 runs): the backend announces the new state before the update's response arrives, so the page's reload by id and its reload of "the current race of the show" race each other.
+
+Behaviour I characterised but did not call a defect (worth a look):
+
+- **Marking a race `RACED` resets every other `RACED` race, in any show, to `LISTED`** until it is set to `DONE`. In the show dashboard, marking several races as won one after another therefore reverts the earlier ones; the old serial dashboard spec never noticed.
+- The current race falls back to the **last** `LISTED` race (highest order number), so the state machine page's play button starts the last race of the show, not the first.
+- A show reset by another show taking over keeps `active: true`, so more than one show can be `active`, and `/api/show/current-show` then returns the oldest of them.
+- The backend accepts any state for any race or show, including nonsense such as `RACED` on a cancelled race.
+- Stop Show/Start Show on the shows page do not touch the races of the show.
+
 ### Fresh database for `test:all`
 
 - `test:all` runs `docker:down` first (`down -v`), so a release run always starts from an empty database instead of reusing a warm stack. Verified with a marker show created before the run: gone afterwards, 45 passed on the fresh stack. `test`, `test:smoke` and `test:regression` still reuse a running stack for quick iteration.
@@ -79,6 +110,7 @@ Behaviour I characterised but did not call a defect (worth a look):
 - `npm run test:all` on a fresh stack: 30 passed (after steps 1 and 2).
 - After step 3, `test:all` on the warm stack: 45 passed, 7 runs in a row. The dashboard spec repeated 12 times in parallel: 120 passed.
 - After step 4a, `test:all` on a fresh stack: 77 passed (the 5 known defects count as passed), 3 runs in a row.
+- After step 4b, `test:all` on a fresh stack: 147 passed (6 known defects count as passed, 1 `fixme` skipped), 4 runs in a row after the last fix. Before it, two of about twelve runs failed in the `startShow` self-test because of the backend race above, and one run showed a cascade of 13 failures in the lock-guarded tests that I could not reproduce afterwards (the stale-lock takeover race and this one are the likely causes; both are fixed). One start of the docker stack failed with "No such container" right after `down -v`; that is docker-compose, not a test.
 
 ## Next steps
 
@@ -87,7 +119,6 @@ Write the regression specs one area at a time, test-first. Each new spec should 
 ### 4. Scenario matrix for `tests/regression/`
 
 - **Shows and races:** create, edit, reorder, merge two waiting races, delete a race that has a winner, the same song twice in one show, deleting a show that has races.
-- **State machine:** every valid and invalid transition for show and race, double winner, winner on a cancelled race, tracker restart mid-race.
 - **MQTT:** out-of-order, duplicate and garbage messages, reconnects, TCP and WebSocket listeners. Cover the full path MQTT publish → race state → UI and winner → export.
 - **Export and import:** export after each scenario above, import into an empty DB (round-trip equality), import over existing data, corrupt file.
 

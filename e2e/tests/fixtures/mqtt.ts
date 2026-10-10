@@ -51,3 +51,69 @@ export async function connectMqttPublisher(url: string = MQTT_TCP_URL) {
 }
 
 export type MqttPublisher = Awaited<ReturnType<typeof connectMqttPublisher>>;
+
+export const pause = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
+
+export interface ReceivedMessage {
+  topic: string;
+  /** The parsed JSON payload, or the raw text when it is not JSON (an empty payload is ''). */
+  body: unknown;
+}
+
+/**
+ * Records everything published on the backend broker, to assert on the
+ * announcements (state changes, "bike won") the backend makes. It sees all
+ * traffic, including other tests', so match on ids.
+ */
+export async function connectMqttListener(url: string = MQTT_TCP_URL) {
+  const client = mqtt.connect(url);
+  const received: ReceivedMessage[] = [];
+  client.on('message', (topic, payload) => {
+    const text = payload.toString();
+    let body: unknown = text;
+    try {
+      body = JSON.parse(text);
+    } catch {
+      // not JSON: keep the text
+    }
+    received.push({ topic, body });
+  });
+  await new Promise<void>((resolve, reject) => {
+    client.once('error', reject);
+    client.once('connect', () => client.subscribe('#', (err) => (err ? reject(err) : resolve())));
+  });
+
+  return {
+    /**
+     * Forgets everything received so far. The listener connects while a test
+     * still queues for a lock, so call this once the test holds it, before
+     * counting messages that carry no id (e.g. "Bike/1/won").
+     */
+    clear: (): void => {
+      received.length = 0;
+    },
+
+    /** What arrived so far, optionally only for one topic. */
+    messages: (topic?: string): ReceivedMessage[] => received.filter((message) => topic === undefined || message.topic === topic),
+
+    /** Resolves with the body of the first message on the topic (including ones already received) that matches. */
+    async waitFor(topic: string, matches: (body: unknown) => boolean = () => true, timeoutMs = 10000): Promise<unknown> {
+      const deadline = Date.now() + timeoutMs;
+      for (;;) {
+        const found = received.find((message) => message.topic === topic && matches(message.body));
+        if (found) {
+          return found.body;
+        }
+        if (Date.now() > deadline) {
+          const seen = received.filter((message) => message.topic === topic).map((message) => JSON.stringify(message.body));
+          throw new Error(`no matching message on "${topic}" within ${timeoutMs}ms (seen on that topic: [${seen.join(', ')}])`);
+        }
+        await pause(25);
+      }
+    },
+
+    close: () => client.endAsync(true),
+  };
+}
+
+export type MqttListener = Awaited<ReturnType<typeof connectMqttListener>>;
