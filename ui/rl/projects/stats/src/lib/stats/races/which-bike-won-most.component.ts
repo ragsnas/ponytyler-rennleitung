@@ -1,6 +1,7 @@
 import { Component, OnInit, ChangeDetectionStrategy } from "@angular/core";
 import { ActivatedRoute } from "@angular/router";
 import { StatisticsService, WhichBikeWonMost } from "../../../../../backend-api/src/lib/statistics.service";
+import { bikeWonLabel } from "../../../../../backend-api/src/lib/bike-won";
 import { map, Observable, tap } from "rxjs";
 
 export type WhichBikeWonMostUi = {
@@ -18,14 +19,6 @@ export type WhichBikeWonMostUi = {
 export class WhichBikeWonMostComponent implements OnInit {
   whichBikeWonMostComponent$: Observable<WhichBikeWonMostUi[]> | undefined;
 
-  bikeWonMapping: Map<number, string> = new Map(
-    [
-      [0, "Not Raced"],
-      [1, "White Bike Won"],
-      [2, "Black Bike Won"],
-      [3, "Both Songs Played"],
-    ]);
-
   constructor(
     private route: ActivatedRoute,
     private statisticsService: StatisticsService) {
@@ -37,7 +30,7 @@ export class WhichBikeWonMostComponent implements OnInit {
       .pipe(
         map((bikeWonMostStats: WhichBikeWonMost[]) =>
           bikeWonMostStats.map((bikeWonMostStat: WhichBikeWonMost) => ({
-            bikeWon: this.bikeWonMapping.get(bikeWonMostStat.bikeWon) || "",
+            bikeWon: bikeWonLabel(bikeWonMostStat.bikeWon),
             timesWon: bikeWonMostStat.timesWon,
           })),
         ),

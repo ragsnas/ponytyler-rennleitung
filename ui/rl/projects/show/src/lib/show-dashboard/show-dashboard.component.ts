@@ -1,6 +1,7 @@
 import { Component, OnDestroy, OnInit, ChangeDetectionStrategy, computed, signal } from "@angular/core";
 import { ActivatedRoute, ParamMap, Router } from "@angular/router";
 import { Race, RaceService, RaceState } from "projects/backend-api/src/lib/race.service";
+import { BikeWon } from "projects/backend-api/src/lib/bike-won";
 import { StatisticsService } from "projects/backend-api/src/lib/statistics.service";
 import { Show, ShowService, ShowState } from "projects/backend-api/src/lib/show.service";
 import { EncoreSong, EncoreSongService } from "projects/backend-api/src/lib/encore-song.service";
@@ -214,7 +215,7 @@ export class ShowDashboardComponent implements OnInit, OnDestroy {
         ...race,
         raced: true,
         raceState: RaceState.RACED,
-        bikeWon: 3,
+        bikeWon: BikeWon.BOTH,
       } as Race)
       .subscribe({
         next: () => {
@@ -251,7 +252,7 @@ export class ShowDashboardComponent implements OnInit, OnDestroy {
 
   markRaceAsNotRaced(race: Race): void {
     this.raceService
-      .updateRace({ ...race, raced: false, bikeWon: 0, raceState: RaceState.LISTED } as Race)
+      .updateRace({ ...race, raced: false, bikeWon: BikeWon.NOT_RACED, raceState: RaceState.LISTED } as Race)
       .subscribe({
         next: () => {
           this.snackBar.open(`Marked Race as NOT over`, "OK", { panelClass: "success", duration: 250 });
@@ -287,9 +288,9 @@ export class ShowDashboardComponent implements OnInit, OnDestroy {
 
   private getSongAlreadyPlayed(races: Race[], songId: string | undefined) {
     return races.some((race: Race) =>
-      (race.song1Id && race.song1Id === songId && (race.bikeWon === 1 || race.bikeWon === 3))
+      (race.song1Id && race.song1Id === songId && (race.bikeWon === BikeWon.BLACK || race.bikeWon === BikeWon.BOTH))
       ||
-      (race.song2Id && race.song2Id === songId && (race.bikeWon === 2 || race.bikeWon === 3)),
+      (race.song2Id && race.song2Id === songId && (race.bikeWon === BikeWon.WHITE || race.bikeWon === BikeWon.BOTH)),
     );
   }
 
@@ -369,7 +370,7 @@ export class ShowDashboardComponent implements OnInit, OnDestroy {
           ...otherRaceWaitingForOpponent,
           raceState: RaceState.CANCELED,
           raced: false,
-          bikeWon: 0,
+          bikeWon: BikeWon.NOT_RACED,
         }),
       ]).subscribe({
         next: () => {

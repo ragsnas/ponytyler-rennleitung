@@ -1,6 +1,7 @@
 import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Race, RaceService } from 'projects/backend-api/src/lib/race.service';
+import { BikeWon } from 'projects/backend-api/src/lib/bike-won';
 import { Show, ShowService } from 'projects/backend-api/src/lib/show.service';
 import { BehaviorSubject } from 'rxjs';
 import {MatSnackBar} from "@angular/material/snack-bar";
@@ -60,7 +61,7 @@ export class DirectorDashboardComponent implements OnInit {
       } as Race)
       .subscribe({
         next: () => {
-          this.snackBar.open(`Marked Race as "Bike ${bike} won!" Congrats ${bike === 1 ? race.person1 : race.person2}`, 'OK', {panelClass: 'success', duration: 250});
+          this.snackBar.open(`Marked Race as "Bike ${bike} won!" Congrats ${bike === BikeWon.BLACK ? race.person1 : race.person2}`, 'OK', {panelClass: 'success', duration: 250});
           this.loadRaces();
         },
         error: (error) => {
@@ -76,7 +77,7 @@ export class DirectorDashboardComponent implements OnInit {
       .updateRace({
         ...race,
         raced: true,
-        bikeWon: 3
+        bikeWon: BikeWon.BOTH
       } as Race)
       .subscribe({
         next: () => {

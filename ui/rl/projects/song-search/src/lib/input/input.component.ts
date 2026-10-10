@@ -9,6 +9,7 @@ import {
   Validator,
 } from '@angular/forms';
 import {Race, RaceService, RaceState} from 'projects/backend-api/src/lib/race.service';
+import {BikeWon} from 'projects/backend-api/src/lib/bike-won';
 import {Song, SongService} from 'projects/song/src/public-api';
 import {combineLatest, filter, map, Observable, startWith, Subject, takeUntil} from 'rxjs';
 
@@ -70,10 +71,10 @@ export class InputComponent implements OnInit, OnDestroy, ControlValueAccessor, 
         const racesFinished = races.filter(race => race.raceState === RaceState.RACED);
         const racesUpcoming = races.filter(race => race.raceState === RaceState.LISTED || race.raceState === RaceState.WAITING_FOR_OPPONENT);
         const songIdsAlreadyPlayed = racesFinished.map(race => {
-          if (race.bikeWon === 1) {
+          if (race.bikeWon === BikeWon.BLACK) {
             return race.song1Id;
           }
-          if (race.bikeWon === 2) {
+          if (race.bikeWon === BikeWon.WHITE) {
             return race.song2Id;
           }
           return [race.song1Id, race.song2Id];
