@@ -7,6 +7,8 @@ import * as os from "os";
 
 const DEFAULT_MQTT_PORT = 3001;
 const RACE_STATE_CHANGE_TOPIC = "RaceStateChange";
+/** First key of the advisory lock taken per show (see lockShow). */
+const RACE_LOCK_NAMESPACE = 1;
 
 @Injectable()
 export class RaceService implements OnModuleDestroy {
@@ -120,66 +122,85 @@ export class RaceService implements OnModuleDestroy {
     data: Prisma.RaceUncheckedUpdateInput;
   }): Promise<Race> {
     const { where, data } = params;
-    const existingRace = await this.prisma.race.findUnique({ where });
-    const updatedRace = await this.prisma.race.update({
-      data: {
-        person1: data.person1,
-        song1: data.song1Id
-          ? { connect: { id: Number(data.song1Id) } }
-          : undefined,
-        person2: data.person2,
-        song2: data.song2Id
-          ? { connect: { id: Number(data.song2Id) } }
-          : undefined,
-        createdAt: data.createdAt,
-        orderNumber: data.orderNumber,
-        raced: data.raced,
-        raceStartedAt: data.raceStartedAt,
-        raceFinishedAt: data.raceFinishedAt,
-        raceState: this.calculateRaceState(data),
-        bikeWon: data.bikeWon,
-        show: {
-          connect: {
-            id: Number(data.showId),
+
+    // Everything that decides which race is active happens in one transaction;
+    // the MQTT events are only published once it has committed.
+    const { existingRace, updatedRace, resetRaces } =
+      await this.prisma.$transaction(async (tx) => {
+        let existingRace = await tx.race.findUnique({ where });
+        if (existingRace) {
+          await this.lockShow(tx, existingRace.showId);
+          // re-read under the lock: a concurrent update may just have committed
+          existingRace = await tx.race.findUnique({ where });
+        }
+        const updatedRace = await tx.race.update({
+          data: {
+            person1: data.person1,
+            song1: data.song1Id
+              ? { connect: { id: Number(data.song1Id) } }
+              : undefined,
+            person2: data.person2,
+            song2: data.song2Id
+              ? { connect: { id: Number(data.song2Id) } }
+              : undefined,
+            createdAt: data.createdAt,
+            orderNumber: data.orderNumber,
+            raced: data.raced,
+            raceStartedAt: data.raceStartedAt,
+            raceFinishedAt: data.raceFinishedAt,
+            raceState: this.calculateRaceState(data),
+            bikeWon: data.bikeWon,
+            show: {
+              connect: {
+                id: Number(data.showId),
+              },
+            },
           },
-        },
-      },
-      where,
-    });
+          where,
+        });
+        const resetRaces = this.isActiveRaceState(
+          updatedRace.raceState as RaceState,
+        )
+          ? await this.resetOtherActiveRaces(tx, updatedRace)
+          : [];
+        return { existingRace, updatedRace, resetRaces };
+      });
 
     if (existingRace && existingRace.raceState !== updatedRace.raceState) {
       console.log(`Race State Changed:`, updatedRace.raceState);
       this.publishRaceStateChange(updatedRace);
     }
-
-    if (this.isActiveRaceState(updatedRace.raceState as RaceState)) {
-      await this.resetOtherActiveRaces(updatedRace.id);
-    }
+    resetRaces.forEach((race) => this.publishRaceStateChange(race));
 
     return updatedRace;
+  }
+
+  /**
+   * Takes a transaction-scoped advisory lock for the show, so two concurrent
+   * updates (UI and MQTT winner detection) cannot both activate a race.
+   * Released automatically on commit/rollback.
+   */
+  private async lockShow(tx: Prisma.TransactionClient, showId: number) {
+    await tx.$executeRaw`SELECT pg_advisory_xact_lock(${RACE_LOCK_NAMESPACE}::int, ${showId}::int)`;
   }
 
   private isActiveRaceState(raceState: RaceState): boolean {
     return !RaceService.ALLOWED_INACTIVE_RACE_STATES.includes(raceState);
   }
 
-  private async resetOtherActiveRaces(excludeId: number) {
-    const otherActiveRaces = await this.prisma.race.findMany({
+  /** Resets the other active races *of the same show*; returns the reset races. */
+  private async resetOtherActiveRaces(
+    tx: Prisma.TransactionClient,
+    activeRace: Race,
+  ): Promise<Race[]> {
+    return tx.race.updateManyAndReturn({
       where: {
-        id: { not: excludeId },
-        raceState: {
-          notIn: RaceService.ALLOWED_INACTIVE_RACE_STATES,
-        },
+        showId: activeRace.showId,
+        id: { not: activeRace.id },
+        raceState: { notIn: RaceService.ALLOWED_INACTIVE_RACE_STATES },
       },
+      data: { raceState: RaceState.LISTED },
     });
-
-    for (const race of otherActiveRaces) {
-      const resetRace = await this.prisma.race.update({
-        where: { id: race.id },
-        data: { raceState: RaceState.LISTED },
-      });
-      this.publishRaceStateChange(resetRace);
-    }
   }
 
   private static readonly ALLOWED_INACTIVE_RACE_STATES: RaceState[] = [

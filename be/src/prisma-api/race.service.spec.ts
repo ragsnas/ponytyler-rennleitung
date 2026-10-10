@@ -15,13 +15,37 @@ describe("RaceService", () => {
   let updateMock: jest.Mock;
   let findManyMock: jest.Mock;
   let transactionMock: jest.Mock;
+  // the interactive transaction client handed to `$transaction(async tx => …)`
+  let tx: {
+    race: {
+      findUnique: jest.Mock;
+      update: jest.Mock;
+      updateManyAndReturn: jest.Mock;
+    };
+    $executeRaw: jest.Mock;
+  };
+  let events: string[];
   let mqttClient: { publish: jest.Mock; end: jest.Mock };
 
   beforeEach(async () => {
     findUniqueMock = jest.fn();
     updateMock = jest.fn();
     findManyMock = jest.fn().mockResolvedValue([]);
-    transactionMock = jest.fn();
+    events = [];
+    tx = {
+      race: {
+        findUnique: jest.fn(),
+        update: jest.fn(),
+        updateManyAndReturn: jest.fn().mockResolvedValue([]),
+      },
+      $executeRaw: jest.fn().mockImplementation(async () => {
+        events.push("lock");
+        return [];
+      }),
+    };
+    transactionMock = jest.fn((work: unknown) =>
+      typeof work === "function" ? work(tx) : undefined,
+    );
     mqttClient = { publish: jest.fn(), end: jest.fn() };
     (mqtt.connect as jest.Mock).mockReturnValue(mqttClient);
 
@@ -31,10 +55,14 @@ describe("RaceService", () => {
         {
           provide: PrismaService,
           useValue: {
+            // updateRace must work on the transaction client only
             race: {
               findUnique: findUniqueMock,
               update: updateMock,
               findMany: findManyMock,
+              updateMany: jest.fn(() => {
+                throw new Error("use the transaction client");
+              }),
             },
             $transaction: transactionMock,
           },
@@ -61,11 +89,16 @@ describe("RaceService", () => {
 
   describe("updateRace", () => {
     it("publishes a RaceStateChange message when the race state changes", async () => {
-      findUniqueMock.mockResolvedValue({
+      tx.race.findUnique.mockResolvedValue({
         id: 1,
+        showId: 5,
         raceState: RaceState.WAITING_TO_RACE,
       });
-      updateMock.mockResolvedValue({ id: 1, raceState: RaceState.RACING });
+      tx.race.update.mockResolvedValue({
+        id: 1,
+        showId: 5,
+        raceState: RaceState.RACING,
+      });
 
       await service.updateRace({
         where: { id: 1 },
@@ -79,8 +112,16 @@ describe("RaceService", () => {
     });
 
     it("does not publish a message when the race state stays the same", async () => {
-      findUniqueMock.mockResolvedValue({ id: 1, raceState: RaceState.LISTED });
-      updateMock.mockResolvedValue({ id: 1, raceState: RaceState.LISTED });
+      tx.race.findUnique.mockResolvedValue({
+        id: 1,
+        showId: 5,
+        raceState: RaceState.LISTED,
+      });
+      tx.race.update.mockResolvedValue({
+        id: 1,
+        showId: 5,
+        raceState: RaceState.LISTED,
+      });
 
       await service.updateRace({
         where: { id: 1 },
@@ -93,15 +134,23 @@ describe("RaceService", () => {
     it("persists raceStartedAt and raceFinishedAt", async () => {
       const raceStartedAt = "2026-10-09T20:00:00.000Z";
       const raceFinishedAt = "2026-10-09T20:00:25.000Z";
-      findUniqueMock.mockResolvedValue({ id: 1, raceState: RaceState.RACING });
-      updateMock.mockResolvedValue({ id: 1, raceState: RaceState.RACED });
+      tx.race.findUnique.mockResolvedValue({
+        id: 1,
+        showId: 5,
+        raceState: RaceState.RACING,
+      });
+      tx.race.update.mockResolvedValue({
+        id: 1,
+        showId: 5,
+        raceState: RaceState.RACED,
+      });
 
       await service.updateRace({
         where: { id: 1 },
         data: { raceState: RaceState.RACED, raceStartedAt, raceFinishedAt },
       });
 
-      expect(updateMock).toHaveBeenCalledWith(
+      expect(tx.race.update).toHaveBeenCalledWith(
         expect.objectContaining({
           data: expect.objectContaining({ raceStartedAt, raceFinishedAt }),
         }),
@@ -109,13 +158,116 @@ describe("RaceService", () => {
     });
 
     it("does not publish when there is no existing race to compare against", async () => {
-      findUniqueMock.mockResolvedValue(null);
-      updateMock.mockResolvedValue({ id: 1, raceState: RaceState.LISTED });
+      tx.race.findUnique.mockResolvedValue(null);
+      tx.race.update.mockResolvedValue({
+        id: 1,
+        showId: 5,
+        raceState: RaceState.LISTED,
+      });
 
       await service.updateRace({
         where: { id: 1 },
         data: { raceState: RaceState.LISTED },
       });
+
+      expect(mqttClient.publish).not.toHaveBeenCalled();
+    });
+
+    it("does all its database work inside one transaction", async () => {
+      tx.race.findUnique.mockResolvedValue({
+        id: 1,
+        showId: 5,
+        raceState: RaceState.LISTED,
+      });
+      tx.race.update.mockResolvedValue({
+        id: 1,
+        showId: 5,
+        raceState: RaceState.RACING,
+      });
+
+      await service.updateRace({
+        where: { id: 1 },
+        data: { raceState: RaceState.RACING },
+      });
+
+      expect(transactionMock).toHaveBeenCalledTimes(1);
+      expect(transactionMock).toHaveBeenCalledWith(expect.any(Function));
+      expect(updateMock).not.toHaveBeenCalled();
+      expect(findManyMock).not.toHaveBeenCalled();
+    });
+
+    it("serialises concurrent updates of one show by locking it before the race is written", async () => {
+      tx.race.findUnique.mockResolvedValue({
+        id: 1,
+        showId: 5,
+        raceState: RaceState.LISTED,
+      });
+      tx.race.update.mockImplementation(async () => {
+        events.push("update");
+        return { id: 1, showId: 5, raceState: RaceState.RACING };
+      });
+
+      await service.updateRace({
+        where: { id: 1 },
+        data: { raceState: RaceState.RACING },
+      });
+
+      expect(events).toEqual(["lock", "update"]);
+      // the lock is keyed by the show of the race
+      expect(tx.$executeRaw.mock.calls[0].slice(1)).toContain(5);
+    });
+
+    it("publishes only after the transaction has committed", async () => {
+      tx.race.findUnique.mockResolvedValue({
+        id: 1,
+        showId: 5,
+        raceState: RaceState.LISTED,
+      });
+      tx.race.update.mockResolvedValue({
+        id: 1,
+        showId: 5,
+        raceState: RaceState.RACING,
+      });
+      tx.race.updateManyAndReturn.mockResolvedValue([
+        { id: 2, showId: 5, raceState: RaceState.LISTED },
+      ]);
+      let publishedInsideTransaction = -1;
+      transactionMock.mockImplementation(
+        async (work: (t: typeof tx) => unknown) => {
+          const result = await work(tx);
+          publishedInsideTransaction = mqttClient.publish.mock.calls.length;
+          return result;
+        },
+      );
+
+      await service.updateRace({
+        where: { id: 1 },
+        data: { raceState: RaceState.RACING },
+      });
+
+      expect(publishedInsideTransaction).toBe(0);
+      expect(mqttClient.publish).toHaveBeenCalledTimes(2);
+    });
+
+    it("publishes nothing when the transaction fails", async () => {
+      tx.race.findUnique.mockResolvedValue({
+        id: 1,
+        showId: 5,
+        raceState: RaceState.LISTED,
+      });
+      tx.race.update.mockResolvedValue({
+        id: 1,
+        showId: 5,
+        raceState: RaceState.RACING,
+      });
+      tx.race.updateManyAndReturn.mockRejectedValue(new Error("boom"));
+
+      await expect(
+        service.updateRace({
+          where: { id: 1 },
+          data: { raceState: RaceState.RACING },
+        }),
+      ).rejects.toThrow("boom");
 
       expect(mqttClient.publish).not.toHaveBeenCalled();
     });
@@ -208,33 +360,34 @@ describe("RaceService", () => {
       RaceState.WAITING_FOR_OPPONENT,
     ];
 
-    it("resets other races with a state outside CANCELED/LISTED/DONE/WAITING_FOR_OPPONENT to LISTED when this race becomes active", async () => {
-      findUniqueMock.mockResolvedValue({ id: 1, raceState: RaceState.LISTED });
-      updateMock.mockResolvedValueOnce({ id: 1, raceState: RaceState.RACING });
-      findManyMock.mockResolvedValue([
-        { id: 2, raceState: RaceState.WAITING_TO_RACE },
-        { id: 3, raceState: RaceState.RACED },
+    it("resets the other active races of the same show to LISTED with one scoped update when this race becomes active", async () => {
+      tx.race.findUnique.mockResolvedValue({
+        id: 1,
+        showId: 5,
+        raceState: RaceState.LISTED,
+      });
+      tx.race.update.mockResolvedValue({
+        id: 1,
+        showId: 5,
+        raceState: RaceState.RACING,
+      });
+      tx.race.updateManyAndReturn.mockResolvedValue([
+        { id: 2, showId: 5, raceState: RaceState.LISTED },
+        { id: 3, showId: 5, raceState: RaceState.LISTED },
       ]);
-      updateMock.mockResolvedValueOnce({ id: 2, raceState: RaceState.LISTED });
-      updateMock.mockResolvedValueOnce({ id: 3, raceState: RaceState.LISTED });
 
       await service.updateRace({
         where: { id: 1 },
         data: { raceState: RaceState.RACING },
       });
 
-      expect(findManyMock).toHaveBeenCalledWith({
+      expect(tx.race.updateManyAndReturn).toHaveBeenCalledTimes(1);
+      expect(tx.race.updateManyAndReturn).toHaveBeenCalledWith({
         where: {
+          showId: 5,
           id: { not: 1 },
           raceState: { notIn: ALLOWED_INACTIVE_STATES },
         },
-      });
-      expect(updateMock).toHaveBeenCalledWith({
-        where: { id: 2 },
-        data: { raceState: RaceState.LISTED },
-      });
-      expect(updateMock).toHaveBeenCalledWith({
-        where: { id: 3 },
         data: { raceState: RaceState.LISTED },
       });
       expect(mqttClient.publish).toHaveBeenCalledWith(
@@ -247,35 +400,74 @@ describe("RaceService", () => {
       );
     });
 
-    it.each(ALLOWED_INACTIVE_STATES)(
-      "does not query for other races when this race is set to %s",
-      async (allowedState) => {
-        findUniqueMock.mockResolvedValue({
-          id: 1,
-          raceState: RaceState.RACING,
-        });
-        updateMock.mockResolvedValue({ id: 1, raceState: allowedState });
-
-        await service.updateRace({
-          where: { id: 1 },
-          data: { raceState: allowedState },
-        });
-
-        expect(findManyMock).not.toHaveBeenCalled();
-      },
-    );
-
-    it("does nothing extra when there are no other active races", async () => {
-      findUniqueMock.mockResolvedValue({ id: 1, raceState: RaceState.LISTED });
-      updateMock.mockResolvedValue({ id: 1, raceState: RaceState.RACING });
-      findManyMock.mockResolvedValue([]);
+    it("announces the new state of this race before the resets of the others", async () => {
+      tx.race.findUnique.mockResolvedValue({
+        id: 1,
+        showId: 5,
+        raceState: RaceState.LISTED,
+      });
+      tx.race.update.mockResolvedValue({
+        id: 1,
+        showId: 5,
+        raceState: RaceState.RACING,
+      });
+      tx.race.updateManyAndReturn.mockResolvedValue([
+        { id: 2, showId: 5, raceState: RaceState.LISTED },
+      ]);
 
       await service.updateRace({
         where: { id: 1 },
         data: { raceState: RaceState.RACING },
       });
 
-      expect(updateMock).toHaveBeenCalledTimes(1);
+      expect(
+        mqttClient.publish.mock.calls.map(
+          ([, payload]) => JSON.parse(payload).raceId,
+        ),
+      ).toEqual(["1", "2"]);
+    });
+
+    it.each(ALLOWED_INACTIVE_STATES)(
+      "does not reset other races when this race is set to %s",
+      async (allowedState) => {
+        tx.race.findUnique.mockResolvedValue({
+          id: 1,
+          showId: 5,
+          raceState: RaceState.RACING,
+        });
+        tx.race.update.mockResolvedValue({
+          id: 1,
+          showId: 5,
+          raceState: allowedState,
+        });
+
+        await service.updateRace({
+          where: { id: 1 },
+          data: { raceState: allowedState },
+        });
+
+        expect(tx.race.updateManyAndReturn).not.toHaveBeenCalled();
+      },
+    );
+
+    it("publishes nothing extra when there are no other active races", async () => {
+      tx.race.findUnique.mockResolvedValue({
+        id: 1,
+        showId: 5,
+        raceState: RaceState.LISTED,
+      });
+      tx.race.update.mockResolvedValue({
+        id: 1,
+        showId: 5,
+        raceState: RaceState.RACING,
+      });
+
+      await service.updateRace({
+        where: { id: 1 },
+        data: { raceState: RaceState.RACING },
+      });
+
+      expect(mqttClient.publish).toHaveBeenCalledTimes(1);
     });
   });
 });

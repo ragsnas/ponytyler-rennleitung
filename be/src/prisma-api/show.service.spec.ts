@@ -14,12 +14,37 @@ describe("ShowService", () => {
   let findUniqueMock: jest.Mock;
   let updateMock: jest.Mock;
   let findManyMock: jest.Mock;
+  let transactionMock: jest.Mock;
+  let tx: {
+    show: {
+      findUnique: jest.Mock;
+      update: jest.Mock;
+      updateManyAndReturn: jest.Mock;
+    };
+    $executeRaw: jest.Mock;
+  };
+  let events: string[];
   let mqttClient: { publish: jest.Mock; end: jest.Mock };
 
   beforeEach(async () => {
     findUniqueMock = jest.fn();
     updateMock = jest.fn();
     findManyMock = jest.fn().mockResolvedValue([]);
+    events = [];
+    tx = {
+      show: {
+        findUnique: jest.fn(),
+        update: jest.fn(),
+        updateManyAndReturn: jest.fn().mockResolvedValue([]),
+      },
+      $executeRaw: jest.fn().mockImplementation(async () => {
+        events.push("lock");
+        return [];
+      }),
+    };
+    transactionMock = jest.fn((work: unknown) =>
+      typeof work === "function" ? work(tx) : undefined,
+    );
     mqttClient = { publish: jest.fn(), end: jest.fn() };
     (mqtt.connect as jest.Mock).mockReturnValue(mqttClient);
 
@@ -34,6 +59,7 @@ describe("ShowService", () => {
               update: updateMock,
               findMany: findManyMock,
             },
+            $transaction: transactionMock,
           },
         },
         { provide: ConfigService, useValue: { get: jest.fn() } },
@@ -58,11 +84,11 @@ describe("ShowService", () => {
 
   describe("updateShow", () => {
     it("publishes a ShowStateChange message when the show state changes", async () => {
-      findUniqueMock.mockResolvedValue({
+      tx.show.findUnique.mockResolvedValue({
         id: 1,
         showState: ShowState.LISTED,
       });
-      updateMock.mockResolvedValue({ id: 1, showState: ShowState.RACE });
+      tx.show.update.mockResolvedValue({ id: 1, showState: ShowState.RACE });
 
       await service.updateShow({
         where: { id: 1 },
@@ -76,8 +102,11 @@ describe("ShowService", () => {
     });
 
     it("does not publish a message when the show state stays the same", async () => {
-      findUniqueMock.mockResolvedValue({ id: 1, showState: ShowState.LISTED });
-      updateMock.mockResolvedValue({ id: 1, showState: ShowState.LISTED });
+      tx.show.findUnique.mockResolvedValue({
+        id: 1,
+        showState: ShowState.LISTED,
+      });
+      tx.show.update.mockResolvedValue({ id: 1, showState: ShowState.LISTED });
 
       await service.updateShow({
         where: { id: 1 },
@@ -88,8 +117,8 @@ describe("ShowService", () => {
     });
 
     it("does not publish when there is no existing show to compare against", async () => {
-      findUniqueMock.mockResolvedValue(null);
-      updateMock.mockResolvedValue({ id: 1, showState: ShowState.LISTED });
+      tx.show.findUnique.mockResolvedValue(null);
+      tx.show.update.mockResolvedValue({ id: 1, showState: ShowState.LISTED });
 
       await service.updateShow({
         where: { id: 1 },
@@ -98,36 +127,99 @@ describe("ShowService", () => {
 
       expect(mqttClient.publish).not.toHaveBeenCalled();
     });
-  });
 
-  describe("updateShow - single active show enforcement", () => {
-    it("resets other shows with a non-LISTED/SHOW_FINISHED state to LISTED when this show becomes active", async () => {
-      findUniqueMock.mockResolvedValue({ id: 1, showState: ShowState.LISTED });
-      updateMock.mockResolvedValueOnce({ id: 1, showState: ShowState.RACE });
-      findManyMock.mockResolvedValue([
-        { id: 2, showState: ShowState.BEFORE_SHOW },
-        { id: 3, showState: ShowState.RACE_FINISHED },
-      ]);
-      updateMock.mockResolvedValueOnce({ id: 2, showState: ShowState.LISTED });
-      updateMock.mockResolvedValueOnce({ id: 3, showState: ShowState.LISTED });
+    it("does all its database work inside one transaction", async () => {
+      tx.show.findUnique.mockResolvedValue({
+        id: 1,
+        showState: ShowState.LISTED,
+      });
+      tx.show.update.mockResolvedValue({ id: 1, showState: ShowState.RACE });
 
       await service.updateShow({
         where: { id: 1 },
         data: { showState: ShowState.RACE },
       });
 
-      expect(findManyMock).toHaveBeenCalledWith({
+      expect(transactionMock).toHaveBeenCalledWith(expect.any(Function));
+      expect(updateMock).not.toHaveBeenCalled();
+      expect(findManyMock).not.toHaveBeenCalled();
+    });
+
+    it("serialises concurrent show updates by taking a lock before writing", async () => {
+      tx.show.findUnique.mockResolvedValue({
+        id: 1,
+        showState: ShowState.LISTED,
+      });
+      tx.show.update.mockImplementation(async () => {
+        events.push("update");
+        return { id: 1, showState: ShowState.RACE };
+      });
+
+      await service.updateShow({
+        where: { id: 1 },
+        data: { showState: ShowState.RACE },
+      });
+
+      expect(events).toEqual(["lock", "update"]);
+    });
+
+    it("publishes only after the transaction has committed, and not at all when it fails", async () => {
+      tx.show.findUnique.mockResolvedValue({
+        id: 1,
+        showState: ShowState.LISTED,
+      });
+      tx.show.update.mockResolvedValue({ id: 1, showState: ShowState.RACE });
+      let publishedInsideTransaction = -1;
+      transactionMock.mockImplementationOnce(
+        async (work: (t: typeof tx) => unknown) => {
+          const result = await work(tx);
+          publishedInsideTransaction = mqttClient.publish.mock.calls.length;
+          return result;
+        },
+      );
+
+      await service.updateShow({
+        where: { id: 1 },
+        data: { showState: ShowState.RACE },
+      });
+      expect(publishedInsideTransaction).toBe(0);
+      expect(mqttClient.publish).toHaveBeenCalledTimes(1);
+
+      mqttClient.publish.mockClear();
+      tx.show.updateManyAndReturn.mockRejectedValue(new Error("boom"));
+      await expect(
+        service.updateShow({
+          where: { id: 1 },
+          data: { showState: ShowState.RACE },
+        }),
+      ).rejects.toThrow("boom");
+      expect(mqttClient.publish).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("updateShow - single active show enforcement", () => {
+    it("resets all other active shows to LISTED with one update when this show becomes active", async () => {
+      tx.show.findUnique.mockResolvedValue({
+        id: 1,
+        showState: ShowState.LISTED,
+      });
+      tx.show.update.mockResolvedValue({ id: 1, showState: ShowState.RACE });
+      tx.show.updateManyAndReturn.mockResolvedValue([
+        { id: 2, showState: ShowState.LISTED },
+        { id: 3, showState: ShowState.LISTED },
+      ]);
+
+      await service.updateShow({
+        where: { id: 1 },
+        data: { showState: ShowState.RACE },
+      });
+
+      expect(tx.show.updateManyAndReturn).toHaveBeenCalledTimes(1);
+      expect(tx.show.updateManyAndReturn).toHaveBeenCalledWith({
         where: {
           id: { not: 1 },
           showState: { notIn: [ShowState.LISTED, ShowState.SHOW_FINISHED] },
         },
-      });
-      expect(updateMock).toHaveBeenCalledWith({
-        where: { id: 2 },
-        data: { showState: ShowState.LISTED },
-      });
-      expect(updateMock).toHaveBeenCalledWith({
-        where: { id: 3 },
         data: { showState: ShowState.LISTED },
       });
       expect(mqttClient.publish).toHaveBeenCalledWith(
@@ -140,44 +232,37 @@ describe("ShowService", () => {
       );
     });
 
-    it("does not query for other shows when this show is set to LISTED", async () => {
-      findUniqueMock.mockResolvedValue({ id: 1, showState: ShowState.RACE });
-      updateMock.mockResolvedValue({ id: 1, showState: ShowState.LISTED });
+    it.each([ShowState.LISTED, ShowState.SHOW_FINISHED])(
+      "does not reset other shows when this show is set to %s",
+      async (inactiveState) => {
+        tx.show.findUnique.mockResolvedValue({
+          id: 1,
+          showState: ShowState.RACE,
+        });
+        tx.show.update.mockResolvedValue({ id: 1, showState: inactiveState });
 
-      await service.updateShow({
-        where: { id: 1 },
-        data: { showState: ShowState.LISTED },
-      });
+        await service.updateShow({
+          where: { id: 1 },
+          data: { showState: inactiveState },
+        });
 
-      expect(findManyMock).not.toHaveBeenCalled();
-    });
+        expect(tx.show.updateManyAndReturn).not.toHaveBeenCalled();
+      },
+    );
 
-    it("does not query for other shows when this show is set to SHOW_FINISHED", async () => {
-      findUniqueMock.mockResolvedValue({ id: 1, showState: ShowState.RACE });
-      updateMock.mockResolvedValue({
+    it("publishes nothing extra when there are no other active shows", async () => {
+      tx.show.findUnique.mockResolvedValue({
         id: 1,
-        showState: ShowState.SHOW_FINISHED,
+        showState: ShowState.LISTED,
       });
-
-      await service.updateShow({
-        where: { id: 1 },
-        data: { showState: ShowState.SHOW_FINISHED },
-      });
-
-      expect(findManyMock).not.toHaveBeenCalled();
-    });
-
-    it("does nothing extra when there are no other active shows", async () => {
-      findUniqueMock.mockResolvedValue({ id: 1, showState: ShowState.LISTED });
-      updateMock.mockResolvedValue({ id: 1, showState: ShowState.RACE });
-      findManyMock.mockResolvedValue([]);
+      tx.show.update.mockResolvedValue({ id: 1, showState: ShowState.RACE });
 
       await service.updateShow({
         where: { id: 1 },
         data: { showState: ShowState.RACE },
       });
 
-      expect(updateMock).toHaveBeenCalledTimes(1);
+      expect(mqttClient.publish).toHaveBeenCalledTimes(1);
     });
   });
 });
