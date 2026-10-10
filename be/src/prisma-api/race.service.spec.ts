@@ -3,6 +3,7 @@ import { ConfigService } from "@nestjs/config";
 import * as mqtt from "mqtt";
 import { RaceService } from "./race.service";
 import { PrismaService } from "./prisma.service";
+import { ShowService } from "./show.service";
 import { RaceState } from "@prisma/client";
 
 jest.mock("mqtt", () => ({
@@ -14,6 +15,8 @@ describe("RaceService", () => {
   let findUniqueMock: jest.Mock;
   let updateMock: jest.Mock;
   let findManyMock: jest.Mock;
+  let findFirstMock: jest.Mock;
+  let getCurrentShowMock: jest.Mock;
   let transactionMock: jest.Mock;
   // the interactive transaction client handed to `$transaction(async tx => …)`
   let tx: {
@@ -33,6 +36,8 @@ describe("RaceService", () => {
     findUniqueMock = jest.fn();
     updateMock = jest.fn();
     findManyMock = jest.fn().mockResolvedValue([]);
+    findFirstMock = jest.fn();
+    getCurrentShowMock = jest.fn().mockResolvedValue({ id: 7 });
     events = [];
     tx = {
       race: {
@@ -70,6 +75,7 @@ describe("RaceService", () => {
               findUnique: findUniqueMock,
               update: updateMock,
               findMany: findManyMock,
+              findFirst: findFirstMock,
               updateMany: jest.fn(() => {
                 throw new Error("use the transaction client");
               }),
@@ -78,6 +84,10 @@ describe("RaceService", () => {
           },
         },
         { provide: ConfigService, useValue: { get: jest.fn() } },
+        {
+          provide: ShowService,
+          useValue: { getCurrentShow: getCurrentShowMock },
+        },
       ],
     }).compile();
 
@@ -95,6 +105,30 @@ describe("RaceService", () => {
     service.onModuleDestroy();
 
     expect(mqttClient.end).toHaveBeenCalled();
+  });
+
+  describe("upcoming races use the current show of the ShowService", () => {
+    it("upcomingRaceWithSongs looks in that show", async () => {
+      findFirstMock.mockResolvedValue({ id: 1 });
+
+      await service.upcomingRaceWithSongs();
+
+      expect(findFirstMock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { showId: 7, raceState: { equals: RaceState.LISTED } },
+        }),
+      );
+    });
+
+    it("upcomingRacesWithSongs looks in that show", async () => {
+      await service.upcomingRacesWithSongs();
+
+      expect(findManyMock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { showId: 7, raceState: { equals: RaceState.LISTED } },
+        }),
+      );
+    });
   });
 
   describe("updateRace", () => {

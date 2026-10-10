@@ -33,15 +33,11 @@ export class ShowController {
 
   @Get("current-show")
   async getCurrentShow(): Promise<Show> {
-    const shows: Show[] = await this.showService.shows({
-      orderBy: { date: { sort: "desc" } },
-      where: { active: true },
-    });
-    if (shows.length > 0) {
-      return shows.pop();
-    } else {
+    const show = await this.showService.getCurrentShow();
+    if (!show) {
       throw new NotFoundException("No current shows");
     }
+    return show;
   }
 
   @Get("current-shows")

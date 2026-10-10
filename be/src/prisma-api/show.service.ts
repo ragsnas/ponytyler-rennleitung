@@ -55,14 +55,15 @@ export class ShowService implements OnModuleDestroy {
     });
   }
 
-  async currentShow(): Promise<Show | null> {
+  /**
+   * The one definition of "current show": the newest active show (by date,
+   * undated last, then by id). More than one show can be flagged active, e.g.
+   * one that another show took over keeps `active: true`.
+   */
+  async getCurrentShow(): Promise<Show | null> {
     return this.prisma.show.findFirst({
-      where: {
-        active: true,
-        showState: {
-          notIn: [ShowState.LISTED, ShowState.RACE_FINISHED],
-        },
-      },
+      where: { active: true },
+      orderBy: [{ date: { sort: "desc", nulls: "last" } }, { id: "desc" }],
     });
   }
 

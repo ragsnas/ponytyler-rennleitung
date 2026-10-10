@@ -10,6 +10,7 @@ describe("ShowController", () => {
   let showsMock: jest.Mock;
   let showsOrderedByActiveAndDateMock: jest.Mock;
   let showMock: jest.Mock;
+  let getCurrentShowMock: jest.Mock;
   let createShowMock: jest.Mock;
   let updateShowMock: jest.Mock;
   let deleteShowWithRacesAndShiftsMock: jest.Mock;
@@ -19,6 +20,7 @@ describe("ShowController", () => {
     showsMock = jest.fn();
     showsOrderedByActiveAndDateMock = jest.fn();
     showMock = jest.fn();
+    getCurrentShowMock = jest.fn();
     createShowMock = jest.fn();
     updateShowMock = jest.fn();
     deleteShowWithRacesAndShiftsMock = jest.fn();
@@ -33,6 +35,7 @@ describe("ShowController", () => {
             shows: showsMock,
             showsOrderedByActiveAndDate: showsOrderedByActiveAndDateMock,
             show: showMock,
+            getCurrentShow: getCurrentShowMock,
             createShow: createShowMock,
             updateShow: updateShowMock,
             deleteShowWithRacesAndShifts: deleteShowWithRacesAndShiftsMock,
@@ -67,21 +70,17 @@ describe("ShowController", () => {
   });
 
   describe("getCurrentShow", () => {
-    it("returns the last active show when active shows exist", async () => {
-      const shows = [{ id: 1 }, { id: 2 }];
-      showsMock.mockResolvedValue(shows);
+    it("returns the current show as defined by the ShowService", async () => {
+      getCurrentShowMock.mockResolvedValue({ id: 2 });
 
       const result = await controller.getCurrentShow();
 
       expect(result).toEqual({ id: 2 });
-      expect(showsMock).toHaveBeenCalledWith({
-        orderBy: { date: { sort: "desc" } },
-        where: { active: true },
-      });
+      expect(showsMock).not.toHaveBeenCalled();
     });
 
-    it("throws NotFoundException when there is no active show", async () => {
-      showsMock.mockResolvedValue([]);
+    it("throws NotFoundException when there is no current show", async () => {
+      getCurrentShowMock.mockResolvedValue(null);
 
       await expect(controller.getCurrentShow()).rejects.toThrow(
         NotFoundException,

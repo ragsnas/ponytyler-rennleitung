@@ -15,6 +15,7 @@ describe("ShowService", () => {
   let updateMock: jest.Mock;
   let findManyMock: jest.Mock;
   let deleteMock: jest.Mock;
+  let findFirstMock: jest.Mock;
   let transactionMock: jest.Mock;
   let tx: {
     show: {
@@ -32,6 +33,7 @@ describe("ShowService", () => {
     updateMock = jest.fn();
     findManyMock = jest.fn().mockResolvedValue([]);
     deleteMock = jest.fn();
+    findFirstMock = jest.fn();
     events = [];
     tx = {
       show: {
@@ -61,6 +63,7 @@ describe("ShowService", () => {
               update: updateMock,
               findMany: findManyMock,
               delete: deleteMock,
+              findFirst: findFirstMock,
             },
             $transaction: transactionMock,
           },
@@ -83,6 +86,26 @@ describe("ShowService", () => {
     service.onModuleDestroy();
 
     expect(mqttClient.end).toHaveBeenCalled();
+  });
+
+  describe("getCurrentShow", () => {
+    it("is the newest active show: ordered by date (undated last), then id, both descending", async () => {
+      findFirstMock.mockResolvedValue({ id: 3 });
+
+      const result = await service.getCurrentShow();
+
+      expect(result).toEqual({ id: 3 });
+      expect(findFirstMock).toHaveBeenCalledWith({
+        where: { active: true },
+        orderBy: [{ date: { sort: "desc", nulls: "last" } }, { id: "desc" }],
+      });
+    });
+
+    it("is null when no show is active", async () => {
+      findFirstMock.mockResolvedValue(null);
+
+      expect(await service.getCurrentShow()).toBeNull();
+    });
   });
 
   describe("deleteShowWithRacesAndShifts", () => {

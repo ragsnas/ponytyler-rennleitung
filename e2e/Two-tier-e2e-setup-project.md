@@ -97,7 +97,7 @@ Behaviour I characterised but did not call a defect (worth a look):
 
 - **Marking a race `RACED` resets every other `RACED` race, in any show, to `LISTED`** until it is set to `DONE`. In the show dashboard, marking several races as won one after another therefore reverts the earlier ones; the old serial dashboard spec never noticed.
 - The current race falls back to the **last** `LISTED` race (highest order number), so the state machine page's play button starts the last race of the show, not the first.
-- A show reset by another show taking over keeps `active: true`, so more than one show can be `active`, and `/api/show/current-show` then returns the oldest of them.
+- A show reset by another show taking over keeps `active: true`, so more than one show can be `active`, and `/api/show/current-show` then returns the newest of them (A7).
 - The backend accepts any state for any race or show, including nonsense such as `RACED` on a cancelled race.
 - Stop Show/Start Show on the shows page do not touch the races of the show.
 

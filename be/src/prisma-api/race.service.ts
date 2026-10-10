@@ -1,6 +1,7 @@
 import { Injectable, OnModuleDestroy } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { PrismaService } from "./prisma.service";
+import { ShowService } from "./show.service";
 import { Prisma, Race, RaceState } from "@prisma/client";
 import mqtt from "mqtt";
 import * as os from "os";
@@ -17,6 +18,7 @@ export class RaceService implements OnModuleDestroy {
   constructor(
     private prisma: PrismaService,
     private configService: ConfigService,
+    private showService: ShowService,
   ) {
     const port = Number(
       this.configService.get("MQTT_PORT") ?? DEFAULT_MQTT_PORT,
@@ -46,11 +48,7 @@ export class RaceService implements OnModuleDestroy {
   }
 
   async upcomingRaceWithSongs() {
-    const show = await this.prisma.show.findFirst({
-      where: { active: true },
-      orderBy: { date: "desc" },
-      take: 1,
-    });
+    const show = await this.showService.getCurrentShow();
     return this.prisma.race.findFirst({
       where: {
         showId: Number(show.id),
@@ -62,11 +60,7 @@ export class RaceService implements OnModuleDestroy {
   }
 
   async upcomingRacesWithSongs() {
-    const show = await this.prisma.show.findFirst({
-      where: { active: true },
-      orderBy: { date: "desc" },
-      take: 1,
-    });
+    const show = await this.showService.getCurrentShow();
     return this.prisma.race.findMany({
       where: {
         showId: Number(show.id),
