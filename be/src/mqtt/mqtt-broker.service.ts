@@ -73,24 +73,39 @@ export class MqttBrokerService
       this.configService.get("MQTT_WS_PORT") ?? DEFAULT_MQTT_WS_PORT,
     );
 
-    this.broker = await Aedes.createBroker();
-    this.server = createTcpServer(this.broker.handle);
-    this.wsServer = createWsCapableServer(this.drainingHandler(this.broker), {
-      ws: true,
-    }) as HttpServer;
-    this.registerBrokerListeners(this.broker);
+    try {
+      this.broker = await Aedes.createBroker();
+      this.server = createTcpServer(this.broker.handle);
+      this.wsServer = createWsCapableServer(this.drainingHandler(this.broker), {
+        ws: true,
+      }) as HttpServer;
+      this.registerBrokerListeners(this.broker);
 
-    await new Promise<void>((resolve) => this.server!.listen(port, resolve));
-    this.logger.log(`🚀 MQTT Broker started and listening on port ${port}`);
+      await this.listen(this.server, port);
+      this.logger.log(`🚀 MQTT Broker started and listening on port ${port}`);
 
-    await new Promise<void>((resolve) =>
-      this.wsServer!.listen(wsPort, resolve),
-    );
-    this.logger.log(`🚀 MQTT-over-WebSocket listening on port ${wsPort}`);
+      await this.listen(this.wsServer, wsPort);
+      this.logger.log(`🚀 MQTT-over-WebSocket listening on port ${wsPort}`);
+    } catch (error) {
+      // e.g. EADDRINUSE: do not leave the half-started broker behind
+      await this.onModuleDestroy();
+      throw error;
+    }
 
     const mqttUri = `mqtt://${os.hostname()}:${port}`;
     this.client = mqtt.connect(mqttUri, {
       clientId: "mqtt-broker-itself",
+    });
+  }
+
+  /** Resolves once listening; rejects on a server `error` such as EADDRINUSE. */
+  private listen(server: Server | HttpServer, port: number): Promise<void> {
+    return new Promise<void>((resolve, reject) => {
+      server.once("error", reject);
+      server.listen(port, () => {
+        server.off("error", reject);
+        resolve();
+      });
     });
   }
 
@@ -123,21 +138,24 @@ export class MqttBrokerService
 
   async onModuleDestroy() {
     this.raceTracker.reset();
-    if (this.client) {
+    const { client, broker, server, wsServer } = this;
+    this.client = this.broker = this.server = this.wsServer = undefined;
+
+    if (client) {
       await new Promise<void>((resolve) =>
-        this.client!.end(true, {}, () => resolve()),
+        client.end(true, {}, () => resolve()),
       );
     }
-    if (this.server) {
-      await new Promise<void>((resolve) => this.server!.close(() => resolve()));
+    // close the broker first: it disconnects its clients, otherwise
+    // `server.close()` waits for them forever
+    if (broker) {
+      await new Promise<void>((resolve) => broker.close(() => resolve()));
     }
-    if (this.wsServer) {
-      await new Promise<void>((resolve) =>
-        this.wsServer!.close(() => resolve()),
-      );
+    if (server?.listening) {
+      await new Promise<void>((resolve) => server.close(() => resolve()));
     }
-    if (this.broker) {
-      await new Promise<void>((resolve) => this.broker!.close(() => resolve()));
+    if (wsServer?.listening) {
+      await new Promise<void>((resolve) => wsServer.close(() => resolve()));
     }
     this.logger.log("MQTT Broker stopped");
   }
@@ -162,6 +180,10 @@ export class MqttBrokerService
   }
 
   private handlePublish(packet: AedesPublishPacket, client: Client | null) {
+    if (!this.broker) {
+      // shut down: an in-flight packet must not re-arm the winner analysis
+      return;
+    }
     const payloadText =
       typeof packet.payload === "string"
         ? packet.payload
@@ -177,7 +199,7 @@ export class MqttBrokerService
 
     const topic = packet.topic;
     if (payloadObject && BIKE_STATUS_TOPIC.test(topic)) {
-      const bikeId = topic.substr(5) as BikeId;
+      const bikeId = topic.substring(5) as BikeId;
       if (this.isBikeStatusPayload(payloadObject)) {
         this.handleBikeStatus(bikeId, payloadObject as BikeStatusMessage);
       }
@@ -187,13 +209,13 @@ export class MqttBrokerService
         `📝 Client ${client ? client.id : "unknown"} published command for Bike ${bikeId}: ${payloadText}`,
       );
     } else if (payloadObject && RACE_STATE_CHANGE_TOPIC.test(topic)) {
-      this.logger.log(`📝 RaceStateChange:`, payloadObject);
+      this.logger.log(`📝 RaceStateChange: ${payloadText}`);
       if (RACE_START_STATES.includes(payloadObject.state)) {
         // a new race is about to start: forget the finish flags of the last one
         this.raceTracker.reset();
       }
     } else if (payloadObject && SHOW_STATE_CHANGE_TOPIC.test(topic)) {
-      this.logger.log(`📝 ShowStateChange:`, payloadObject);
+      this.logger.log(`📝 ShowStateChange: ${payloadText}`);
     } else {
       this.logger.log(
         `📝 Client ${client ? client.id : "unknown"} published unrecognizable message [topic=${topic}]: ${payloadText}`,

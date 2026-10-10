@@ -167,7 +167,9 @@ export class RaceService implements OnModuleDestroy {
     const otherActiveRaces = await this.prisma.race.findMany({
       where: {
         id: { not: excludeId },
-        raceState: { notIn: RaceService.ALLOWED_INACTIVE_RACE_STATES },
+        raceState: {
+          notIn: RaceService.ALLOWED_INACTIVE_RACE_STATES,
+        },
       },
     });
 

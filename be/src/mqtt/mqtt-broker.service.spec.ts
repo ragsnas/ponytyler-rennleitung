@@ -1,4 +1,6 @@
 import { Test, TestingModule } from "@nestjs/testing";
+import { Logger } from "@nestjs/common";
+import { createServer, Server } from "net";
 import { ConfigService } from "@nestjs/config";
 import { RaceState, ShowState } from "@prisma/client";
 import * as mqtt from "mqtt";
@@ -178,6 +180,62 @@ describe("MqttBrokerService", () => {
     }
   }, 15000);
 
+  it("logs a RaceStateChange payload as text, not as a logger context object", async () => {
+    const logSpy = jest.spyOn(Logger.prototype, "log");
+    const publisher = mqtt.connect(`mqtt://localhost:${TEST_MQTT_PORT}`);
+    try {
+      await waitForEvent(publisher, "connect");
+
+      publisher.publish(
+        "RaceStateChange",
+        JSON.stringify({ raceId: "43", state: RaceState.LISTED }),
+      );
+      await waitUntil(() =>
+        logSpy.mock.calls.some(([message]) =>
+          String(message).includes("RaceStateChange"),
+        ),
+      );
+
+      const withContext = logSpy.mock.calls.filter(
+        ([, context]) => typeof context === "object",
+      );
+      expect(withContext).toEqual([]);
+      const line = logSpy.mock.calls
+        .map(([message]) => String(message))
+        .find((message) => message.includes("RaceStateChange"));
+      expect(line).toContain(RaceState.LISTED);
+    } finally {
+      logSpy.mockRestore();
+      publisher.end(true);
+    }
+  });
+
+  it("does not decide a winner after the module has been destroyed", async () => {
+    raceService.currentRace.mockResolvedValue({ id: 42, showId: 7 });
+    const publisher = mqtt.connect(`mqtt://localhost:${TEST_MQTT_PORT}`);
+    try {
+      await waitForEvent(publisher, "connect");
+      await new Promise<void>((resolve, reject) => {
+        publisher.subscribe("Bike/1", (err) => (err ? reject(err) : resolve()));
+      });
+      const received = new Promise<void>((resolve) =>
+        publisher.once("message", () => resolve()),
+      );
+      publisher.publish(
+        "Bike/1",
+        JSON.stringify({ pulsecount: 121, sequenz: 10, timestamp: 1000 }),
+      );
+      await received;
+
+      await service.onModuleDestroy();
+      await new Promise((resolve) => setTimeout(resolve, 1300));
+
+      expect(raceService.currentRace).not.toHaveBeenCalled();
+    } finally {
+      publisher.end(true);
+    }
+  }, 10000);
+
   it("does not fail the broker when no current race can be found for a winning bike", async () => {
     raceService.currentRace.mockResolvedValue(null);
     const currentRaceLookedUp = new Promise<void>((resolve) => {
@@ -209,6 +267,76 @@ describe("MqttBrokerService", () => {
     }
   });
 });
+
+describe("MqttBrokerService startup failures", () => {
+  const PORT = 18840;
+  const WS_PORT = 18841;
+  let blocker: Server | undefined;
+  let service: MqttBrokerService;
+
+  beforeEach(async () => {
+    const module: TestingModule = await Test.createTestingModule({
+      providers: [
+        MqttBrokerService,
+        {
+          provide: ConfigService,
+          useValue: {
+            get: (key: string) =>
+              key === "MQTT_PORT"
+                ? PORT
+                : key === "MQTT_WS_PORT"
+                  ? WS_PORT
+                  : undefined,
+          },
+        },
+        { provide: RaceService, useValue: {} },
+        { provide: ShowService, useValue: {} },
+      ],
+    }).compile();
+    service = module.get(MqttBrokerService);
+  });
+
+  afterEach(async () => {
+    await service.onModuleDestroy();
+    await new Promise<void>((resolve) =>
+      blocker ? blocker.close(() => resolve()) : resolve(),
+    );
+    blocker = undefined;
+  });
+
+  function occupy(port: number): Promise<void> {
+    blocker = createServer();
+    return new Promise((resolve) => blocker!.listen(port, resolve));
+  }
+
+  it("rejects the bootstrap instead of hanging when the TCP port is already in use", async () => {
+    await occupy(PORT);
+
+    await expect(service.onApplicationBootstrap()).rejects.toMatchObject({
+      code: "EADDRINUSE",
+    });
+  });
+
+  it("rejects the bootstrap when the WebSocket port is already in use and releases the TCP port again", async () => {
+    await occupy(WS_PORT);
+
+    await expect(service.onApplicationBootstrap()).rejects.toMatchObject({
+      code: "EADDRINUSE",
+    });
+
+    // the TCP listener started before the failure must not stay behind
+    await service.onModuleDestroy();
+    await expect(occupyAndRelease(PORT)).resolves.toBeUndefined();
+  });
+});
+
+function occupyAndRelease(port: number): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const probe = createServer();
+    probe.once("error", reject);
+    probe.listen(port, () => probe.close(() => resolve()));
+  });
+}
 
 function waitForEvent(
   client: mqtt.MqttClient,
