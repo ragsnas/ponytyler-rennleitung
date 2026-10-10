@@ -1,7 +1,7 @@
 import { Injectable, OnModuleDestroy } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { PrismaService } from "./prisma.service";
-import { Show, Prisma, Shift, ShowState } from "@prisma/client";
+import { Show, Prisma, ShowState } from "@prisma/client";
 import mqtt from "mqtt";
 import * as os from "os";
 
@@ -126,46 +126,10 @@ export class ShowService implements OnModuleDestroy {
     );
   }
 
-  async deleteShowWithRacesAndShifts(id: string) {
-    const deleteRaces = this.prisma.race.deleteMany({
-      where: {
-        showId: Number(id),
-      },
+  /** Races, shifts, shift roles and encore songs go with the show (`onDelete: Cascade`). */
+  async deleteShowWithRacesAndShifts(id: string): Promise<Show> {
+    return this.prisma.show.delete({
+      where: { id: Number(id) },
     });
-
-    const relatedShifts: Shift[] = await this.prisma.shift.findMany({
-      where: {
-        showId: Number(id),
-      },
-    });
-
-    const deleteShiftsRoles = this.prisma.shiftRole.deleteMany({
-      where: {
-        shiftId: {
-          in: relatedShifts.map((shift) => shift.id),
-        },
-      },
-    });
-
-    const deleteShifts = this.prisma.shift.deleteMany({
-      where: {
-        id: {
-          in: relatedShifts.map((shift) => shift.id),
-        },
-      },
-    });
-
-    const deleteShow = this.prisma.show.delete({
-      where: {
-        id: Number(id),
-      },
-    });
-
-    return this.prisma.$transaction([
-      deleteRaces,
-      deleteShifts,
-      deleteShiftsRoles,
-      deleteShow,
-    ]);
   }
 }

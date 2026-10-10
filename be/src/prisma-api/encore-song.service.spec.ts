@@ -5,11 +5,32 @@ import { PrismaService } from "./prisma.service";
 describe("EncoreSongService", () => {
   let service: EncoreSongService;
   let findManyMock: jest.Mock;
-  let createMock: jest.Mock;
+  let events: string[];
+  let transactionMock: jest.Mock;
+  let tx: {
+    encoreSong: { aggregate: jest.Mock; create: jest.Mock };
+    $executeRaw: jest.Mock;
+  };
 
   beforeEach(async () => {
     findManyMock = jest.fn();
-    createMock = jest.fn();
+    events = [];
+    tx = {
+      encoreSong: {
+        aggregate: jest.fn().mockImplementation(async () => {
+          events.push("aggregate");
+          return { _max: { order: null } };
+        }),
+        create: jest.fn().mockImplementation(async () => {
+          events.push("create");
+          return {};
+        }),
+      },
+      $executeRaw: jest.fn().mockImplementation(async () => {
+        events.push("lock");
+      }),
+    };
+    transactionMock = jest.fn((work: (t: typeof tx) => unknown) => work(tx));
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -17,7 +38,8 @@ describe("EncoreSongService", () => {
         {
           provide: PrismaService,
           useValue: {
-            encoreSong: { findMany: findManyMock, create: createMock },
+            encoreSong: { findMany: findManyMock },
+            $transaction: transactionMock,
           },
         },
       ],
@@ -28,47 +50,43 @@ describe("EncoreSongService", () => {
 
   describe("createEncoreSong", () => {
     it("assigns order 0 when the show has no encore songs yet", async () => {
-      findManyMock.mockResolvedValue([]);
-      createMock.mockResolvedValue({ id: 1, showId: 5, songId: 10, order: 0 });
+      tx.encoreSong.aggregate.mockResolvedValue({ _max: { order: null } });
 
       await service.createEncoreSong({ showId: 5, songId: 10 });
 
-      expect(findManyMock).toHaveBeenCalledWith({
-        where: { showId: 5 },
-        orderBy: { order: "desc" },
-        take: 1,
-      });
-      expect(createMock).toHaveBeenCalledWith({
+      expect(tx.encoreSong.create).toHaveBeenCalledWith({
         data: { showId: 5, songId: 10, order: 0 },
         include: { song: true },
       });
     });
 
-    it("assigns the next order number after the highest existing encore song for that show", async () => {
-      findManyMock.mockResolvedValue([
-        { id: 2, showId: 5, songId: 11, order: 3 },
-      ]);
-      createMock.mockResolvedValue({ id: 3, showId: 5, songId: 12, order: 4 });
+    it("assigns the next order number after the highest existing encore song of that show", async () => {
+      tx.encoreSong.aggregate.mockResolvedValue({ _max: { order: 3 } });
 
       await service.createEncoreSong({ showId: 5, songId: 12 });
 
-      expect(createMock).toHaveBeenCalledWith({
+      expect(tx.encoreSong.create).toHaveBeenCalledWith({
         data: { showId: 5, songId: 12, order: 4 },
         include: { song: true },
       });
     });
 
-    it("scopes the highest order lookup to the given show", async () => {
-      findManyMock.mockResolvedValue([]);
-      createMock.mockResolvedValue({ id: 1, showId: 7, songId: 20, order: 0 });
-
+    it("asks the database for the maximum of the given show instead of loading rows", async () => {
       await service.createEncoreSong({ showId: 7, songId: 20 });
 
-      expect(findManyMock).toHaveBeenCalledWith({
+      expect(tx.encoreSong.aggregate).toHaveBeenCalledWith({
         where: { showId: 7 },
-        orderBy: { order: "desc" },
-        take: 1,
+        _max: { order: true },
       });
+      expect(findManyMock).not.toHaveBeenCalled();
+    });
+
+    it("locks the show, reads the maximum and writes in one transaction, in that order", async () => {
+      await service.createEncoreSong({ showId: 5, songId: 10 });
+
+      expect(transactionMock).toHaveBeenCalledTimes(1);
+      expect(events).toEqual(["lock", "aggregate", "create"]);
+      expect(tx.$executeRaw.mock.calls[0].slice(1)).toContain(5);
     });
   });
 

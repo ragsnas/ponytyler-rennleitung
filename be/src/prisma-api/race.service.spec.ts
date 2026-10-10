@@ -21,6 +21,8 @@ describe("RaceService", () => {
       findUnique: jest.Mock;
       update: jest.Mock;
       updateManyAndReturn: jest.Mock;
+      aggregate: jest.Mock;
+      create: jest.Mock;
     };
     $executeRaw: jest.Mock;
   };
@@ -37,6 +39,14 @@ describe("RaceService", () => {
         findUnique: jest.fn(),
         update: jest.fn(),
         updateManyAndReturn: jest.fn().mockResolvedValue([]),
+        aggregate: jest.fn().mockImplementation(async () => {
+          events.push("aggregate");
+          return { _max: { orderNumber: null } };
+        }),
+        create: jest.fn().mockImplementation(async (args) => {
+          events.push("create");
+          return { id: 1, ...args.data };
+        }),
       },
       $executeRaw: jest.fn().mockImplementation(async () => {
         events.push("lock");
@@ -270,6 +280,73 @@ describe("RaceService", () => {
       ).rejects.toThrow("boom");
 
       expect(mqttClient.publish).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("createRace", () => {
+    const complete = {
+      showId: 5,
+      person1: "A",
+      song1Id: 10,
+      person2: "B",
+      song2Id: 11,
+      raceState: RaceState.LISTED,
+    };
+
+    it("appends the race after the highest orderNumber of its show, taken from a database aggregate", async () => {
+      tx.race.aggregate.mockResolvedValue({ _max: { orderNumber: 7 } });
+
+      await service.createRace(complete);
+
+      expect(tx.race.aggregate).toHaveBeenCalledWith({
+        where: { showId: 5 },
+        _max: { orderNumber: true },
+      });
+      expect(tx.race.create).toHaveBeenCalledWith({
+        data: expect.objectContaining({ showId: 5, orderNumber: 8 }),
+      });
+      expect(findManyMock).not.toHaveBeenCalled();
+    });
+
+    it("starts at orderNumber 0 in a show without races", async () => {
+      await service.createRace(complete);
+
+      expect(tx.race.create).toHaveBeenCalledWith({
+        data: expect.objectContaining({ orderNumber: 0 }),
+      });
+    });
+
+    it("locks the show, reads the maximum and inserts in one transaction, in that order", async () => {
+      await service.createRace(complete);
+
+      expect(transactionMock).toHaveBeenCalledTimes(1);
+      expect(events).toEqual(["lock", "aggregate", "create"]);
+      expect(tx.$executeRaw.mock.calls[0].slice(1)).toContain(5);
+    });
+
+    it("stores missing songs as null instead of NaN", async () => {
+      await service.createRace({
+        showId: 5,
+        person1: "A",
+        raceState: RaceState.WAITING_FOR_OPPONENT,
+      });
+
+      const { data } = tx.race.create.mock.calls[0][0];
+      expect(data.song1Id).toBeNull();
+      expect(data.song2Id).toBeNull();
+      expect(data.raceState).toBe(RaceState.WAITING_FOR_OPPONENT);
+    });
+
+    it("keeps given songs as numbers", async () => {
+      await service.createRace({
+        ...complete,
+        song1Id: "10" as unknown as number,
+        song2Id: "11" as unknown as number,
+      });
+
+      const { data } = tx.race.create.mock.calls[0][0];
+      expect(data.song1Id).toBe(10);
+      expect(data.song2Id).toBe(11);
     });
   });
 

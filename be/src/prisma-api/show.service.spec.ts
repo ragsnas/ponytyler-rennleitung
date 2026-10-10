@@ -14,6 +14,7 @@ describe("ShowService", () => {
   let findUniqueMock: jest.Mock;
   let updateMock: jest.Mock;
   let findManyMock: jest.Mock;
+  let deleteMock: jest.Mock;
   let transactionMock: jest.Mock;
   let tx: {
     show: {
@@ -30,6 +31,7 @@ describe("ShowService", () => {
     findUniqueMock = jest.fn();
     updateMock = jest.fn();
     findManyMock = jest.fn().mockResolvedValue([]);
+    deleteMock = jest.fn();
     events = [];
     tx = {
       show: {
@@ -58,6 +60,7 @@ describe("ShowService", () => {
               findUnique: findUniqueMock,
               update: updateMock,
               findMany: findManyMock,
+              delete: deleteMock,
             },
             $transaction: transactionMock,
           },
@@ -80,6 +83,27 @@ describe("ShowService", () => {
     service.onModuleDestroy();
 
     expect(mqttClient.end).toHaveBeenCalled();
+  });
+
+  describe("deleteShowWithRacesAndShifts", () => {
+    it("deletes only the show; the database cascades to races, shifts, shift roles and encore songs", async () => {
+      deleteMock.mockResolvedValue({ id: 7 });
+
+      const result = await service.deleteShowWithRacesAndShifts("7");
+
+      expect(deleteMock).toHaveBeenCalledTimes(1);
+      expect(deleteMock).toHaveBeenCalledWith({ where: { id: 7 } });
+      expect(result).toEqual({ id: 7 });
+    });
+
+    it("needs no extra reads or transaction", async () => {
+      deleteMock.mockResolvedValue({ id: 7 });
+
+      await service.deleteShowWithRacesAndShifts("7");
+
+      expect(findManyMock).not.toHaveBeenCalled();
+      expect(transactionMock).not.toHaveBeenCalled();
+    });
   });
 
   describe("updateShow", () => {

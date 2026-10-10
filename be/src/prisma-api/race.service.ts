@@ -95,25 +95,33 @@ export class RaceService implements OnModuleDestroy {
     });
   }
 
-  async createRace(data: Prisma.RaceUncheckedCreateInput): Promise<Race> {
-    const highestOrderNumberRace: Race[] = await this.races({
-      where: { showId: Number(data.showId) },
-      orderBy: { orderNumber: "desc" },
-    });
-    return this.prisma.race.create({
-      data: {
-        raceState: this.calculateRaceState(data),
-        person1: data.person1,
-        song1Id: Number(data.song1Id),
-        person2: data.person2,
-        song2Id: Number(data.song2Id),
-        showId: Number(data.showId),
-        createdAt: data.createdAt || new Date(),
-        orderNumber:
-          highestOrderNumberRace.length > 0
-            ? Number(highestOrderNumberRace[0].orderNumber) + 1
-            : 0,
-      },
+  async createRace(
+    data: Omit<Prisma.RaceUncheckedCreateInput, "orderNumber"> & {
+      /** Ignored: the next free number of the show is assigned here. */
+      orderNumber?: number;
+    },
+  ): Promise<Race> {
+    const showId = Number(data.showId);
+    return this.prisma.$transaction(async (tx) => {
+      // serialise with other creates/updates of this show so two races cannot
+      // be given the same orderNumber ((showId, orderNumber) is unique)
+      await this.lockShow(tx, showId);
+      const { _max } = await tx.race.aggregate({
+        where: { showId },
+        _max: { orderNumber: true },
+      });
+      return tx.race.create({
+        data: {
+          raceState: this.calculateRaceState(data),
+          person1: data.person1,
+          song1Id: data.song1Id == null ? null : Number(data.song1Id),
+          person2: data.person2,
+          song2Id: data.song2Id == null ? null : Number(data.song2Id),
+          showId,
+          createdAt: data.createdAt || new Date(),
+          orderNumber: (_max.orderNumber ?? -1) + 1,
+        },
+      });
     });
   }
 
