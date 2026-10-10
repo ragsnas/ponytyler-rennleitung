@@ -5,8 +5,10 @@ import { StatisticsService } from "projects/backend-api/src/lib/statistics.servi
 import { Show, ShowService, ShowState } from "projects/backend-api/src/lib/show.service";
 import { EncoreSong, EncoreSongService } from "projects/backend-api/src/lib/encore-song.service";
 import {
+  catchError,
   combineLatest,
   delay,
+  EMPTY,
   interval,
   startWith,
   Subject,
@@ -139,11 +141,21 @@ export class ShowDashboardComponent implements OnInit, OnDestroy {
         return this.refresh$.pipe(
           takeUntil(this.unsubscribe$),
           startWith(0),
+          // The error is handled per request: an error reaching the outer
+          // subscription would end it and with it the polling.
           switchMap(() => combineLatest([
             this.showService.getShow(showId),
             this.raceService.getAllRacesForShow(showId),
             this.encoreSongService.getEncoreSongsForShow(showId),
-          ])));
+          ]).pipe(
+            catchError((error) => {
+              this.refreshing.set(false);
+              this.snackBar.open(`Error during loading of Data: ${JSON.stringify(error)}`, "OK", {
+                duration: 10000, announcementMessage: `Error`, panelClass: "error",
+              });
+              return EMPTY;
+            }),
+          )));
       }),
     ).subscribe({
       next: ([show, races, encoreSongs]) => {
@@ -162,13 +174,7 @@ export class ShowDashboardComponent implements OnInit, OnDestroy {
         this.refreshing.set(false);
         this.lastUpdated.set(new Date());
       },
-      error: (error) => {
-        this.snackBar.open(`Error during loading of Data: ${JSON.stringify(error)}`, "OK", {
-          duration: 10000, announcementMessage: `Error`, panelClass: "error",
-        });
-      },
     });
-
   }
 
   bikeWon(bike: number, race: Race) {

@@ -7,7 +7,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatDialog } from '@angular/material/dialog';
 import { MatTableModule } from '@angular/material/table';
 import { MatButtonModule } from '@angular/material/button';
-import { Subject, of } from 'rxjs';
+import { Subject, of, throwError } from 'rxjs';
 
 import { ShowDashboardComponent } from './show-dashboard.component';
 import { ShowService, ShowState } from 'projects/backend-api/src/lib/show.service';
@@ -108,6 +108,58 @@ describe('ShowDashboardComponent', () => {
     racesSubject.next([]);
     racesSubject.complete();
     expect(component.refreshing()).toBe(false);
+  });
+
+  describe('when loading the data fails', () => {
+    const racesOk: Race[] = [
+      { id: 'race-1', showId: 'show-1', person1: 'A', person2: 'B', orderNumber: '0', bikeWon: 0, raceState: RaceState.LISTED },
+    ];
+
+    it('shows an error and re-enables the buttons (refreshing is reset)', () => {
+      fixture.detectChanges();
+      raceService.getAllRacesForShow.and.returnValue(throwError(() => new Error('boom')));
+
+      component.manualRefresh();
+
+      expect(component.refreshing()).toBe(false);
+      expect(TestBed.inject(MatSnackBar).open).toHaveBeenCalledWith(
+        jasmine.stringContaining('Error during loading of Data'), 'OK', jasmine.anything());
+    });
+
+    it('keeps polling: the next refresh loads again', () => {
+      fixture.detectChanges();
+      raceService.getAllRacesForShow.and.returnValue(throwError(() => new Error('boom')));
+      component.manualRefresh();
+
+      raceService.getAllRacesForShow.and.returnValue(of(racesOk));
+      component.manualRefresh();
+
+      expect(component.races().length).toBe(1);
+      expect(component.refreshing()).toBe(false);
+    });
+
+    it('keeps polling after the initial load failed', () => {
+      raceService.getAllRacesForShow.and.returnValue(throwError(() => new Error('boom')));
+      fixture.detectChanges();
+
+      raceService.getAllRacesForShow.and.returnValue(of(racesOk));
+      component.manualRefresh();
+
+      expect(component.races().length).toBe(1);
+    });
+
+    it('keeps polling on the timer', fakeAsync(() => {
+      fixture.detectChanges();
+      raceService.getAllRacesForShow.and.returnValue(throwError(() => new Error('boom')));
+      tick(5000 + 600);
+
+      raceService.getAllRacesForShow.and.returnValue(of(racesOk));
+      tick(5000 + 600);
+
+      expect(component.races().length).toBe(1);
+
+      discardPeriodicTasks();
+    }));
   });
 
   it('triggers manualRefresh when the manual refresh button is clicked', () => {
