@@ -3,9 +3,9 @@ import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { ReactiveFormsModule } from '@angular/forms';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
-import { ActivatedRoute, provideRouter, convertToParamMap } from '@angular/router';
+import { ActivatedRoute, Router, provideRouter, convertToParamMap } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { EMPTY, of } from 'rxjs';
+import { EMPTY, of, throwError } from 'rxjs';
 import { Show, ShowService } from 'projects/backend-api/src/lib/show.service';
 
 import { EditShowComponent } from './edit-show.component';
@@ -14,6 +14,7 @@ describe('EditShowComponent', () => {
   let component: EditShowComponent;
   let fixture: ComponentFixture<EditShowComponent>;
   let updateShow: jasmine.Spy;
+  let navigate: jasmine.Spy;
   let existingShow: Show;
 
   beforeEach(async () => {
@@ -32,6 +33,7 @@ describe('EditShowComponent', () => {
     })
     .compileComponents();
 
+    navigate = spyOn(TestBed.inject(Router), 'navigate').and.resolveTo(true);
     fixture = TestBed.createComponent(EditShowComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
@@ -39,6 +41,20 @@ describe('EditShowComponent', () => {
 
   it('should create', () => {
     expect(component).toBeTruthy();
+  });
+
+  it('navigates right away on success, without waiting for the snackbar to be dismissed', () => {
+    component.updateShow();
+
+    expect(navigate).toHaveBeenCalledOnceWith(['..'], { relativeTo: jasmine.anything() });
+  });
+
+  it('stays on the page when saving fails', () => {
+    updateShow.and.returnValue(throwError(() => new Error('boom')));
+
+    component.updateShow();
+
+    expect(navigate).not.toHaveBeenCalled();
   });
 
   it('keeps a finished, inactive show inactive when saving', () => {

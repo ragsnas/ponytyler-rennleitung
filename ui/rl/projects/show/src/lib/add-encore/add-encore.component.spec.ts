@@ -4,7 +4,7 @@ import { ActivatedRoute, convertToParamMap, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR, ReactiveFormsModule } from '@angular/forms';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { of, throwError } from 'rxjs';
+import { EMPTY, of, throwError } from 'rxjs';
 
 import { AddEncoreComponent } from './add-encore.component';
 import { Show, ShowService } from 'projects/backend-api/src/lib/show.service';
@@ -48,7 +48,7 @@ describe('AddEncoreComponent', () => {
 
     router = jasmine.createSpyObj('Router', ['navigate']);
     snackBar = jasmine.createSpyObj('MatSnackBar', ['open']);
-    snackBar.open.and.returnValue({ afterDismissed: () => of(undefined) } as never);
+    snackBar.open.and.returnValue({ afterDismissed: () => EMPTY } as never);
 
     await TestBed.configureTestingModule({
       declarations: [AddEncoreComponent, StubSongAutoCompleteComponent],

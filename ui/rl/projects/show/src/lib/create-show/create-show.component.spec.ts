@@ -3,7 +3,7 @@ import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { ReactiveFormsModule } from '@angular/forms';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
-import { provideRouter } from '@angular/router';
+import { Router, provideRouter } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { EMPTY, of } from 'rxjs';
 import { ShowService } from 'projects/backend-api/src/lib/show.service';
@@ -14,6 +14,7 @@ describe('CreateShowComponent', () => {
   let component: CreateShowComponent;
   let fixture: ComponentFixture<CreateShowComponent>;
   let createShow: jasmine.Spy;
+  let navigate: jasmine.Spy;
 
   beforeEach(async () => {
     createShow = jasmine.createSpy('createShow').and.returnValue(of({ id: '1' }));
@@ -29,6 +30,7 @@ describe('CreateShowComponent', () => {
     })
     .compileComponents();
 
+    navigate = spyOn(TestBed.inject(Router), 'navigate').and.resolveTo(true);
     fixture = TestBed.createComponent(CreateShowComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
@@ -50,6 +52,14 @@ describe('CreateShowComponent', () => {
 
       const sent = createShow.calls.mostRecent().args[0];
       expect(sent).toEqual({ name: 'Show', date: new Date(2026, 5, 1, 21, 30), duration: 90 });
+    });
+
+    it('navigates to the new show right away, without waiting for the snackbar to be dismissed', () => {
+      component.form.patchValue({ name: 'Show' });
+
+      component.createShow();
+
+      expect(navigate).toHaveBeenCalledOnceWith(['..', '1'], { relativeTo: jasmine.anything() });
     });
 
     it('does not mutate the date held by the form', () => {

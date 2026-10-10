@@ -44,11 +44,8 @@ export class CreateShowComponent {
       duration: Number(duration) || 0,
     }).subscribe({
       next: (result) => {
-        this.snackBar.open(`Successfully Created Show ${name}`, "OK", { panelClass: "success" })
-          .afterDismissed()
-          .subscribe(() => {
-            this.router.navigate(["..", result.id], { relativeTo: this.route });
-          });
+        this.snackBar.open(`Successfully Created Show ${name}`, "OK", { duration: 2000, panelClass: "success" });
+        this.router.navigate(["..", result.id], { relativeTo: this.route });
       },
       error: (error) => {
         this.snackBar.open(`Error during Creation Of Show: ${JSON.stringify(error)}`, "OK", {

@@ -46,11 +46,8 @@ export class AddEncoreComponent implements OnInit {
       song,
     }).subscribe({
       next: () => {
-        this.snackBar.open(`Successfully added Encore Song`, 'OK', { duration: 200, panelClass: 'success' })
-          .afterDismissed()
-          .subscribe(() => {
-            this.router.navigate(['..'], { relativeTo: this.route });
-          });
+        this.snackBar.open(`Successfully added Encore Song`, 'OK', { duration: 2000, panelClass: 'success' });
+        this.router.navigate(['..'], { relativeTo: this.route });
       },
       error: (error) => {
         this.createInProcess = false;

@@ -3,7 +3,7 @@ import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { ReactiveFormsModule } from '@angular/forms';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
-import { ActivatedRoute, provideRouter, convertToParamMap } from '@angular/router';
+import { ActivatedRoute, Router, provideRouter, convertToParamMap } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { EMPTY, of } from 'rxjs';
 import { RaceService, RaceState } from 'projects/backend-api/src/lib/race.service';
@@ -18,6 +18,7 @@ describe('CreateRaceComponent', () => {
   let component: CreateRaceComponent;
   let fixture: ComponentFixture<CreateRaceComponent>;
   let createRace: jasmine.Spy;
+  let navigate: jasmine.Spy;
 
   beforeEach(async () => {
     createRace = jasmine.createSpy('createRace').and.returnValue(of({}));
@@ -36,6 +37,7 @@ describe('CreateRaceComponent', () => {
     })
     .compileComponents();
 
+    navigate = spyOn(TestBed.inject(Router), 'navigate').and.resolveTo(true);
     fixture = TestBed.createComponent(CreateRaceComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
@@ -43,6 +45,12 @@ describe('CreateRaceComponent', () => {
 
   it('should create', () => {
     expect(component).toBeTruthy();
+  });
+
+  it('navigates right away on success, without waiting for the snackbar to be dismissed', () => {
+    component.createRace();
+
+    expect(navigate).toHaveBeenCalledOnceWith(['..'], { relativeTo: jasmine.anything() });
   });
 
   describe('createRace', () => {
