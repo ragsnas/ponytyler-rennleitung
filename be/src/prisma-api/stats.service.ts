@@ -33,9 +33,9 @@ export class StatsService {
    */
   private static readonly PICKS = Prisma.sql`
     picks AS (
-      SELECT r."song1Id" AS "songId", r.raced FROM "Race" r WHERE r."song1Id" IS NOT NULL
+      SELECT r."song1Id" AS "songId", r."raceState" FROM "Race" r WHERE r."song1Id" IS NOT NULL
       UNION ALL
-      SELECT r."song2Id" AS "songId", r.raced FROM "Race" r WHERE r."song2Id" IS NOT NULL
+      SELECT r."song2Id" AS "songId", r."raceState" FROM "Race" r WHERE r."song2Id" IS NOT NULL
     )
   `;
 
@@ -46,7 +46,7 @@ export class StatsService {
       SELECT s.artist, s.name, COUNT(*)::int AS "totalCount"
       FROM picks p
         INNER JOIN "Song" s ON s.id = p."songId"
-      WHERE p.raced = true
+      WHERE p."raceState" IN ('RACED', 'DONE')
       GROUP BY s.id, s.artist, s.name
       ORDER BY "totalCount" DESC, s.artist, s.name
       LIMIT ${limit}

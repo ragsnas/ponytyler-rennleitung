@@ -170,7 +170,7 @@ test.describe('api seeding', () => {
 
     const won = await api.setWinner(race, 2);
 
-    expect(won).toMatchObject({ id: race.id, bikeWon: 2, raceState: 'RACED', raced: true });
+    expect(won).toMatchObject({ id: race.id, bikeWon: 2, raceState: 'RACED' });
   });
 
   test('lets a name override the generated one', async ({ api }) => {

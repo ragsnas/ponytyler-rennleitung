@@ -272,7 +272,6 @@ export class MqttBrokerService
           bikeWon: Number(bikeId),
           raceFinishedAt: new Date().toISOString(),
           raceState: RaceState.RACED,
-          raced: true,
         },
       });
 

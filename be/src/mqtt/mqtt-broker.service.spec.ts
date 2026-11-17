@@ -123,7 +123,6 @@ describe("MqttBrokerService", () => {
           bikeWon: 1,
           raceFinishedAt: expect.any(String),
           raceState: RaceState.RACED,
-          raced: true,
         },
       });
       expect(showService.updateShow).toHaveBeenCalledWith({

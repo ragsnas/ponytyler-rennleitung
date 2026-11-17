@@ -152,7 +152,7 @@ export class StateMachineComponent implements OnInit, OnDestroy {
     const show = this.currentShow();
     if (show && race) {
       this.updateRaceAndShow(
-        { ...race, raced: true, raceState: RaceState.WAITING_TO_RACE },
+        { ...race, raceState: RaceState.WAITING_TO_RACE },
         { ...show, showState: ShowState.RACE },
         () => {
         },
@@ -166,7 +166,7 @@ export class StateMachineComponent implements OnInit, OnDestroy {
     const show = this.currentShow();
     if (show && race) {
       this.updateRaceAndShow(
-        { ...race, raced: true, raceState: RaceState.RACING, raceStartedAt: new Date() },
+        { ...race, raceState: RaceState.RACING, raceStartedAt: new Date() },
         { ...show, showState: ShowState.RACE },
         () => {
         },
@@ -180,7 +180,7 @@ export class StateMachineComponent implements OnInit, OnDestroy {
     const show = this.currentShow();
     if (show && race) {
       this.updateRaceAndShow(
-        { ...race, raced: true, raceState: RaceState.RACED },
+        { ...race, raceState: RaceState.RACED },
         { ...show, showState: ShowState.RACE_FINISHED },
         () => {
         },
@@ -194,7 +194,7 @@ export class StateMachineComponent implements OnInit, OnDestroy {
     const show = this.currentShow();
     if (show && race) {
       this.updateRaceAndShow(
-        { ...race, raced: true, raceState: RaceState.LISTED },
+        { ...race, raceState: RaceState.LISTED },
         { ...show, showState: ShowState.BEFORE_RACE },
         () => {
         },
@@ -208,7 +208,7 @@ export class StateMachineComponent implements OnInit, OnDestroy {
     const show = this.currentShow();
     if (show && race) {
       this.updateRaceAndShow(
-        { ...race, raced: true, raceState: RaceState.CANCELED },
+        { ...race, raceState: RaceState.CANCELED },
         { ...show, showState: ShowState.BEFORE_RACE },
         () => {
           this.getCurrentShowAndRace();
@@ -223,7 +223,7 @@ export class StateMachineComponent implements OnInit, OnDestroy {
     const show = this.currentShow();
     if (show && race) {
       this.updateRaceAndShow(
-        { ...race, raced: true, raceState: RaceState.DONE },
+        { ...race, raceState: RaceState.DONE },
         { ...show, showState: ShowState.BEFORE_RACE },
         () => {
           this.getCurrentShowAndRace();

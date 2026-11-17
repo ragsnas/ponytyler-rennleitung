@@ -37,7 +37,6 @@ export class ShowsComponent implements OnInit {
       ...show,
       active: true,
       showState: ShowState.BEFORE_RACE,
-      finished: false
     }).subscribe({
       next: () => {
         this.shows$ = this.showService.getAllShows();
@@ -55,7 +54,6 @@ export class ShowsComponent implements OnInit {
       ...show,
       active: false,
       showState: ShowState.SHOW_FINISHED,
-      finished: true
     }).subscribe({
       next: () => {
         this.shows$ = this.showService.getAllShows();
@@ -71,7 +69,6 @@ export class ShowsComponent implements OnInit {
   setFinished(show: Show) {
     this.showService.updateShow({
       ...show,
-      finished: true,
       active: false,
       showState: ShowState.SHOW_FINISHED
     }).subscribe({

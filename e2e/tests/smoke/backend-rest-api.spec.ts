@@ -99,7 +99,6 @@ test.describe.serial('Backend REST API lifecycle', () => {
         person2: 'white',
         bikeWon: 1,
         raceState: 'RACED',
-        raced: true,
       },
     });
     expect(response.status()).toBe(200);
@@ -109,7 +108,6 @@ test.describe.serial('Backend REST API lifecycle', () => {
       id: race2Id,
       bikeWon: 1,
       raceState: 'RACED',
-      raced: true,
     });
   });
 

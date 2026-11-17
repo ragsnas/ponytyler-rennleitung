@@ -151,12 +151,11 @@ describe("Backend REST API lifecycle (e2e)", () => {
   it("manipulates the show", async () => {
     const updated = await request(app.getHttpServer())
       .patch(`/api/show/${showId}`)
-      .send({ finished: true, showState: "SHOW_FINISHED" })
+      .send({ showState: "SHOW_FINISHED" })
       .expect(200);
 
     expect(updated.body).toMatchObject({
       id: showId,
-      finished: true,
       showState: "SHOW_FINISHED",
     });
   });
@@ -231,7 +230,7 @@ describe("Backend REST API lifecycle (e2e)", () => {
     expect(restoredShow.body).toMatchObject({
       id: showId,
       name: showName,
-      finished: true,
+      showState: "SHOW_FINISHED",
     });
 
     const restoredSong = await request(app.getHttpServer()).get(

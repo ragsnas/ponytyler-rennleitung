@@ -5,6 +5,7 @@
  * disposable database, like the other e2e suites.
  */
 import { Test, TestingModule } from "@nestjs/testing";
+import { RaceState } from "@prisma/client";
 import { PrismaService } from "../src/prisma-api/prisma.service";
 import { StatsService } from "../src/prisma-api/stats.service";
 
@@ -34,13 +35,13 @@ describe("StatsService song statistics (e2e)", () => {
   const race = (
     song1: string | undefined,
     song2: string | undefined,
-    raced: boolean,
+    raceState: RaceState,
   ) =>
     prisma.race.create({
       data: {
         showId,
         orderNumber: nextOrder++,
-        raced,
+        raceState,
         song1Id: song1 ? songIds[song1] : undefined,
         song2Id: song2 ? songIds[song2] : undefined,
       },
@@ -66,10 +67,10 @@ describe("StatsService song statistics (e2e)", () => {
     await createSong("neverUnselectable", { selectable: false });
     await createSong("neverDeleted", { deleted: true });
 
-    await race("only1", "both", true);
-    await race("both", "only2", true);
-    await race("both", "only2", true);
-    await race("unraced", "only2", false);
+    await race("only1", "both", RaceState.RACED);
+    await race("both", "only2", RaceState.RACED);
+    await race("both", "only2", RaceState.DONE);
+    await race("unraced", "only2", RaceState.LISTED);
   });
 
   afterAll(async () => {

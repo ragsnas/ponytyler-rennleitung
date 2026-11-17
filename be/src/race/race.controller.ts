@@ -10,7 +10,7 @@ import {
 } from "@nestjs/common";
 import { RaceService } from "../prisma-api/race.service";
 import { ShowService } from "../prisma-api/show.service";
-import { Prisma, RaceState } from "@prisma/client";
+import { Prisma, RaceState, ShowState } from "@prisma/client";
 import { combineLatest, map } from "rxjs";
 
 @Controller("api/race")
@@ -62,12 +62,12 @@ export class RaceController {
       this.raceService.races({
         where: {
           raceState: { equals: RaceState.RACED },
-          show: { finished: { equals: true } },
+          show: { showState: { equals: ShowState.SHOW_FINISHED } },
         },
       }),
       this.showService.shows({
         where: {
-          finished: { equals: true },
+          showState: { equals: ShowState.SHOW_FINISHED },
         },
       }),
     ]).pipe(

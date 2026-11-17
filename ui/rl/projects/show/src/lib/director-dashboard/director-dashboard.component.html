@@ -52,18 +52,18 @@
       <ng-container matColumnDef="actions">
         <th mat-header-cell *matHeaderCellDef>Actions</th>
         <td mat-cell *matCellDef="let element">
-          @if (!element.raced) {
+          @if (element.raceState !== 'RACED') {
             <button mat-icon-button aria-label="Delete Song" (click)="markRaceAsPlayBoth(element)">
               <mat-icon matBadge="2" matBadgeColor="warn">sports_score</mat-icon>
             </button>
           }
           &nbsp;
-          @if (!element.raced) {
+          @if (element.raceState !== 'RACED') {
             <button mat-icon-button aria-label="Delete Song" (click)="markRaceAsRaced(element)">
               <mat-icon>check_box_outline_blank</mat-icon>
             </button>
           }
-          @if (element.raced) {
+          @if (element.raceState === 'RACED') {
             <button mat-icon-button aria-label="Delete Song" (click)="markRaceAsNotRaced(element)">
               <mat-icon>check_box</mat-icon>
             </button>
@@ -125,12 +125,12 @@
       <ng-container matColumnDef="actions">
         <th mat-header-cell *matHeaderCellDef>Actions</th>
         <td mat-cell *matCellDef="let element">
-          @if (!element.raced) {
+          @if (element.raceState !== 'RACED') {
             <button mat-icon-button aria-label="Delete Song" (click)="markRaceAsRaced(element)">
               <mat-icon>check_box_outline_blank</mat-icon>
             </button>
           }
-          @if (element.raced) {
+          @if (element.raceState === 'RACED') {
             <button mat-icon-button aria-label="Delete Song" (click)="markRaceAsNotRaced(element)">
               <mat-icon>check_box</mat-icon>
             </button>

@@ -56,7 +56,7 @@ test.describe('winner through the bike sensors', () => {
         await mqttPublisher.publishBikeFinished(bike, sequenz);
       }
 
-      await expect.poll(() => api.getRace(race), { timeout: 10000 }).toMatchObject({ raceState: 'RACED', bikeWon: expectedWinner, raced: true });
+      await expect.poll(() => api.getRace(race), { timeout: 10000 }).toMatchObject({ raceState: 'RACED', bikeWon: expectedWinner });
       expect((await api.getRace(race)) as { raceFinishedAt: string | null }).toMatchObject({ raceFinishedAt: expect.any(String) });
       expect(await api.getShow(show)).toMatchObject({ showState: 'RACE_FINISHED' });
       await mqttListener.waitFor(`Bike/${expectedWinner}/won`);

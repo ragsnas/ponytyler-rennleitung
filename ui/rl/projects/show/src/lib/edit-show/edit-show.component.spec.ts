@@ -6,7 +6,7 @@ import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { ActivatedRoute, Router, provideRouter, convertToParamMap } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { EMPTY, of, throwError } from 'rxjs';
-import { Show, ShowService } from 'projects/backend-api/src/lib/show.service';
+import { Show, ShowService, ShowState } from 'projects/backend-api/src/lib/show.service';
 
 import { EditShowComponent } from './edit-show.component';
 
@@ -18,7 +18,7 @@ describe('EditShowComponent', () => {
   let existingShow: Show;
 
   beforeEach(async () => {
-    existingShow = { id: '7', name: 'Old', date: new Date(2026, 5, 1, 20, 0), duration: 120, active: false, finished: true };
+    existingShow = { id: '7', name: 'Old', date: new Date(2026, 5, 1, 20, 0), duration: 120, active: false, showState: ShowState.SHOW_FINISHED };
     updateShow = jasmine.createSpy('updateShow').and.returnValue(of(existingShow));
     await TestBed.configureTestingModule({
       declarations: [EditShowComponent],
@@ -62,12 +62,12 @@ describe('EditShowComponent', () => {
 
     const sent = updateShow.calls.mostRecent().args[0];
     expect(sent.active).toBeFalse();
-    expect(sent.finished).toBeTrue();
+    expect(sent.showState).toBe(ShowState.SHOW_FINISHED);
   });
 
   it('keeps an active show active when saving', () => {
     existingShow.active = true;
-    existingShow.finished = false;
+    existingShow.showState = ShowState.BEFORE_RACE;
     component.ngOnInit();
 
     component.updateShow();

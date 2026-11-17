@@ -189,7 +189,6 @@ export class ShowDashboardComponent implements OnInit, OnDestroy {
           ...race,
           bikeWon: bike,
           raceState: RaceState.RACED,
-          raced: true,
         } as Race)
         .subscribe({
           next: () => {
@@ -213,7 +212,6 @@ export class ShowDashboardComponent implements OnInit, OnDestroy {
     this.raceService
       .updateRace({
         ...race,
-        raced: true,
         raceState: RaceState.RACED,
         bikeWon: BikeWon.BOTH,
       } as Race)
@@ -234,7 +232,6 @@ export class ShowDashboardComponent implements OnInit, OnDestroy {
     this.raceService
       .updateRace({
         ...race,
-        raced: true,
         raceState: RaceState.CANCELED,
       } as Race)
       .subscribe({
@@ -252,7 +249,7 @@ export class ShowDashboardComponent implements OnInit, OnDestroy {
 
   markRaceAsNotRaced(race: Race): void {
     this.raceService
-      .updateRace({ ...race, raced: false, bikeWon: BikeWon.NOT_RACED, raceState: RaceState.LISTED } as Race)
+      .updateRace({ ...race, bikeWon: BikeWon.NOT_RACED, raceState: RaceState.LISTED } as Race)
       .subscribe({
         next: () => {
           this.snackBar.open(`Marked Race as NOT over`, "OK", { panelClass: "success", duration: 250 });
@@ -369,7 +366,6 @@ export class ShowDashboardComponent implements OnInit, OnDestroy {
         this.raceService.updateRace({
           ...otherRaceWaitingForOpponent,
           raceState: RaceState.CANCELED,
-          raced: false,
           bikeWon: BikeWon.NOT_RACED,
         }),
       ]).subscribe({

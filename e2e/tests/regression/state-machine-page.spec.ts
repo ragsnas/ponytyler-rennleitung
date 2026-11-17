@@ -129,7 +129,7 @@ test.describe('state machine page', () => {
 
     await button(page, BUTTONS.start).click();
 
-    await expect.poll(async () => api.getRace(races[0])).toMatchObject({ raceState: 'WAITING_TO_RACE', raced: true });
+    await expect.poll(async () => api.getRace(races[0])).toMatchObject({ raceState: 'WAITING_TO_RACE' });
     expect(await api.getShow(show)).toMatchObject({ showState: 'RACE' });
     await announced(mqttListener, 'RaceStateChange', races[0].id, 'WAITING_TO_RACE');
     await announced(mqttListener, 'ShowStateChange', show.id, 'RACE');

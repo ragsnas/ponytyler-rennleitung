@@ -1,6 +1,6 @@
 import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { Race, RaceService } from 'projects/backend-api/src/lib/race.service';
+import { Race, RaceService, RaceState } from 'projects/backend-api/src/lib/race.service';
 import { BikeWon } from 'projects/backend-api/src/lib/bike-won';
 import { Show, ShowService } from 'projects/backend-api/src/lib/show.service';
 import { BehaviorSubject } from 'rxjs';
@@ -57,7 +57,7 @@ export class DirectorDashboardComponent implements OnInit {
       .updateRace({
         ...race,
         bikeWon: bike,
-        raced: true,
+        raceState: RaceState.RACED,
       } as Race)
       .subscribe({
         next: () => {
@@ -76,7 +76,7 @@ export class DirectorDashboardComponent implements OnInit {
     this.raceService
       .updateRace({
         ...race,
-        raced: true,
+        raceState: RaceState.RACED,
         bikeWon: BikeWon.BOTH
       } as Race)
       .subscribe({
@@ -96,7 +96,7 @@ export class DirectorDashboardComponent implements OnInit {
     this.raceService
       .updateRace({
         ...race,
-        raced: true,
+        raceState: RaceState.RACED,
       } as Race)
       .subscribe({
         next: () => {
@@ -113,7 +113,7 @@ export class DirectorDashboardComponent implements OnInit {
 
   markRaceAsNotRaced(race: Race): void {
     this.raceService
-      .updateRace({ ...race, raced: false } as Race)
+      .updateRace({ ...race, raceState: RaceState.LISTED } as Race)
       .subscribe({
         next: () => {
           this.snackBar.open(`Marked Race as NOT over`, 'OK', {panelClass: 'success', duration: 250});

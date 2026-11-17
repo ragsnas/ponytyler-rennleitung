@@ -9,7 +9,6 @@ export interface Show {
   date: Date;
   duration?: number;
   active?: boolean;
-  finished?: boolean;
   showState?: ShowState;
 }
 

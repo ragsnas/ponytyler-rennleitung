@@ -29,7 +29,6 @@ model Show {
   date            DateTime?
   actualStartTime DateTime?
   duration        Int?
-  finished        Boolean      @default(false)
   showState       ShowState    @default(SHOW_FINISHED)
   active          Boolean      @default(false)
   races           Race[]       @relation(name: "ShowToRace")
@@ -98,7 +97,6 @@ model Race {
   createdAt      DateTime  @default(now())
   raceStartedAt  DateTime?
   raceFinishedAt DateTime?
-  raced          Boolean   @default(false)
   raceState      RaceState @default(LISTED)
   person1        String?
   song1          Song?     @relation(name: "SongForPerson1", fields: [song1Id], references: [id], onDelete: SetNull)

@@ -27,7 +27,6 @@ export interface Race {
   song2Id: number | null;
   raceState: string;
   bikeWon: number;
-  raced: boolean;
 }
 
 export interface RaceOptions {
@@ -212,7 +211,6 @@ export function createApi(request: APIRequestContext) {
         showId: race.showId,
         bikeWon,
         raceState: 'RACED',
-        raced: true,
       });
     },
 

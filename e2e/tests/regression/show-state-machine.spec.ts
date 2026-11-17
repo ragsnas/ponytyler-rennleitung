@@ -119,18 +119,18 @@ test.describe('show state machine', () => {
       await api.stopAllShows();
       await page.goto('/show', { waitUntil: 'networkidle' });
       const row = rowByText(page, show.name);
-      const stateOf = () => api.getShow(show) as Promise<{ active: boolean; finished: boolean; showState: string }>;
+      const stateOf = () => api.getShow(show) as Promise<{ active: boolean; showState: string }>;
 
       await row.getByRole('button', { name: 'Start Show' }).click();
-      await expect.poll(stateOf).toMatchObject({ active: true, finished: false, showState: 'BEFORE_RACE' });
+      await expect.poll(stateOf).toMatchObject({ active: true, showState: 'BEFORE_RACE' });
       await mqttListener.waitFor('ShowStateChange', (body) => (body as StateChange).showId === String(show.id) && (body as StateChange).state === 'BEFORE_RACE');
 
       await row.getByRole('button', { name: 'Stop Show' }).click();
-      await expect.poll(stateOf).toMatchObject({ active: false, finished: true, showState: 'SHOW_FINISHED' });
+      await expect.poll(stateOf).toMatchObject({ active: false, showState: 'SHOW_FINISHED' });
       await mqttListener.waitFor('ShowStateChange', (body) => (body as StateChange).showId === String(show.id) && (body as StateChange).state === 'SHOW_FINISHED');
 
       await row.getByRole('button', { name: 'Re-Activate Show' }).click();
-      await expect.poll(stateOf).toMatchObject({ active: true, finished: false, showState: 'BEFORE_RACE' });
+      await expect.poll(stateOf).toMatchObject({ active: true, showState: 'BEFORE_RACE' });
     });
 
     test('Set Show to finished ends a live show like Stop Show does', async ({ page, api, exclusiveRaceState }) => {

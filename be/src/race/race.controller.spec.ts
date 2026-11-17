@@ -3,7 +3,7 @@ import { firstValueFrom, of } from "rxjs";
 import { RaceController } from "./race.controller";
 import { RaceService } from "../prisma-api/race.service";
 import { ShowService } from "../prisma-api/show.service";
-import { RaceState } from "@prisma/client";
+import { RaceState, ShowState } from "@prisma/client";
 
 describe("RaceController", () => {
   let controller: RaceController;
@@ -124,11 +124,11 @@ describe("RaceController", () => {
       expect(racesMock).toHaveBeenCalledWith({
         where: {
           raceState: { equals: RaceState.RACED },
-          show: { finished: { equals: true } },
+          show: { showState: { equals: ShowState.SHOW_FINISHED } },
         },
       });
       expect(showsMock).toHaveBeenCalledWith({
-        where: { finished: { equals: true } },
+        where: { showState: { equals: ShowState.SHOW_FINISHED } },
       });
     });
   });

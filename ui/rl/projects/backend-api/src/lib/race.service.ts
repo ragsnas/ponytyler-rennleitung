@@ -15,7 +15,6 @@ export interface Race {
   song2Id?: string;
   song2?: Song;
   orderNumber: string;
-  raced?: boolean;
   raceState?: RaceState;
   raceStartedAt?: Date | string;
   raceFinishedAt?: Date | string;
