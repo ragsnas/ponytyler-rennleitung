@@ -14,6 +14,8 @@ import {MatSnackBar} from "@angular/material/snack-bar";
     standalone: false
 })
 export class DirectorDashboardComponent implements OnInit {
+  /** For the template. */
+  readonly BikeWon = BikeWon;
   show: Show | undefined;
   races$: BehaviorSubject<Race[]> = new BehaviorSubject<Race[]>([]);
   finishedRaces$: BehaviorSubject<Race[]> = new BehaviorSubject<Race[]>([]);
@@ -27,6 +29,15 @@ export class DirectorDashboardComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadRaces();
+  }
+
+  /** The black bike won, or both did (`bikeWon` is a number, see BikeWon). */
+  blackWon(race: Race): boolean {
+    return race.bikeWon === BikeWon.BLACK || race.bikeWon === BikeWon.BOTH;
+  }
+
+  whiteWon(race: Race): boolean {
+    return race.bikeWon === BikeWon.WHITE || race.bikeWon === BikeWon.BOTH;
   }
   loadRaces() {
     this.route.paramMap.subscribe({next: (params) => {

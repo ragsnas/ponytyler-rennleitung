@@ -3,6 +3,6 @@
 @if (form) {
   <div [formGroup]="form">
     <user-form formControlName="user"></user-form>
-    <button mat-flat-button color="primary" (click)="createUser()">Speichern</button>
+    <button mat-flat-button color="primary" [disabled]="form.invalid" (click)="createUser()">Speichern</button>
   </div>
 }

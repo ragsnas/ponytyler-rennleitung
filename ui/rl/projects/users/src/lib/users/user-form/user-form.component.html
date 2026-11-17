@@ -2,7 +2,10 @@
   <div [formGroup]="form">
     <mat-form-field appearance="outline">
       <mat-label>Username</mat-label>
-      <input matInput placeholder="i.e. Dustin..." formControlName="name">
+      <input matInput placeholder="i.e. Dustin..." formControlName="name" (blur)="markAsTouched()">
+      @if (form.controls['name'].hasError('required')) {
+        <mat-error>Name is required</mat-error>
+      }
     </mat-form-field>
   </div>
 }

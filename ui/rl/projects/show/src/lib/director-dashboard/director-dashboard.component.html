@@ -28,7 +28,7 @@
       <ng-container matColumnDef="blackBikeWon">
         <th mat-header-cell *matHeaderCellDef>-</th>
         <td mat-cell *matCellDef="let element" class="black-bike-won-icon">
-          <button mat-icon-button aria-label="Mark Race as won by black Bike" (click)="bikeWon(1, element)">
+          <button mat-icon-button aria-label="Mark Race as won by black Bike" (click)="bikeWon(BikeWon.BLACK, element)">
             <mat-icon>sports_score</mat-icon>
           </button>
         </td>
@@ -44,7 +44,7 @@
       <ng-container matColumnDef="whiteBikeWon">
         <th mat-header-cell *matHeaderCellDef>-</th>
         <td mat-cell *matCellDef="let element" class="white-bike-won-icon">
-          <button mat-icon-button aria-label="Mark Race as won by white Bike" (click)="bikeWon(2, element)">
+          <button mat-icon-button aria-label="Mark Race as won by white Bike" (click)="bikeWon(BikeWon.WHITE, element)">
             <mat-icon>sports_score</mat-icon>
           </button>
         </td>
@@ -53,22 +53,22 @@
         <th mat-header-cell *matHeaderCellDef>Actions</th>
         <td mat-cell *matCellDef="let element">
           @if (element.raceState !== 'RACED') {
-            <button mat-icon-button aria-label="Delete Song" (click)="markRaceAsPlayBoth(element)">
+            <button mat-icon-button aria-label="Mark Race as won by both Bikes" (click)="markRaceAsPlayBoth(element)">
               <mat-icon matBadge="2" matBadgeColor="warn">sports_score</mat-icon>
             </button>
           }
           &nbsp;
           @if (element.raceState !== 'RACED') {
-            <button mat-icon-button aria-label="Delete Song" (click)="markRaceAsRaced(element)">
+            <button mat-icon-button aria-label="Mark Race as raced" (click)="markRaceAsRaced(element)">
               <mat-icon>check_box_outline_blank</mat-icon>
             </button>
           }
           @if (element.raceState === 'RACED') {
-            <button mat-icon-button aria-label="Delete Song" (click)="markRaceAsNotRaced(element)">
+            <button mat-icon-button aria-label="Mark Race as not raced" (click)="markRaceAsNotRaced(element)">
               <mat-icon>check_box</mat-icon>
             </button>
           }
-          <button mat-icon-button aria-label="Update Song" [routerLink]="'race/' +element.id">
+          <button mat-icon-button aria-label="Edit Race" [routerLink]="'race/' +element.id">
             <mat-icon>edit</mat-icon>
           </button>
         </td>
@@ -92,32 +92,32 @@
       </ng-container>
       <ng-container matColumnDef="person1">
         <th mat-header-cell *matHeaderCellDef>Rider Black Bike</th>
-        <td mat-cell *matCellDef="let element" class="{{ element.bikeWon === '1' || element.bikeWon === '3' ? 'winning-bike' : '' }}"> {{element.person1}} </td>
+        <td mat-cell *matCellDef="let element" [class.winning-bike]="blackWon(element)"> {{element.person1}} </td>
       </ng-container>
       <ng-container matColumnDef="song1">
         <th mat-header-cell *matHeaderCellDef>Song Black Bike</th>
-        <td mat-cell *matCellDef="let element" class="{{ element.bikeWon === '1' || element.bikeWon === '3' ? 'winning-bike' : '' }}"> {{element.song1.artist}}<br/>{{element.song1.name}} </td>
+        <td mat-cell *matCellDef="let element" [class.winning-bike]="blackWon(element)"> {{element.song1.artist}}<br/>{{element.song1.name}} </td>
       </ng-container>
       <ng-container matColumnDef="blackBikeWon">
         <th mat-header-cell *matHeaderCellDef>-</th>
-        <td mat-cell *matCellDef="let element" class="{{ element.bikeWon === '1' || element.bikeWon === '3' ? 'winning-bike' : '' }}">
-          @if (element.bikeWon === '1' || element.bikeWon === '3') {
+        <td mat-cell *matCellDef="let element" [class.winning-bike]="blackWon(element)">
+          @if (blackWon(element)) {
             <mat-icon>sports_score</mat-icon>
           }
         </td>
       </ng-container>
       <ng-container matColumnDef="person2">
         <th mat-header-cell *matHeaderCellDef>Rider White Bike</th>
-        <td mat-cell *matCellDef="let element" class="{{ element.bikeWon === '2' || element.bikeWon === '3' ? 'winning-bike' : '' }}"> {{element.person2}} </td>
+        <td mat-cell *matCellDef="let element" [class.winning-bike]="whiteWon(element)"> {{element.person2}} </td>
       </ng-container>
       <ng-container matColumnDef="song2">
         <th mat-header-cell *matHeaderCellDef>Song White Bike</th>
-        <td mat-cell *matCellDef="let element" class="{{ element.bikeWon === '2' || element.bikeWon === '3' ? 'winning-bike' : '' }}"> {{element.song2.artist}}<br/>{{element.song2.name}} </td>
+        <td mat-cell *matCellDef="let element" [class.winning-bike]="whiteWon(element)"> {{element.song2.artist}}<br/>{{element.song2.name}} </td>
       </ng-container>
       <ng-container matColumnDef="whiteBikeWon">
         <th mat-header-cell *matHeaderCellDef>-</th>
-        <td mat-cell *matCellDef="let element" class="{{ element.bikeWon === '2' || element.bikeWon === '3' ? 'winning-bike' : '' }}">
-          @if (element.bikeWon === '2' || element.bikeWon === '3') {
+        <td mat-cell *matCellDef="let element" [class.winning-bike]="whiteWon(element)">
+          @if (whiteWon(element)) {
             <mat-icon>sports_score</mat-icon>
           }
         </td>
@@ -126,12 +126,12 @@
         <th mat-header-cell *matHeaderCellDef>Actions</th>
         <td mat-cell *matCellDef="let element">
           @if (element.raceState !== 'RACED') {
-            <button mat-icon-button aria-label="Delete Song" (click)="markRaceAsRaced(element)">
+            <button mat-icon-button aria-label="Mark Race as raced" (click)="markRaceAsRaced(element)">
               <mat-icon>check_box_outline_blank</mat-icon>
             </button>
           }
           @if (element.raceState === 'RACED') {
-            <button mat-icon-button aria-label="Delete Song" (click)="markRaceAsNotRaced(element)">
+            <button mat-icon-button aria-label="Mark Race as not raced" (click)="markRaceAsNotRaced(element)">
               <mat-icon>check_box</mat-icon>
             </button>
           }

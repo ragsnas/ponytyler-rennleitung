@@ -25,6 +25,9 @@ export class CreateUserComponent {
   }
 
   createUser() {
+    if (this.form.invalid) {
+      return;
+    }
     this.userService.createUser({
       ...this.form.controls['user'].getRawValue()
     }).subscribe({

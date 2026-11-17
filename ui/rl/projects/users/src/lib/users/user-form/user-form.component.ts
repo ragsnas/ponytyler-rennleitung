@@ -4,7 +4,9 @@ import {
   ControlValueAccessor,
   FormControl,
   FormGroup,
-  NG_VALUE_ACCESSOR, Validators,
+  NG_VALIDATORS,
+  NG_VALUE_ACCESSOR,
+  Validators,
   ValidationErrors,
 } from "@angular/forms";
 import { User } from "projects/backend-api/src/lib/user.service";
@@ -19,6 +21,12 @@ import { Subscription } from "rxjs";
             provide: NG_VALUE_ACCESSOR,
             multi: true,
             useExisting: UserFormComponent
+        },
+        {
+            // makes the parent control invalid while this form is (see validate())
+            provide: NG_VALIDATORS,
+            multi: true,
+            useExisting: UserFormComponent
         }
     ],
     changeDetection: ChangeDetectionStrategy.Eager,
@@ -26,36 +34,36 @@ import { Subscription } from "rxjs";
 })
 export class UserFormComponent implements ControlValueAccessor, OnInit, OnDestroy {
 
-  onChangeSubs: Subscription[] = [];
+  /** Everything subscribed to the form; unsubscribed on destroy. */
+  private readonly subscriptions = new Subscription();
+  /** The subscription of the parent's onChange; replaced when the parent registers again. */
+  private onChangeSub: Subscription | undefined;
   user: User = {name:''};
   touched = false;
 
   public form: FormGroup = new FormGroup({
-    name: new FormControl(null, [Validators.required, Validators.min(1)])
+    name: new FormControl(null, [Validators.required, Validators.minLength(1)])
   });
 
   ngOnInit(): void {
-    this.form.valueChanges.subscribe({
+    this.subscriptions.add(this.form.valueChanges.subscribe({
       next: (valueChange) => {
         console.log(`valueChange:`, valueChange);
         this.user.name = valueChange.name;
       }
-    });
+    }));
   }
 
   ngOnDestroy() {
-    for (const sub of this.onChangeSubs) {
-      sub.unsubscribe();
-    }
+    this.subscriptions.unsubscribe();
   }
 
   registerOnChange(onChange: (value: User) => void) {
-    const sub = this.form?.valueChanges.subscribe({
+    this.onChangeSub?.unsubscribe();
+    this.onChangeSub = this.form.valueChanges.subscribe({
       next: (valueChange) => onChange(valueChange)
     });
-    if(sub) {
-      this.onChangeSubs.push(sub);
-    }
+    this.subscriptions.add(this.onChangeSub);
   }
 
   registerOnTouched(onTouched: () => void) {
@@ -88,16 +96,16 @@ export class UserFormComponent implements ControlValueAccessor, OnInit, OnDestro
     }
   }
 
-  validate(_control: AbstractControl) {
+  validate(_control: AbstractControl): ValidationErrors | null {
 
     if (this.form.valid) {
       return null;
     }
 
-    let errors : ValidationErrors = {};
-    errors = this.addControlErrors(errors, "name");
+    const errors = this.addControlErrors({}, "name");
 
-    return errors;
+    // any object counts as "invalid", also an empty one
+    return Object.keys(errors).length > 0 ? errors : null;
   }
 
   addControlErrors(allErrors: ValidationErrors, controlName:string) {
