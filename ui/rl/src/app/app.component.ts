@@ -1,7 +1,7 @@
 import {Component, OnInit, ChangeDetectionStrategy} from '@angular/core';
 import {Show, ShowService} from "projects/backend-api/src/lib/show.service";
 import {HealthService} from "projects/backend-api/src/lib/health.service";
-import {catchError, filter, map, Observable, of, switchMap, timer} from "rxjs";
+import {catchError, EMPTY, map, Observable, of, switchMap, timer} from "rxjs";
 
 const HEALTH_CHECK_INTERVAL_MS = 5000;
 
@@ -21,9 +21,9 @@ export class AppComponent implements OnInit {
 
   ngOnInit(): void {
     console.log(`Main ngOnInit!`);
-    this.currentShow$ = this.showService.getAllShows().pipe(
-      filter((shows: Show[]) => shows.some((show: Show) => show.active)),
-      map((shows: Show[]) => shows[0])
+    // the backend answers 404 while no show is active: then there is no current show
+    this.currentShow$ = this.showService.getCurrentShow().pipe(
+      catchError(() => EMPTY)
     );
     this.backendUnhealthy$ = timer(0, HEALTH_CHECK_INTERVAL_MS).pipe(
       switchMap(() => this.healthService.checkHealth().pipe(
