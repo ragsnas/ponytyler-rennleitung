@@ -1,7 +1,7 @@
 import { Component, OnInit, ChangeDetectionStrategy } from "@angular/core";
 import { Race, RaceService } from "projects/backend-api/src/lib/race.service";
 import { Show, ShowService } from "projects/backend-api/src/lib/show.service";
-import { filter, map, Observable } from "rxjs";
+import { catchError, EMPTY, Observable } from "rxjs";
 
 @Component({
     selector: 'lib-upcomming-races',
@@ -16,12 +16,12 @@ export class UpcommingRacesComponent implements OnInit {
   constructor(private showService: ShowService, private raceService: RaceService) { }
 
   ngOnInit(): void {
-    this.showService.getAllShows().pipe(
-      filter((shows: Show[]) => shows.some((show: Show) => show.active)),
-      map((shows: Show[]) => shows[0])
-    ).subscribe((show:Show) => {
+    // the backend answers 404 while no show is active: then there is nothing to list
+    this.showService.getCurrentShow().pipe(
+      catchError(() => EMPTY)
+    ).subscribe((show: Show) => {
       if (show.id) {
-        this.upcommingRaces$ = this.raceService.getUpcommingRaces().pipe();
+        this.upcommingRaces$ = this.raceService.getUpcommingRaces();
       }
     });
   }

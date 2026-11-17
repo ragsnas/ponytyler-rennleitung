@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed, fakeAsync, tick, discardPeriodicTasks } from '@angular/core/testing';
 import { CommonModule } from '@angular/common';
-import { RouterModule, provideRouter } from '@angular/router';
+import { Router, RouterModule, provideRouter } from '@angular/router';
 import { HttpResponse } from '@angular/common/http';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatButtonModule } from '@angular/material/button';
@@ -18,8 +18,10 @@ describe('AppComponent', () => {
   let healthServiceSpy: jasmine.SpyObj<HealthService>;
 
   beforeEach(async () => {
-    showServiceSpy = jasmine.createSpyObj('ShowService', ['getAllShows']);
-    showServiceSpy.getAllShows.and.returnValue(of([]));
+    // no getAllShows on purpose: the page must ask for the current show only
+    showServiceSpy = jasmine.createSpyObj('ShowService', ['getCurrentShow']);
+    // the backend answers 404 while no show is active
+    showServiceSpy.getCurrentShow.and.returnValue(throwError(() => ({ status: 404 })));
 
     healthServiceSpy = jasmine.createSpyObj('HealthService', ['checkHealth']);
     healthServiceSpy.checkHealth.and.returnValue(of(new HttpResponse<{ status: string }>({ status: 200, body: { status: 'ok' } })));
@@ -104,4 +106,35 @@ describe('AppComponent', () => {
 
     discardPeriodicTasks();
   }));
+
+  describe('add race button', () => {
+    const addRaceButton = (): HTMLButtonElement | null => fixture.nativeElement.querySelector('button[aria-label="Add Show"]');
+
+    it('leads to the race form of the current show', fakeAsync(() => {
+      showServiceSpy.getCurrentShow.and.returnValue(of({ id: '7', name: 'Live', date: new Date(), active: true }));
+
+      fixture.detectChanges();
+      tick();
+      fixture.detectChanges();
+
+      expect(addRaceButton()).not.toBeNull();
+      const router = TestBed.inject(Router);
+      const navigate = spyOn(router, 'navigateByUrl').and.resolveTo(true);
+      addRaceButton()!.click();
+      expect(router.serializeUrl(navigate.calls.mostRecent().args[0] as never)).toBe('/show/7/create-race');
+      expect(showServiceSpy.getCurrentShow).toHaveBeenCalledTimes(1);
+
+      discardPeriodicTasks();
+    }));
+
+    it('is not offered, and nothing fails, while no show is active', fakeAsync(() => {
+      fixture.detectChanges();
+      tick();
+      fixture.detectChanges();
+
+      expect(addRaceButton()).toBeNull();
+
+      discardPeriodicTasks();
+    }));
+  });
 });
