@@ -3,5 +3,6 @@
  */
 
 export * from './lib/mqtt-broker.service';
+export * from './lib/live-updates.service';
 export * from './lib/mqtt-broker.component';
 export * from './lib/mqtt-broker.module';

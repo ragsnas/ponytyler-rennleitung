@@ -6,18 +6,21 @@ import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
-import { of, throwError } from 'rxjs';
+import { BehaviorSubject, of, throwError } from 'rxjs';
 
 import { AppComponent } from './app.component';
 import { ShowService } from '../../projects/backend-api/src/lib/show.service';
 import { HealthService } from '../../projects/backend-api/src/lib/health.service';
+import { LiveUpdatesService } from '../../projects/mqtt-broker/src/lib/live-updates.service';
 
 describe('AppComponent', () => {
   let fixture: ComponentFixture<AppComponent>;
   let showServiceSpy: jasmine.SpyObj<ShowService>;
   let healthServiceSpy: jasmine.SpyObj<HealthService>;
+  let mqttConnected$: BehaviorSubject<boolean>;
 
   beforeEach(async () => {
+    mqttConnected$ = new BehaviorSubject<boolean>(false);
     // no getAllShows on purpose: the page must ask for the current show only
     showServiceSpy = jasmine.createSpyObj('ShowService', ['getCurrentShow']);
     // the backend answers 404 while no show is active
@@ -33,6 +36,7 @@ describe('AppComponent', () => {
         provideRouter([]),
         { provide: ShowService, useValue: showServiceSpy },
         { provide: HealthService, useValue: healthServiceSpy },
+        { provide: LiveUpdatesService, useValue: { connected$: mqttConnected$.asObservable() } },
       ],
     }).compileComponents();
 
@@ -93,7 +97,7 @@ describe('AppComponent', () => {
     discardPeriodicTasks();
   }));
 
-  it('polls the health check every 5 seconds', fakeAsync(() => {
+  it('polls the health check every 5 seconds while the live connection is down', fakeAsync(() => {
     fixture.detectChanges();
     tick();
     expect(healthServiceSpy.checkHealth).toHaveBeenCalledTimes(1);
@@ -106,6 +110,56 @@ describe('AppComponent', () => {
 
     discardPeriodicTasks();
   }));
+
+  describe('with a live connection', () => {
+    it('does not poll the health check while the live connection is up, and shows no warning', fakeAsync(() => {
+      mqttConnected$.next(true);
+
+      fixture.detectChanges();
+      tick(5000 * 3);
+      fixture.detectChanges();
+
+      expect(healthServiceSpy.checkHealth).not.toHaveBeenCalled();
+      expect(healthWarningElement()).toBeNull();
+
+      discardPeriodicTasks();
+    }));
+
+    it('starts polling when the live connection is lost, and warns if the backend does not answer', fakeAsync(() => {
+      mqttConnected$.next(true);
+      fixture.detectChanges();
+      tick(5000);
+      healthServiceSpy.checkHealth.and.returnValue(throwError(() => new Error('down')));
+
+      mqttConnected$.next(false);
+      tick(0);
+      fixture.detectChanges();
+
+      expect(healthServiceSpy.checkHealth).toHaveBeenCalledTimes(1);
+      expect(healthWarningElement()).not.toBeNull();
+
+      discardPeriodicTasks();
+    }));
+
+    it('clears the warning and stops polling as soon as the live connection is back', fakeAsync(() => {
+      healthServiceSpy.checkHealth.and.returnValue(throwError(() => new Error('down')));
+      fixture.detectChanges();
+      tick(0);
+      fixture.detectChanges();
+      expect(healthWarningElement()).not.toBeNull();
+
+      mqttConnected$.next(true);
+      fixture.detectChanges();
+      const callsWhenBack = healthServiceSpy.checkHealth.calls.count();
+      tick(5000 * 3);
+      fixture.detectChanges();
+
+      expect(healthWarningElement()).toBeNull();
+      expect(healthServiceSpy.checkHealth.calls.count()).toBe(callsWhenBack);
+
+      discardPeriodicTasks();
+    }));
+  });
 
   describe('add race button', () => {
     const addRaceButton = (): HTMLButtonElement | null => fixture.nativeElement.querySelector('button[aria-label="Add Show"]');

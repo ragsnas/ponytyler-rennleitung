@@ -15,6 +15,7 @@ import { Race, RaceService, RaceState } from 'projects/backend-api/src/lib/race.
 import { StatisticsService } from 'projects/backend-api/src/lib/statistics.service';
 import { EncoreSong, EncoreSongService } from 'projects/backend-api/src/lib/encore-song.service';
 import { Origin } from 'projects/backend-api/src/lib/song.service';
+import { LiveUpdatesService, RaceStateChange, ShowStateChange } from 'projects/mqtt-broker/src/lib/live-updates.service';
 
 describe('ShowDashboardComponent', () => {
   let component: ShowDashboardComponent;
@@ -22,8 +23,12 @@ describe('ShowDashboardComponent', () => {
   let showService: jasmine.SpyObj<ShowService>;
   let raceService: jasmine.SpyObj<RaceService>;
   let encoreSongService: jasmine.SpyObj<EncoreSongService>;
+  let raceChanged$: Subject<RaceStateChange>;
+  let showChanged$: Subject<ShowStateChange>;
 
   beforeEach(async () => {
+    raceChanged$ = new Subject<RaceStateChange>();
+    showChanged$ = new Subject<ShowStateChange>();
     localStorage.removeItem('pontyTyperRefreshTimerInterval');
     showService = jasmine.createSpyObj('ShowService', ['getShow', 'deleteShow', 'updateShow']);
     showService.getShow.and.returnValue(of({ id: 'show-1', name: 'Test Show', date: new Date(), duration: 60 }));
@@ -48,6 +53,7 @@ describe('ShowDashboardComponent', () => {
         { provide: RaceService, useValue: raceService },
         { provide: StatisticsService, useValue: statisticsService },
         { provide: EncoreSongService, useValue: encoreSongService },
+        { provide: LiveUpdatesService, useValue: { raceChanged$: raceChanged$.asObservable(), showChanged$: showChanged$.asObservable() } },
         { provide: MatSnackBar, useValue: jasmine.createSpyObj('MatSnackBar', ['open']) },
         { provide: MatDialog, useValue: jasmine.createSpyObj('MatDialog', ['open']) },
         { provide: Router, useValue: jasmine.createSpyObj('Router', ['navigate']) },
@@ -108,6 +114,62 @@ describe('ShowDashboardComponent', () => {
     racesSubject.next([]);
     racesSubject.complete();
     expect(component.refreshing()).toBe(false);
+  });
+
+  describe('live updates', () => {
+    it('reloads at once when a race changes state, without waiting for the timer', () => {
+      fixture.detectChanges();
+      raceService.getAllRacesForShow.calls.reset();
+
+      raceChanged$.next({ raceId: '5', state: RaceState.RACING });
+
+      expect(raceService.getAllRacesForShow).toHaveBeenCalledTimes(1);
+      expect(showService.getShow).toHaveBeenCalledTimes(2);
+      expect(component.refreshing()).toBe(false);
+    });
+
+    it('reloads at once when the show changes state', () => {
+      fixture.detectChanges();
+      raceService.getAllRacesForShow.calls.reset();
+
+      showChanged$.next({ showId: 'show-1', state: ShowState.RACE });
+
+      expect(raceService.getAllRacesForShow).toHaveBeenCalledTimes(1);
+    });
+
+    it('shows what the reload brought', () => {
+      fixture.detectChanges();
+      raceService.getAllRacesForShow.and.returnValue(of([
+        { id: 'r1', showId: 'show-1', orderNumber: 0, raceState: RaceState.RACED, bikeWon: 1 } as unknown as Race,
+      ]));
+
+      raceChanged$.next({ raceId: 'r1', state: RaceState.RACED });
+
+      expect(component.finishedRaces().map((race) => race.id)).toEqual(['r1']);
+    });
+
+    it('keeps listening after a reload failed', () => {
+      fixture.detectChanges();
+      raceService.getAllRacesForShow.and.returnValue(throwError(() => ({ status: 500 })));
+      raceChanged$.next({ raceId: '5', state: RaceState.RACING });
+      raceService.getAllRacesForShow.calls.reset();
+      raceService.getAllRacesForShow.and.returnValue(of([]));
+
+      raceChanged$.next({ raceId: '5', state: RaceState.RACED });
+
+      expect(raceService.getAllRacesForShow).toHaveBeenCalledTimes(1);
+    });
+
+    it('stops listening when the page is left', () => {
+      fixture.detectChanges();
+      fixture.destroy();
+      raceService.getAllRacesForShow.calls.reset();
+
+      raceChanged$.next({ raceId: '5', state: RaceState.RACING });
+      showChanged$.next({ showId: 'show-1', state: ShowState.RACE });
+
+      expect(raceService.getAllRacesForShow).not.toHaveBeenCalled();
+    });
   });
 
   describe('when loading the data fails', () => {

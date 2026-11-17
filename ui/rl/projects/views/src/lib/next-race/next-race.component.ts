@@ -1,6 +1,7 @@
 import {Component, ChangeDetectionStrategy} from '@angular/core';
 import {Race, RaceService} from 'projects/backend-api/src/lib/race.service';
-import {Observable} from "rxjs";
+import {LiveUpdatesService} from 'projects/mqtt-broker/src/lib/live-updates.service';
+import {catchError, EMPTY, Observable, startWith, switchMap} from "rxjs";
 
 @Component({
     selector: 'lib-next-race',
@@ -11,9 +12,14 @@ import {Observable} from "rxjs";
 })
 export class NextRaceComponent {
 
+  /** The upcoming race now, and again whenever the live updates say something changed. */
   upcommingRace$: Observable<Race> | undefined;
 
-  constructor(private raceService: RaceService) {
-    this.upcommingRace$ = this.raceService.getUpcommingRace()
+  constructor(private raceService: RaceService, liveUpdates: LiveUpdatesService) {
+    this.upcommingRace$ = liveUpdates.refreshNeeded$.pipe(
+      startWith(undefined),
+      // a failed reload keeps what is shown; the next change reloads again
+      switchMap(() => this.raceService.getUpcommingRace().pipe(catchError(() => EMPTY))),
+    );
   }
 }

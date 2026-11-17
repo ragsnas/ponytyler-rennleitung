@@ -22,9 +22,11 @@ export const MQTT_CONNECT = new InjectionToken<typeof mqtt.connect>('MQTT_CONNEC
  * Connects to the MQTT broker embedded in the backend over WebSocket (a
  * browser can't open the raw TCP socket it also listens on, see
  * be/src/mqtt/README.md) and republishes every message it receives,
- * regardless of topic, as an observable.
+ * regardless of topic, as an observable. Components that want their own
+ * connection list it in their `providers`; the root instance is shared (see
+ * LiveUpdatesService).
  */
-@Injectable()
+@Injectable({ providedIn: 'root' })
 export class MqttBrokerService implements OnDestroy {
   private client: MqttClient | undefined;
 
@@ -36,7 +38,8 @@ export class MqttBrokerService implements OnDestroy {
 
   constructor(@Inject(MQTT_CONNECT) private readonly connectFn: typeof mqtt.connect) {}
 
-  connect(url: string): void {
+  /** Subscribes to `topics` (every topic by default) each time the connection is (re)established. */
+  connect(url: string, topics: string | string[] = '#'): void {
     if (this.client) {
       return;
     }
@@ -44,7 +47,7 @@ export class MqttBrokerService implements OnDestroy {
     this.client = this.connectFn(url);
     this.client.on('connect', () => {
       this.connectedSubject.next(true);
-      this.client!.subscribe('#');
+      this.client!.subscribe(topics);
     });
     this.client.on('close', () => this.connectedSubject.next(false));
     this.client.on('message', (topic: string, payload: { toString(): string }) => {

@@ -11,6 +11,7 @@ import {
   delay,
   EMPTY,
   interval,
+  merge,
   startWith,
   Subject,
   Subscription,
@@ -22,6 +23,7 @@ import { MatSnackBar } from "@angular/material/snack-bar";
 import { FormControl } from "@angular/forms";
 import { MatSelectChange } from "@angular/material/select";
 import { MatDialog } from "@angular/material/dialog";
+import { LiveUpdatesService } from "projects/mqtt-broker/src/lib/live-updates.service";
 import { YesNoDialogComponent } from "projects/ui/yes-no-dialog/src/lib/yes-no-dialog.component";
 
 export interface RaceWithSongPlayedInfo extends Race {
@@ -116,6 +118,7 @@ export class ShowDashboardComponent implements OnInit, OnDestroy {
     private router: Router,
     private snackBar: MatSnackBar,
     private dialog: MatDialog,
+    private liveUpdates: LiveUpdatesService,
   ) {
   }
 
@@ -139,7 +142,13 @@ export class ShowDashboardComponent implements OnInit, OnDestroy {
       takeUntil(this.unsubscribe$),
       switchMap((params: ParamMap) => {
         const showId = params.get("showId") as string;
-        return this.refresh$.pipe(
+        // reload on the timer / manual refresh, and at once when the backend
+        // announces that a race or the show changed state
+        return merge(
+          this.refresh$,
+          this.liveUpdates.raceChanged$,
+          this.liveUpdates.showChanged$,
+        ).pipe(
           takeUntil(this.unsubscribe$),
           startWith(0),
           // The error is handled per request: an error reaching the outer

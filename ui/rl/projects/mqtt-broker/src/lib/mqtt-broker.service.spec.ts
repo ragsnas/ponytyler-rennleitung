@@ -84,4 +84,22 @@ describe('MqttBrokerService', () => {
 
     expect(connectFn).toHaveBeenCalledTimes(1);
   });
+
+  it('subscribes only to the given topics when asked to', () => {
+    service.connect('ws://example.test/mqtt-ws', ['RaceStateChange', 'ShowStateChange']);
+
+    fakeClient.emit('connect');
+
+    expect(fakeClient.subscribe).toHaveBeenCalledOnceWith(['RaceStateChange', 'ShowStateChange']);
+  });
+
+  it('subscribes again after a reconnect', () => {
+    service.connect('ws://example.test/mqtt-ws', ['RaceStateChange']);
+
+    fakeClient.emit('connect');
+    fakeClient.emit('close');
+    fakeClient.emit('connect');
+
+    expect(fakeClient.subscribe).toHaveBeenCalledTimes(2);
+  });
 });
