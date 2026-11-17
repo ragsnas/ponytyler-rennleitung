@@ -2,8 +2,10 @@ import { test, expect, Page, SeedingApi, MqttListener, Race, Show } from '../fix
 
 /**
  * The state machine page (/state-machine): the operator's control for the
- * live show. This is where the transition rules live; the backend accepts any
- * state (see race-state-machine.spec.ts). The page
+ * live show. Its buttons call `POST /api/race/:id/transition`, which moves the
+ * race and the show together, only from a race state the action fits (the
+ * table is be/src/race/race-transitions.ts; the plain PATCH accepts any
+ * state, see race-state-machine.spec.ts). The page
  *
  *  - enables its buttons by state: play unless a race is WAITING_TO_RACE or
  *    RACING, stop only then, skip always, "lyrics" only when the show is

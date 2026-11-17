@@ -4,12 +4,14 @@ import {
   Delete,
   Get,
   Param,
+  ParseIntPipe,
   Patch,
   Post,
   Query,
 } from "@nestjs/common";
 import { RaceService } from "../prisma-api/race.service";
 import { ShowService } from "../prisma-api/show.service";
+import { RaceControlService } from "./race-control.service";
 import { Prisma, RaceState, ShowState } from "@prisma/client";
 import { combineLatest, map } from "rxjs";
 
@@ -18,6 +20,7 @@ export class RaceController {
   constructor(
     private readonly raceService: RaceService,
     private readonly showService: ShowService,
+    private readonly raceControlService: RaceControlService,
   ) {}
 
   @Post()
@@ -118,6 +121,19 @@ export class RaceController {
   @Get(":id/with-songs")
   findOneWithSongs(@Param("id") id: string) {
     return this.raceService.raceWithSongs(id);
+  }
+
+  /**
+   * An operator action on the race (see race-transitions.ts): moves the race
+   * and its show together, or answers 409 when the race is in a state the
+   * action does not fit. Responds with the race and the show as they are now.
+   */
+  @Post(":id/transition")
+  transition(
+    @Param("id", ParseIntPipe) id: number,
+    @Body() body: { action?: string },
+  ) {
+    return this.raceControlService.transition(id, body?.action);
   }
 
   @Patch(":id/:upOrDown")

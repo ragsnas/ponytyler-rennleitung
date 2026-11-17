@@ -11,6 +11,13 @@ const RACE_STATE_CHANGE_TOPIC = "RaceStateChange";
 /** First key of the advisory lock taken per show (see lockShow). */
 const RACE_LOCK_NAMESPACE = 1;
 
+export interface RaceChanges {
+  existingRace: Race | null;
+  updatedRace: Race;
+  /** Other active races that were reset to LISTED. */
+  resetRaces: Race[];
+}
+
 @Injectable()
 export class RaceService implements OnModuleDestroy {
   private readonly mqttClient: mqtt.MqttClient;
@@ -167,13 +174,43 @@ export class RaceService implements OnModuleDestroy {
         return { existingRace, updatedRace, resetRaces };
       });
 
+    this.publishChanges({ existingRace, updatedRace, resetRaces });
+
+    return updatedRace;
+  }
+
+  /**
+   * Moves a race to a new state on the caller's transaction (see
+   * RaceControlService), resetting every other active race when it becomes
+   * active. The caller must hold `lockShow` for the race's show; announce the
+   * result with `publishChanges` once the transaction has committed.
+   */
+  async setStateInTransaction(
+    tx: Prisma.TransactionClient,
+    race: Race,
+    data: Pick<
+      Prisma.RaceUncheckedUpdateInput,
+      "raceState" | "raceStartedAt" | "raceFinishedAt"
+    >,
+  ): Promise<RaceChanges> {
+    const updatedRace = await tx.race.update({
+      where: { id: race.id },
+      data,
+      include: { song1: true, song2: true },
+    });
+    const resetRaces = this.isActiveRaceState(updatedRace.raceState)
+      ? await this.resetOtherActiveRaces(tx, updatedRace)
+      : [];
+    return { existingRace: race, updatedRace, resetRaces };
+  }
+
+  /** Announces what an update changed; call after the commit. */
+  publishChanges({ existingRace, updatedRace, resetRaces }: RaceChanges) {
     if (existingRace && existingRace.raceState !== updatedRace.raceState) {
       console.log(`Race State Changed:`, updatedRace.raceState);
       this.publishRaceStateChange(updatedRace);
     }
     resetRaces.forEach((race) => this.publishRaceStateChange(race));
-
-    return updatedRace;
   }
 
   /**
@@ -181,7 +218,7 @@ export class RaceService implements OnModuleDestroy {
    * updates (UI and MQTT winner detection) cannot both activate a race.
    * Released automatically on commit/rollback.
    */
-  private async lockShow(tx: Prisma.TransactionClient, showId: number) {
+  async lockShow(tx: Prisma.TransactionClient, showId: number) {
     await tx.$executeRaw`SELECT pg_advisory_xact_lock(${RACE_LOCK_NAMESPACE}::int, ${showId}::int)`;
   }
 

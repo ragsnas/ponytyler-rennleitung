@@ -10,6 +10,13 @@ const SHOW_STATE_CHANGE_TOPIC = "ShowStateChange";
 /** First key of the advisory lock that serialises show updates. */
 const SHOW_LOCK_NAMESPACE = 2;
 
+export interface ShowChanges {
+  existingShow: Show | null;
+  updatedShow: Show;
+  /** Other active shows that were reset to LISTED. */
+  resetShows: Show[];
+}
+
 @Injectable()
 export class ShowService implements OnModuleDestroy {
   private readonly mqttClient: mqtt.MqttClient;
@@ -100,32 +107,48 @@ export class ShowService implements OnModuleDestroy {
     const { where, data } = params;
 
     // One transaction; the MQTT events are published once it has committed.
-    const { existingShow, updatedShow, resetShows } =
-      await this.prisma.$transaction(async (tx) => {
-        // at most one show is active: serialise concurrent updates
-        await tx.$executeRaw`SELECT pg_advisory_xact_lock(${SHOW_LOCK_NAMESPACE}::int, 0::int)`;
-        const existingShow = await tx.show.findUnique({ where });
-        const updatedShow = await tx.show.update({ data, where });
-        const resetShows = this.isActiveState(updatedShow.showState)
-          ? await tx.show.updateManyAndReturn({
-              where: {
-                id: { not: updatedShow.id },
-                showState: {
-                  notIn: [ShowState.LISTED, ShowState.SHOW_FINISHED],
-                },
-              },
-              data: { showState: ShowState.LISTED },
-            })
-          : [];
-        return { existingShow, updatedShow, resetShows };
-      });
+    const changes = await this.prisma.$transaction((tx) =>
+      this.updateShowInTransaction(tx, where, data),
+    );
+    this.publishChanges(changes);
+    return changes.updatedShow;
+  }
 
+  /**
+   * The database part of updateShow, for callers that change a show together
+   * with something else in one transaction (see RaceControlService). Takes the
+   * lock that serialises show updates; announce the result with
+   * `publishChanges` once the transaction has committed.
+   */
+  async updateShowInTransaction(
+    tx: Prisma.TransactionClient,
+    where: Prisma.ShowWhereUniqueInput,
+    data: Prisma.ShowUpdateInput,
+  ): Promise<ShowChanges> {
+    // at most one show is active: serialise concurrent updates
+    await tx.$executeRaw`SELECT pg_advisory_xact_lock(${SHOW_LOCK_NAMESPACE}::int, 0::int)`;
+    const existingShow = await tx.show.findUnique({ where });
+    const updatedShow = await tx.show.update({ data, where });
+    const resetShows = this.isActiveState(updatedShow.showState)
+      ? await tx.show.updateManyAndReturn({
+          where: {
+            id: { not: updatedShow.id },
+            showState: {
+              notIn: [ShowState.LISTED, ShowState.SHOW_FINISHED],
+            },
+          },
+          data: { showState: ShowState.LISTED },
+        })
+      : [];
+    return { existingShow, updatedShow, resetShows };
+  }
+
+  /** Announces what `updateShowInTransaction` changed; call after the commit. */
+  publishChanges({ existingShow, updatedShow, resetShows }: ShowChanges) {
     if (existingShow && existingShow.showState !== updatedShow.showState) {
       this.publishShowStateChange(updatedShow);
     }
     resetShows.forEach((show) => this.publishShowStateChange(show));
-
-    return updatedShow;
   }
 
   private isActiveState(showState: ShowState): boolean {

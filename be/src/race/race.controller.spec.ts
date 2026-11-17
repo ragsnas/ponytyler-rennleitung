@@ -3,6 +3,7 @@ import { firstValueFrom, of } from "rxjs";
 import { RaceController } from "./race.controller";
 import { RaceService } from "../prisma-api/race.service";
 import { ShowService } from "../prisma-api/show.service";
+import { RaceControlService } from "./race-control.service";
 import { RaceState, ShowState } from "@prisma/client";
 
 describe("RaceController", () => {
@@ -18,6 +19,7 @@ describe("RaceController", () => {
   let updateRaceMock: jest.Mock;
   let deleteRaceMock: jest.Mock;
   let showsMock: jest.Mock;
+  let transitionMock: jest.Mock;
 
   beforeEach(async () => {
     createRaceMock = jest.fn();
@@ -31,6 +33,7 @@ describe("RaceController", () => {
     updateRaceMock = jest.fn();
     deleteRaceMock = jest.fn();
     showsMock = jest.fn();
+    transitionMock = jest.fn();
 
     const module: TestingModule = await Test.createTestingModule({
       controllers: [RaceController],
@@ -53,6 +56,10 @@ describe("RaceController", () => {
         {
           provide: ShowService,
           useValue: { shows: showsMock },
+        },
+        {
+          provide: RaceControlService,
+          useValue: { transition: transitionMock },
         },
       ],
     }).compile();
@@ -187,5 +194,16 @@ describe("RaceController", () => {
     controller.remove("3");
 
     expect(deleteRaceMock).toHaveBeenCalledWith({ id: 3 });
+  });
+
+  it("applies a race action through the RaceControlService and returns its result", async () => {
+    const result = { race: { id: 3 }, show: { id: 1 } };
+    transitionMock.mockResolvedValue(result);
+
+    await expect(controller.transition(3, { action: "start" })).resolves.toBe(
+      result,
+    );
+
+    expect(transitionMock).toHaveBeenCalledWith(3, "start");
   });
 });

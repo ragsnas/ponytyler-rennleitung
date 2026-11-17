@@ -1,10 +1,10 @@
 import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { Subject, of } from 'rxjs';
+import { Subject, of, throwError } from 'rxjs';
 
 import { StateMachineComponent } from './state-machine.component';
-import { Race, RaceService, RaceState } from 'projects/backend-api/src/lib/race.service';
+import { Race, RaceAction, RaceService, RaceState, RaceTransitionResult } from 'projects/backend-api/src/lib/race.service';
 import { Show, ShowService, ShowState } from 'projects/backend-api/src/lib/show.service';
 import { MqttBrokerMessage, MqttBrokerService } from 'projects/mqtt-broker/src/lib/mqtt-broker.service';
 
@@ -19,11 +19,14 @@ describe('StateMachineComponent', () => {
   const currentShow: Show = { id: 'show-1', name: 'Test Show', date: new Date() };
   const currentRace: Race = { id: 'race-1', showId: 'show-1', person1: 'A', person2: 'B', orderNumber: '0', bikeWon: 0, raceState: RaceState.RACING };
 
+  let snackBar: jasmine.SpyObj<MatSnackBar>;
+
   beforeEach(async () => {
-    showService = jasmine.createSpyObj('ShowService', ['getCurrentShow', 'getShow', 'updateShow']);
+    snackBar = jasmine.createSpyObj('MatSnackBar', ['open']);
+    showService = jasmine.createSpyObj('ShowService', ['getCurrentShow', 'getShow']);
     showService.getCurrentShow.and.returnValue(of(currentShow));
 
-    raceService = jasmine.createSpyObj('RaceService', ['getCurrentRace', 'getRace', 'updateRace']);
+    raceService = jasmine.createSpyObj('RaceService', ['getCurrentRace', 'getRace', 'transition']);
     raceService.getCurrentRace.and.returnValue(of(currentRace));
 
     messages$ = new Subject<MqttBrokerMessage>();
@@ -38,7 +41,7 @@ describe('StateMachineComponent', () => {
       providers: [
         { provide: RaceService, useValue: raceService },
         { provide: ShowService, useValue: showService },
-        { provide: MatSnackBar, useValue: jasmine.createSpyObj('MatSnackBar', ['open']) },
+        { provide: MatSnackBar, useValue: snackBar },
       ],
     })
       .overrideComponent(StateMachineComponent, {
@@ -159,6 +162,141 @@ describe('StateMachineComponent', () => {
 
     expect(showService.getShow).not.toHaveBeenCalled();
     expect(component.currentShow()).toEqual(currentShow);
+  });
+
+  describe('race actions', () => {
+    const listedRace: Race = { ...currentRace, raceState: RaceState.LISTED };
+    const serverResult = (raceState: RaceState, showState: ShowState): RaceTransitionResult => ({
+      race: { ...currentRace, raceState, person1: 'from the server' },
+      show: { ...currentShow, showState },
+    });
+
+    async function ready() {
+      fixture.detectChanges();
+      await fixture.whenStable();
+    }
+
+    const actions: Array<[string, () => void, RaceAction, RaceState, ShowState, string]> = [
+      ['startCountdown', () => component.startCountdown(), 'countdown', RaceState.WAITING_TO_RACE, ShowState.RACE, 'Error starting the countdown'],
+      ['startRace', () => component.startRace(), 'start', RaceState.RACING, ShowState.RACE, 'Error starting the race'],
+      ['finishRace', () => component.finishRace(), 'finish', RaceState.RACED, ShowState.RACE_FINISHED, 'Error finishing the race'],
+      ['stopRace', () => component.stopRace(), 'stop', RaceState.LISTED, ShowState.BEFORE_RACE, 'Error stopping the race'],
+      ['skipRace', () => component.skipRace(), 'skip', RaceState.CANCELED, ShowState.BEFORE_RACE, 'Error skipping the race'],
+      ['setRaceDone', () => component.setRaceDone(), 'lyrics', RaceState.DONE, ShowState.BEFORE_RACE, 'Error setting the race to done'],
+      ['finishVideo', () => component.finishVideo(), 'video-done', RaceState.DONE, ShowState.BEFORE_RACE, 'Error finishing the video'],
+    ];
+
+    for (const [method, run, action, raceState, showState, message] of actions) {
+      it(`${method} asks the backend for the "${action}" action and takes race and show from its answer`, async () => {
+        await ready();
+        const result = serverResult(raceState, showState);
+        raceService.transition.and.returnValue(of(result));
+        // what the page reloads after skip / done; keeps the answer of the action visible
+        raceService.getCurrentRace.and.returnValue(of(result.race));
+        showService.getCurrentShow.and.returnValue(of(result.show));
+
+        run();
+        await fixture.whenStable();
+
+        expect(raceService.transition).toHaveBeenCalledOnceWith('race-1', action);
+        expect(component.currentRace()).toEqual(result.race);
+        expect(component.currentRaceState()).toBe(raceState);
+        expect(component.currentShow()).toEqual(result.show);
+        expect(component.currentShowState()).toBe(showState);
+      });
+
+      it(`${method} reports its own failure, with the reason the backend gives, and keeps the state shown`, async () => {
+        await ready();
+        raceService.transition.and.returnValue(throwError(() => ({ status: 409, error: { message: 'because of the state' } })));
+
+        run();
+        await fixture.whenStable();
+
+        expect(snackBar.open).toHaveBeenCalledTimes(1);
+        expect(snackBar.open.calls.mostRecent().args[0]).toBe(`${message}: because of the state`);
+        expect(component.currentRace()).toEqual(currentRace);
+        expect(component.currentShow()).toEqual(currentShow);
+      });
+    }
+
+    it('moves on to the next race after skip and done, by loading the current race again', async () => {
+      await ready();
+      const next = { ...listedRace, id: 'race-2' };
+      raceService.transition.and.returnValue(of(serverResult(RaceState.CANCELED, ShowState.BEFORE_RACE)));
+      raceService.getCurrentRace.and.returnValue(of(next));
+      showService.getCurrentShow.and.returnValue(of({ ...currentShow, showState: ShowState.BEFORE_RACE }));
+
+      component.skipRace();
+      await new Promise((resolve) => setTimeout(resolve)); // the reload is a chain of promises
+
+      expect(component.currentRace()).toEqual(next);
+      expect(component.currentRaceState()).toBe(RaceState.LISTED);
+    });
+
+    it('does nothing without a current race or show', async () => {
+      showService.getCurrentShow.and.returnValue(throwError(() => ({ status: 404 })));
+      await ready();
+
+      component.startCountdown();
+      component.stopRace();
+
+      expect(raceService.transition).not.toHaveBeenCalled();
+    });
+
+    it('starts the race when the countdown ends, as the "start" action', async () => {
+      await ready();
+      raceService.transition.and.returnValue(of(serverResult(RaceState.RACING, ShowState.RACE)));
+
+      component.startRace();
+      await fixture.whenStable();
+
+      expect(raceService.transition).toHaveBeenCalledWith('race-1', 'start');
+    });
+
+    it('wires the lyrics button to "lyrics" and the check button to "video-done"', async () => {
+      await ready();
+      component.currentShowState.set(ShowState.RACE_FINISHED);
+      fixture.detectChanges();
+      raceService.transition.and.returnValue(of(serverResult(RaceState.DONE, ShowState.BEFORE_RACE)));
+      const buttons = Array.from<HTMLButtonElement>(fixture.nativeElement.querySelectorAll('button'));
+
+      buttons[3].click();
+      expect(raceService.transition).toHaveBeenCalledWith('race-1', 'lyrics');
+
+      component.currentShowState.set(ShowState.VIDEO_FINISHED);
+      fixture.detectChanges();
+      buttons[4].click();
+      expect(raceService.transition).toHaveBeenCalledWith('race-1', 'video-done');
+    });
+  });
+
+  describe('loading the current show and race', () => {
+    it('tells the operator when there is no active show, instead of an unhandled error', async () => {
+      showService.getCurrentShow.and.returnValue(throwError(() => ({ status: 404 })));
+      const unhandled = jasmine.createSpy('unhandledrejection');
+      window.addEventListener('unhandledrejection', unhandled);
+
+      fixture.detectChanges();
+      await fixture.whenStable();
+      await new Promise((resolve) => setTimeout(resolve));
+      window.removeEventListener('unhandledrejection', unhandled);
+
+      expect(unhandled).not.toHaveBeenCalled();
+      expect(snackBar.open).toHaveBeenCalledTimes(1);
+      expect(snackBar.open.calls.mostRecent().args[0]).toContain('active show');
+      expect(component.currentShow()).toBeUndefined();
+      expect(component.currentRace()).toBeUndefined();
+    });
+
+    it('reports any other failure to load', async () => {
+      raceService.getCurrentRace.and.returnValue(throwError(() => ({ status: 500 })));
+
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      expect(snackBar.open).toHaveBeenCalledTimes(1);
+      expect(snackBar.open.calls.mostRecent().args[0]).toContain('Error loading');
+    });
   });
 
   describe('control buttons', () => {

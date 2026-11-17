@@ -1,6 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
+import { Show } from './show.service';
 import { Song } from './song.service';
 import { environment } from 'src/environments/environment';
 
@@ -33,6 +34,15 @@ export enum RaceState {
   DONE = "DONE"
 }
 
+/** What the operator can do with the current race; the backend decides whether it fits the race's state. */
+export type RaceAction = 'countdown' | 'start' | 'finish' | 'stop' | 'skip' | 'lyrics' | 'video-done';
+
+/** The race and its show as they are after an action. */
+export interface RaceTransitionResult {
+  race: Race;
+  show: Show;
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -60,6 +70,11 @@ export class RaceService {
       song2Id: race.song2?.id,
       raceState: race.raceState,
     });
+  }
+
+  /** Moves the race and its show together, atomically; rejects with 409 if the action does not fit the race's state. */
+  transition(raceId: string, action: RaceAction): Observable<RaceTransitionResult> {
+    return this.http.post<RaceTransitionResult>(`${environment.apiUrl}api/race/${raceId}/transition`, { action });
   }
 
   updateRace(race: Race) {

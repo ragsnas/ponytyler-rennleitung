@@ -335,4 +335,58 @@ describe("ShowService", () => {
       expect(mqttClient.publish).toHaveBeenCalledTimes(1);
     });
   });
+
+  describe("updateShowInTransaction / publishChanges (used by RaceControlService)", () => {
+    it("locks, updates and resets the other active shows on the given transaction client", async () => {
+      const reset = [{ id: 2, showState: ShowState.LISTED }];
+      tx.show.findUnique.mockResolvedValue({
+        id: 1,
+        showState: ShowState.BEFORE_RACE,
+      });
+      tx.show.update.mockResolvedValue({ id: 1, showState: ShowState.RACE });
+      tx.show.updateManyAndReturn.mockResolvedValue(reset);
+
+      const changes = await service.updateShowInTransaction(
+        tx as never,
+        { id: 1 },
+        { showState: ShowState.RACE },
+      );
+
+      expect(events).toEqual(["lock"]);
+      expect(changes).toEqual({
+        existingShow: { id: 1, showState: ShowState.BEFORE_RACE },
+        updatedShow: { id: 1, showState: ShowState.RACE },
+        resetShows: reset,
+      });
+      expect(transactionMock).not.toHaveBeenCalled();
+    });
+
+    it("publishes the changed show and the resets, and nothing when the state stays", () => {
+      service.publishChanges({
+        existingShow: { id: 1, showState: ShowState.BEFORE_RACE },
+        updatedShow: { id: 1, showState: ShowState.RACE },
+        resetShows: [{ id: 2, showState: ShowState.LISTED }],
+      } as never);
+
+      expect(mqttClient.publish.mock.calls).toEqual([
+        [
+          "ShowStateChange",
+          JSON.stringify({ showId: "1", state: ShowState.RACE }),
+        ],
+        [
+          "ShowStateChange",
+          JSON.stringify({ showId: "2", state: ShowState.LISTED }),
+        ],
+      ]);
+
+      mqttClient.publish.mockClear();
+      service.publishChanges({
+        existingShow: { id: 1, showState: ShowState.RACE },
+        updatedShow: { id: 1, showState: ShowState.RACE },
+        resetShows: [],
+      } as never);
+
+      expect(mqttClient.publish).not.toHaveBeenCalled();
+    });
+  });
 });

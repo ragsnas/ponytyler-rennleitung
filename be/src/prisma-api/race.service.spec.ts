@@ -606,4 +606,102 @@ describe("RaceService", () => {
       expect(mqttClient.publish).toHaveBeenCalledTimes(1);
     });
   });
+
+  describe("setStateInTransaction / publishChanges (used by RaceControlService)", () => {
+    const stored = { id: 5, showId: 7, raceState: RaceState.LISTED };
+
+    it("writes the data to the race on the given transaction client and returns it with its songs", async () => {
+      const updated = { ...stored, raceState: RaceState.RACING };
+      tx.race.update.mockResolvedValue(updated);
+
+      const changes = await service.setStateInTransaction(
+        tx as never,
+        stored as never,
+        {
+          raceState: RaceState.RACING,
+          raceStartedAt: new Date(0),
+        },
+      );
+
+      expect(tx.race.update).toHaveBeenCalledWith({
+        where: { id: 5 },
+        data: { raceState: RaceState.RACING, raceStartedAt: new Date(0) },
+        include: { song1: true, song2: true },
+      });
+      expect(changes).toEqual({
+        existingRace: stored,
+        updatedRace: updated,
+        resetRaces: [],
+      });
+    });
+
+    it("resets every other active race when the race becomes active, and none when it does not", async () => {
+      const reset = [{ id: 9, raceState: RaceState.LISTED }];
+      tx.race.updateManyAndReturn.mockResolvedValue(reset);
+      tx.race.update.mockResolvedValueOnce({
+        ...stored,
+        raceState: RaceState.RACING,
+      });
+
+      const active = await service.setStateInTransaction(
+        tx as never,
+        stored as never,
+        {
+          raceState: RaceState.RACING,
+        },
+      );
+
+      expect(active.resetRaces).toEqual(reset);
+      expect(tx.race.updateManyAndReturn).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({ id: { not: 5 } }),
+        }),
+      );
+
+      tx.race.updateManyAndReturn.mockClear();
+      tx.race.update.mockResolvedValueOnce({
+        ...stored,
+        raceState: RaceState.DONE,
+      });
+
+      const inactive = await service.setStateInTransaction(
+        tx as never,
+        stored as never,
+        {
+          raceState: RaceState.DONE,
+        },
+      );
+
+      expect(inactive.resetRaces).toEqual([]);
+      expect(tx.race.updateManyAndReturn).not.toHaveBeenCalled();
+    });
+
+    it("publishes the new state of the race, then the resets, and nothing when the state stays", () => {
+      service.publishChanges({
+        existingRace: stored,
+        updatedRace: { ...stored, raceState: RaceState.RACING },
+        resetRaces: [{ id: 9, raceState: RaceState.LISTED }],
+      } as never);
+
+      expect(mqttClient.publish.mock.calls).toEqual([
+        [
+          "RaceStateChange",
+          JSON.stringify({ raceId: "5", state: RaceState.RACING }),
+        ],
+        [
+          "RaceStateChange",
+          JSON.stringify({ raceId: "9", state: RaceState.LISTED }),
+        ],
+      ]);
+
+      mqttClient.publish.mockClear();
+      service.publishChanges({
+        existingRace: stored,
+        updatedRace: stored,
+        resetRaces: [],
+      } as never);
+
+      expect(mqttClient.publish).not.toHaveBeenCalled();
+    });
+  });
 });

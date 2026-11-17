@@ -1,5 +1,5 @@
 import { Component, OnDestroy, OnInit, ChangeDetectionStrategy, computed, signal } from "@angular/core";
-import { Race, RaceService, RaceState } from "projects/backend-api/src/lib/race.service";
+import { Race, RaceAction, RaceService, RaceState } from "projects/backend-api/src/lib/race.service";
 import { Show, ShowService, ShowState } from "projects/backend-api/src/lib/show.service";
 import { MqttBrokerMessage, MqttBrokerService } from "projects/mqtt-broker/src/lib/mqtt-broker.service";
 import { BikeData } from "projects/race-track/src/lib/race-track.component";
@@ -133,104 +133,55 @@ export class StateMachineComponent implements OnInit, OnDestroy {
 
   async getCurrentShowAndRace() {
     console.log(`Loading current show / race`);
-    const show = await firstValueFrom(this.showService.getCurrentShow());
-    this.currentShow.set(show);
-    if (show && show.id) {
-      console.log(`Current Show:`, show);
+    try {
+      const show = await firstValueFrom(this.showService.getCurrentShow());
+      this.currentShow.set(show);
       this.currentShowState.set(show.showState);
-      this.currentRace.set(await firstValueFrom(this.raceService.getCurrentRace(show.id)));
-    }
-    const race = this.currentRace();
-    if (race) {
-      console.log(`Current Race:`, race);
-      this.currentRaceState.set(race.raceState);
-    }
-  }
-
-  async startCountdown() {
-    const race = this.currentRace();
-    const show = this.currentShow();
-    if (show && race) {
-      this.updateRaceAndShow(
-        { ...race, raceState: RaceState.WAITING_TO_RACE },
-        { ...show, showState: ShowState.RACE },
-        () => {
-        },
-        `Error Starting Race`,
-      );
+      const race = await firstValueFrom(this.raceService.getCurrentRace(show.id!));
+      this.currentRace.set(race);
+      this.currentRaceState.set(race?.raceState);
+    } catch (error) {
+      if ((error as { status?: number })?.status === 404) {
+        // the backend answers 404 when no show is active
+        this.currentShow.set(undefined);
+        this.currentShowState.set(undefined);
+        this.currentRace.set(undefined);
+        this.currentRaceState.set(undefined);
+        this.showError("There is no active show", error);
+      } else {
+        this.showError("Error loading the current show and race", error);
+      }
     }
   }
 
-  async startRace() {
-    const race = this.currentRace();
-    const show = this.currentShow();
-    if (show && race) {
-      this.updateRaceAndShow(
-        { ...race, raceState: RaceState.RACING, raceStartedAt: new Date() },
-        { ...show, showState: ShowState.RACE },
-        () => {
-        },
-        `Error Starting Race`,
-      );
-    }
+  startCountdown() {
+    this.runAction("countdown", "Error starting the countdown");
   }
 
-  async finishRace() {
-    const race = this.currentRace();
-    const show = this.currentShow();
-    if (show && race) {
-      this.updateRaceAndShow(
-        { ...race, raceState: RaceState.RACED },
-        { ...show, showState: ShowState.RACE_FINISHED },
-        () => {
-        },
-        `Error Starting Race`,
-      );
-    }
+  startRace() {
+    this.runAction("start", "Error starting the race");
+  }
+
+  finishRace() {
+    this.runAction("finish", "Error finishing the race");
   }
 
   stopRace() {
-    const race = this.currentRace();
-    const show = this.currentShow();
-    if (show && race) {
-      this.updateRaceAndShow(
-        { ...race, raceState: RaceState.LISTED },
-        { ...show, showState: ShowState.BEFORE_RACE },
-        () => {
-        },
-        `Error Stopping Race`,
-      );
-    }
+    this.runAction("stop", "Error stopping the race");
   }
 
   skipRace() {
-    const race = this.currentRace();
-    const show = this.currentShow();
-    if (show && race) {
-      this.updateRaceAndShow(
-        { ...race, raceState: RaceState.CANCELED },
-        { ...show, showState: ShowState.BEFORE_RACE },
-        () => {
-          this.getCurrentShowAndRace();
-        },
-        `Error Skipping Race`,
-      );
-    }
+    this.runAction("skip", "Error skipping the race", true);
   }
 
+  /** The "lyrics" button: the winner was celebrated, on to the next race. */
   setRaceDone() {
-    const race = this.currentRace();
-    const show = this.currentShow();
-    if (show && race) {
-      this.updateRaceAndShow(
-        { ...race, raceState: RaceState.DONE },
-        { ...show, showState: ShowState.BEFORE_RACE },
-        () => {
-          this.getCurrentShowAndRace();
-        },
-        `Error setting Race Done`,
-      );
-    }
+    this.runAction("lyrics", "Error setting the race to done", true);
+  }
+
+  /** The "check" button: the video is over, on to the next race. */
+  finishVideo() {
+    this.runAction("video-done", "Error finishing the video", true);
   }
 
   getRandomStartWord(): string {
@@ -238,52 +189,34 @@ export class StateMachineComponent implements OnInit, OnDestroy {
     return "GO!";
   }
 
-  private async updateRaceAndShow(
-    race: Race,
-    show: Show,
-    successFunction: () => void,
-    errorMessage: string) {
-    await this.updateShow(
-      show,
-      () => {
-      },
-      errorMessage);
-    await this.updateRace(
-      race,
-      successFunction,
-      errorMessage);
-  }
-
-  private async updateShow(show: Show, successFunction: () => void, errorMessage: string) {
-    await this.showService.updateShow(show).subscribe({
-      next: () => {
+  /**
+   * Asks the backend to apply the action to the current race. The backend
+   * moves race and show together and only if the action fits the race's state
+   * at that moment; what is shown afterwards is what it answers with.
+   */
+  private runAction(action: RaceAction, errorMessage: string, loadNextRace = false) {
+    const race = this.currentRace();
+    if (!race?.id) {
+      return;
+    }
+    this.raceService.transition(race.id, action).subscribe({
+      next: ({ race, show }) => {
+        this.currentRace.set(race);
+        this.currentRaceState.set(race.raceState);
         this.currentShow.set(show);
         this.currentShowState.set(show.showState);
-        successFunction();
+        if (loadNextRace) {
+          this.getCurrentShowAndRace();
+        }
       },
-      error: (error) => {
-        this.snackBar.open(`${errorMessage}: ${JSON.stringify(error)}`, "OK", {
-          duration: 10000, announcementMessage: `Error`, panelClass: "error",
-        });
-      },
+      error: (error) => this.showError(errorMessage, error),
     });
   }
 
-  private async updateRace(
-    race: Race,
-    successFunction: () => void,
-    errorMessage: string) {
-    await this.raceService.updateRace(race).subscribe({
-      next: () => {
-        this.currentRace.set(race);
-        this.currentRaceState.set(race.raceState);
-        successFunction();
-      },
-      error: (error) => {
-        this.snackBar.open(`${errorMessage}: ${JSON.stringify(error)}`, "OK", {
-          duration: 10000, announcementMessage: `Error`, panelClass: "error",
-        });
-      },
+  private showError(message: string, error: unknown) {
+    const reason = (error as { error?: { message?: string } })?.error?.message ?? JSON.stringify(error);
+    this.snackBar.open(`${message}: ${reason}`, "OK", {
+      duration: 10000, announcementMessage: `Error`, panelClass: "error",
     });
   }
 }
