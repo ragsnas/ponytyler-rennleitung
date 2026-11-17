@@ -108,6 +108,29 @@ describe("ShowService", () => {
     });
   });
 
+  describe("getLiveShow", () => {
+    it("is the newest active show that is neither LISTED nor RACE_FINISHED", async () => {
+      findFirstMock.mockResolvedValue({ id: 4 });
+
+      const result = await service.getLiveShow();
+
+      expect(result).toEqual({ id: 4 });
+      expect(findFirstMock).toHaveBeenCalledWith({
+        where: {
+          active: true,
+          showState: { notIn: [ShowState.LISTED, ShowState.RACE_FINISHED] },
+        },
+        orderBy: [{ date: { sort: "desc", nulls: "last" } }, { id: "desc" }],
+      });
+    });
+
+    it("is null when no show is live", async () => {
+      findFirstMock.mockResolvedValue(null);
+
+      expect(await service.getLiveShow()).toBeNull();
+    });
+  });
+
   describe("deleteShowWithRacesAndShifts", () => {
     it("deletes only the show; the database cascades to races, shifts, shift roles and encore songs", async () => {
       deleteMock.mockResolvedValue({ id: 7 });

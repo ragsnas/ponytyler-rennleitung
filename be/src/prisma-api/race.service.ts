@@ -190,14 +190,17 @@ export class RaceService implements OnModuleDestroy {
     return !RaceService.ALLOWED_INACTIVE_RACE_STATES.includes(raceState);
   }
 
-  /** Resets the other active races *of the same show*; returns the reset races. */
+  /**
+   * Resets every other active race to LISTED; returns the reset races. Not
+   * scoped by show: the bike tracker follows one race at a time, so only one
+   * race in the whole database may be active.
+   */
   private async resetOtherActiveRaces(
     tx: Prisma.TransactionClient,
     activeRace: Race,
   ): Promise<Race[]> {
     return tx.race.updateManyAndReturn({
       where: {
-        showId: activeRace.showId,
         id: { not: activeRace.id },
         raceState: { notIn: RaceService.ALLOWED_INACTIVE_RACE_STATES },
       },

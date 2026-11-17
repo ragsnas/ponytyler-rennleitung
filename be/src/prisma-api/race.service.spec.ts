@@ -497,7 +497,7 @@ describe("RaceService", () => {
       RaceState.WAITING_FOR_OPPONENT,
     ];
 
-    it("resets the other active races of the same show to LISTED with one scoped update when this race becomes active", async () => {
+    it("resets the other active races (of any show) to LISTED with one update when this race becomes active", async () => {
       tx.race.findUnique.mockResolvedValue({
         id: 1,
         showId: 5,
@@ -521,7 +521,6 @@ describe("RaceService", () => {
       expect(tx.race.updateManyAndReturn).toHaveBeenCalledTimes(1);
       expect(tx.race.updateManyAndReturn).toHaveBeenCalledWith({
         where: {
-          showId: 5,
           id: { not: 1 },
           raceState: { notIn: ALLOWED_INACTIVE_STATES },
         },

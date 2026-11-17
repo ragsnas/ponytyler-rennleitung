@@ -86,7 +86,8 @@ test.describe('Show Dashboard', () => {
     await dismissSuccessSnackBar(page);
     await page.waitForURL(/\/show\/\d+$/, { timeout: 15000 });
     api.adoptShow(Number(page.url().match(/\/show\/(\d+)$/)![1]));
-    await expect(page.getByText(showName)).toBeVisible({ timeout: 10000 });
+    // heading only: the success snackbar also contains the name
+    await expect(page.getByRole('heading', { name: showName })).toBeVisible({ timeout: 10000 });
   });
 
   test('creates a race for the show', async ({ page, api }) => {

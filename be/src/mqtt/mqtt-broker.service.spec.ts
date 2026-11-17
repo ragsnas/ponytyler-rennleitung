@@ -14,7 +14,7 @@ const TEST_MQTT_WS_PORT = 18831;
 describe("MqttBrokerService", () => {
   let service: MqttBrokerService;
   let raceService: { currentRace: jest.Mock; updateRace: jest.Mock };
-  let showService: { getCurrentShow: jest.Mock; updateShow: jest.Mock };
+  let showService: { getLiveShow: jest.Mock; updateShow: jest.Mock };
 
   beforeEach(async () => {
     raceService = {
@@ -22,7 +22,7 @@ describe("MqttBrokerService", () => {
       updateRace: jest.fn().mockResolvedValue(undefined),
     };
     showService = {
-      getCurrentShow: jest.fn().mockResolvedValue({ id: 7 }),
+      getLiveShow: jest.fn().mockResolvedValue({ id: 7 }),
       updateShow: jest.fn().mockResolvedValue(undefined),
     };
 
@@ -260,6 +260,37 @@ describe("MqttBrokerService", () => {
 
       await currentRaceLookedUp;
 
+      expect(raceService.updateRace).not.toHaveBeenCalled();
+      expect(showService.updateShow).not.toHaveBeenCalled();
+    } finally {
+      publisher.end(true);
+    }
+  });
+
+  it("records no winner while no show is live", async () => {
+    const liveShowLookedUp = new Promise<void>((resolve) => {
+      showService.getLiveShow.mockImplementation(async () => {
+        resolve();
+        return null;
+      });
+    });
+
+    const publisher = mqtt.connect(`mqtt://localhost:${TEST_MQTT_PORT}`);
+    try {
+      await waitForEvent(publisher, "connect");
+
+      publisher.publish(
+        "Bike/1",
+        JSON.stringify({ pulsecount: 121, sequenz: 10, timestamp: 1000 }),
+      );
+      publisher.publish(
+        "Bike/1",
+        JSON.stringify({ pulsecount: 125, sequenz: 14, timestamp: 1010 }),
+      );
+
+      await liveShowLookedUp;
+
+      expect(raceService.currentRace).not.toHaveBeenCalled();
       expect(raceService.updateRace).not.toHaveBeenCalled();
       expect(showService.updateShow).not.toHaveBeenCalled();
     } finally {

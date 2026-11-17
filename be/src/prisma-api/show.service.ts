@@ -67,6 +67,20 @@ export class ShowService implements OnModuleDestroy {
     });
   }
 
+  /**
+   * The show a race result belongs to: the newest active show that is neither
+   * LISTED (not started) nor RACE_FINISHED (already done).
+   */
+  async getLiveShow(): Promise<Show | null> {
+    return this.prisma.show.findFirst({
+      where: {
+        active: true,
+        showState: { notIn: [ShowState.LISTED, ShowState.RACE_FINISHED] },
+      },
+      orderBy: [{ date: { sort: "desc", nulls: "last" } }, { id: "desc" }],
+    });
+  }
+
   async showsOrderedByActiveAndDate(): Promise<Show[]> {
     return this.prisma.show.findMany({
       orderBy: [{ active: "desc" }, { date: "desc" }],

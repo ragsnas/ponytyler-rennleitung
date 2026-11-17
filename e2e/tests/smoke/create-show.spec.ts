@@ -38,6 +38,7 @@ test('can create a new show', async ({ page }) => {
   // The app navigates to the newly created show's detail page
   await page.waitForURL(/\/show\/\d+$/, { timeout: 15000 });
 
-  // Verify the show's name is displayed on its detail page
-  await expect(page.getByText(showName)).toBeVisible({ timeout: 10000 });
+  // Verify the show's name is displayed on its detail page. Scoped to the
+  // heading: the success snackbar also contains the name and may still be showing.
+  await expect(page.getByRole('heading', { name: showName })).toBeVisible({ timeout: 10000 });
 });

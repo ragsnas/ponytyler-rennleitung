@@ -250,7 +250,13 @@ export class MqttBrokerService
 
   private async markCurrentRaceAsWonBy(bikeId: Winner): Promise<void> {
     try {
-      const show: Show = await this.showService.getCurrentShow();
+      const show: Show | null = await this.showService.getLiveShow();
+      if (!show) {
+        this.logger.warn(
+          `No live show found while marking Bike ${bikeId} as winner`,
+        );
+        return;
+      }
       const race: Race = await this.raceService.currentRace(show.id);
       if (!race) {
         this.logger.warn(
